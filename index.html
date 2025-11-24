@@ -6,7 +6,6 @@
     <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- 辅助功能与样式 --- */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -27,11 +26,10 @@
         }
 
         /* 列表项选中态 */
-        .item-card[tabindex="0"] {
+        .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
             transform: scale(1.01);
-            transition: all 0.2s;
         }
 
         /* 数量选择器按钮样式 */
@@ -42,15 +40,17 @@
             border: 2px solid #e5e7eb;
             border-radius: 0.5rem;
             background: white;
+            cursor: pointer;
         }
-        .qty-btn.active-focus {
+        /* 模拟焦点样式 (用于 arrow key 导航时) */
+        .qty-btn.virtual-focus {
             background-color: #dbeafe;
             border-color: #2563eb;
             color: #1e40af;
-            outline: 3px solid #ea580c; /* 模拟焦点 */
+            outline: 3px solid #ea580c;
         }
 
-        /* 自定义输入框容器样式 */
+        /* 自定义输入框容器 */
         .custom-input-container {
             border: 2px solid #e5e7eb;
             padding: 0.5rem;
@@ -59,8 +59,9 @@
             align-items: center;
             justify-content: center;
             background: white;
+            cursor: pointer;
         }
-        .custom-input-container.active-focus {
+        .custom-input-container.virtual-focus {
             border-color: #2563eb;
             background-color: #eff6ff;
             outline: 3px solid #ea580c;
@@ -74,16 +75,15 @@
     <div id="login-screen" class="min-h-screen flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
             <h1 class="text-2xl font-bold mb-6 text-center" tabindex="-1">家庭物品管家 - 请登录</h1>
-            <label for="login-email" class="block mb-2 font-medium">邮箱账号</label>
+            <label class="block mb-2 font-medium">邮箱账号</label>
             <input type="email" id="login-email" class="w-full p-3 border rounded mb-4" placeholder="例如：888@home.com">
-            <label for="login-password" class="block mb-2 font-medium">家庭密码</label>
+            <label class="block mb-2 font-medium">家庭密码</label>
             <input type="password" id="login-password" class="w-full p-3 border rounded mb-6" placeholder="请输入密码">
             <button id="btn-login" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold hover:bg-blue-700">登录系统</button>
         </div>
     </div>
 
     <div id="app-screen" class="hidden min-h-screen flex flex-col pb-20">
-        
         <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto">
                 <div class="flex justify-between items-center mb-3">
@@ -95,16 +95,11 @@
                         <option value="老人">我是老人</option>
                     </select>
                 </div>
-
                 <div class="flex flex-col gap-3">
                     <input type="text" id="search-input" placeholder="输入物品名称搜索..." class="w-full p-3 text-black rounded shadow font-medium" aria-label="搜索物品">
                     <div class="flex gap-3">
-                        <button id="btn-open-add" class="flex-1 bg-green-500 text-white font-bold py-3 rounded shadow hover:bg-green-600 text-lg">
-                            + 新增物品
-                        </button>
-                        <button id="btn-open-takeout" class="flex-1 bg-orange-500 text-white font-bold py-3 rounded shadow hover:bg-orange-600 text-lg">
-                            - 取出物品
-                        </button>
+                        <button id="btn-open-add" class="flex-1 bg-green-500 text-white font-bold py-3 rounded shadow hover:bg-green-600 text-lg">+ 新增物品</button>
+                        <button id="btn-open-takeout" class="flex-1 bg-orange-500 text-white font-bold py-3 rounded shadow hover:bg-orange-600 text-lg">- 取出物品</button>
                     </div>
                 </div>
             </div>
@@ -128,8 +123,7 @@
         </section>
 
         <main class="flex-grow p-4 bg-gray-50">
-            <div id="items-container" class="max-w-3xl mx-auto space-y-4 outline-none" 
-                 role="list" aria-label="物品列表，使用上下光标浏览，按回车管理">
+            <div id="items-container" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="物品列表">
                 <p class="text-center text-gray-500 mt-10">数据加载中...</p>
             </div>
         </main>
@@ -140,12 +134,12 @@
             <h2 class="text-2xl font-bold mb-4" tabindex="-1" id="title-add">入库：新增物品</h2>
             <form id="form-add" class="space-y-4">
                 <div>
-                    <label for="add-name" class="block font-medium mb-1">名称</label>
+                    <label class="block font-medium mb-1">名称</label>
                     <input type="text" id="add-name" required class="w-full p-3 border rounded" placeholder="如：大米">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="add-room" class="block font-medium mb-1">房间</label>
+                        <label class="block font-medium mb-1">房间</label>
                         <select id="add-room" class="w-full p-3 border rounded">
                             <option value="厨房">厨房</option>
                             <option value="客厅">客厅</option>
@@ -158,7 +152,7 @@
                         </select>
                     </div>
                     <div>
-                        <label for="add-location" class="block font-medium mb-1">位置</label>
+                        <label class="block font-medium mb-1">位置</label>
                         <input type="text" id="add-location" class="w-full p-3 border rounded" placeholder="如：柜子">
                     </div>
                 </div>
@@ -177,35 +171,28 @@
     </div>
 
     <div id="modal-action" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
-        <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl text-center" role="dialog" aria-modal="true" aria-labelledby="action-title">
-            <h2 id="action-title" class="text-xl font-bold mb-2 text-gray-800">管理物品</h2>
+        <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl text-center">
+            <h2 id="action-title" class="text-xl font-bold mb-2 text-gray-800" tabindex="-1">管理物品</h2>
             <p id="action-desc" class="text-gray-500 mb-6">请选择操作</p>
-            
             <div class="flex flex-col gap-3" id="action-buttons-container">
-                <button class="p-4 bg-blue-50 text-blue-700 font-bold rounded hover:bg-blue-100 focus:bg-blue-100 border border-blue-200" data-action="put">
-                    放入 (增加库存)
-                </button>
-                <button class="p-4 bg-orange-50 text-orange-700 font-bold rounded hover:bg-orange-100 focus:bg-orange-100 border border-orange-200" data-action="take">
-                    取出 (减少库存)
-                </button>
-                <button class="p-4 bg-red-50 text-red-700 font-bold rounded hover:bg-red-100 focus:bg-red-100 border border-red-200" data-action="delete">
-                    删除物品
-                </button>
-                <button class="p-3 text-gray-500 mt-2" onclick="closeAllModals()">取消返回</button>
+                <button class="p-4 bg-blue-50 text-blue-700 font-bold rounded border border-blue-200" data-action="put">放入 (增加)</button>
+                <button class="p-4 bg-orange-50 text-orange-700 font-bold rounded border border-orange-200" data-action="take">取出 (减少)</button>
+                <button class="p-4 bg-red-50 text-red-700 font-bold rounded border border-red-200" data-action="delete">删除物品</button>
+                <button class="p-3 text-gray-500 mt-2" onclick="closeAllModals()">取消</button>
             </div>
         </div>
     </div>
 
     <div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-end sm:items-center">
-        <div class="bg-white w-full max-w-md p-6 rounded-t-xl sm:rounded-xl shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="qty-title">
-            <h2 id="qty-title" class="text-xl font-bold mb-4 text-center">选择数量</h2>
+        <div class="bg-white w-full max-w-md p-6 rounded-t-xl sm:rounded-xl shadow-2xl">
+            <h2 id="qty-title" class="text-xl font-bold mb-4 text-center" tabindex="-1">选择数量</h2>
             
-            <div class="grid grid-cols-5 gap-2 mb-4" id="qty-grid" role="grid">
+            <div class="grid grid-cols-5 gap-2 mb-4" id="qty-grid">
                 </div>
 
-            <div id="qty-custom-container" class="custom-input-container mb-6" role="button" aria-label="自定义数量，按回车输入">
+            <div id="qty-custom-container" class="custom-input-container mb-6" role="button" tabindex="0" aria-label="自定义数量，按回车输入">
                 <span class="mr-2 font-bold text-gray-700">自定义:</span>
-                <input type="number" id="qty-custom-input" class="w-24 p-1 border-b-2 border-gray-300 text-center font-bold text-lg focus:outline-none focus:border-blue-500" disabled placeholder="#">
+                <input type="number" id="qty-custom-input" class="w-24 p-1 border-b-2 border-gray-300 text-center font-bold text-lg" disabled placeholder="#">
             </div>
 
             <button class="w-full p-3 bg-gray-200 rounded font-bold" onclick="closeAllModals()">取消</button>
@@ -214,10 +201,10 @@
 
     <div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl text-center">
-            <h2 class="text-xl font-bold mb-4 text-red-600">⚠ 确定删除吗？</h2>
+            <h2 class="text-xl font-bold mb-4 text-red-600" tabindex="-1">⚠ 确定删除吗？</h2>
             <p id="confirm-text" class="mb-6 text-gray-700"></p>
             <div class="flex gap-4">
-                <button id="btn-confirm-cancel" class="flex-1 p-3 bg-gray-200 rounded font-bold">取消</button>
+                <button class="flex-1 p-3 bg-gray-200 rounded font-bold" onclick="closeAllModals()">取消</button>
                 <button id="btn-confirm-ok" class="flex-1 p-3 bg-red-600 text-white rounded font-bold">确认删除</button>
             </div>
         </div>
@@ -225,7 +212,7 @@
 
     <div id="modal-takeout-search" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-start pt-20">
         <div class="bg-white w-full max-w-lg p-6 rounded-xl shadow-2xl mx-4">
-            <h2 class="text-xl font-bold mb-4">取出物品：搜索</h2>
+            <h2 class="text-xl font-bold mb-4" tabindex="-1">取出物品：搜索</h2>
             <input list="takeout-options" id="takeout-search-input" class="w-full p-4 border-2 border-orange-300 rounded text-lg font-bold mb-4" placeholder="输入名称查找...">
             <datalist id="takeout-options"></datalist>
             <div class="flex justify-end">
@@ -239,7 +226,6 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 配置
         const firebaseConfig = {
             apiKey: "AIzaSyC3rxfvajIswJADfzJD0lphVra99vka7nE",
             authDomain: "household-item-management.firebaseapp.com",
@@ -254,44 +240,39 @@
         const db = getFirestore(app);
         const itemsRef = collection(db, "items");
 
-        // 全局状态
+        // 全局变量
         let allItems = [];
-        let currentActionItem = null; // 当前正在操作的物品对象
-        let pendingAddQty = 1; // 新增物品时的暂存数量
+        let currentActionItem = null;
+        let pendingAddQty = 1;
 
-        // 辅助函数：语音
         window.announce = (msg) => {
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // ================== 登录逻辑 ==================
+        // --- 登录 ---
         onAuthStateChanged(auth, user => {
-            const login = document.getElementById('login-screen');
-            const app = document.getElementById('app-screen');
             if (user) {
-                login.classList.add('hidden');
-                app.classList.remove('hidden');
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
                 loadItems();
             } else {
-                login.classList.remove('hidden');
-                app.classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('app-screen').classList.add('hidden');
             }
         });
-
         document.getElementById('btn-login').addEventListener('click', () => {
             const e = document.getElementById('login-email').value;
             const p = document.getElementById('login-password').value;
             signInWithEmailAndPassword(auth, e, p).catch(() => announce("登录失败"));
         });
 
-        // ================== 列表加载与渲染 ==================
+        // --- 加载列表 (修复：TAB 键可聚焦) ---
         function loadItems() {
-            const q = query(itemsRef, orderBy("updatedAt", "desc"));
-            onSnapshot(q, snapshot => {
+            onSnapshot(query(itemsRef, orderBy("updatedAt", "desc")), snap => {
                 allItems = [];
-                snapshot.forEach(doc => allItems.push({ id: doc.id, ...doc.data() }));
+                snap.forEach(d => allItems.push({ id: d.id, ...d.data() }));
                 renderList();
                 updateDatalist();
             });
@@ -317,9 +298,9 @@
             filtered.forEach(item => {
                 const div = document.createElement('div');
                 div.className = "item-card bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 cursor-pointer relative";
-                div.setAttribute('role', 'listitem');
-                div.setAttribute('tabindex', '-1'); // 默认不可TAB，由JS控制焦点
-                // ARIA Label: 包含所有关键信息
+                div.setAttribute('role', 'button');
+                // 修复：设置为 0，允许 TAB 键聚焦
+                div.setAttribute('tabindex', '0'); 
                 div.setAttribute('aria-label', `${item.name}, ${item.room}, 剩余 ${item.quantity} 个。按回车管理。`);
                 
                 div.innerHTML = `
@@ -332,113 +313,65 @@
                     </div>
                 `;
                 
-                // 点击触发
-                div.addEventListener('click', () => openActionMenu(item));
+                // 点击或回车 -> 打开菜单
+                const triggerMenu = () => openActionMenu(item);
+                div.addEventListener('click', triggerMenu);
+                div.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        triggerMenu();
+                    }
+                });
+                
                 container.appendChild(div);
             });
         }
 
-        // ================== 列表键盘导航 (Arrow Keys) ==================
-        const itemsContainer = document.getElementById('items-container');
-        itemsContainer.addEventListener('keydown', (e) => {
-            const items = Array.from(document.querySelectorAll('.item-card'));
-            if (items.length === 0) return;
-            const currentIndex = items.indexOf(document.activeElement);
-
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                const next = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-                items[next].focus();
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                const prev = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-                items[prev].focus();
-            } else if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                if (currentIndex !== -1) {
-                    // 找到对应的 item 数据
-                    // 由于渲染顺序一致，直接用 index 取
-                    // *注意：如果筛选逻辑复杂，建议把 ID 绑在 DOM 上
-                    // 这里为了简便，重新匹配一下，或者更好的是把 ID 存在 dataset
-                }
-                // 由于 DOM 和 filtered 数组不一定一一对应（如果重新渲染了），我们最好给 DOM 加 ID
-                // 但上面的 renderList 是实时的。我们可以在 render 时把 item 对象挂载到 dom 上
-                // 简单修改 renderList：
-            }
-        });
-        
-        // 修正：为了准确获取 Item，我们在 click 事件里处理了，键盘事件复用 click
-        // 修改 renderList 里的 div，增加 item 数据绑定
-        // 在 renderList 循环里： div.itemData = item;
-        
-        // 重新绑定列表事件处理
-        itemsContainer.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                if (document.activeElement.classList.contains('item-card')) {
-                    // 模拟点击
-                    document.activeElement.click();
-                }
-            }
-        });
-
-        // 为了让 click 能获取 item，我们需要在 render 时做个闭包，这已经在 renderList 实现了。
-        // 补充：renderList 里必须处理 div 的 tabindex，为了让 Arrow Key 能 focus，
-        // 我们需要手动管理。
-        
-        // ================== 功能：操作菜单 ==================
+        // --- 操作菜单 ---
         function openActionMenu(item) {
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
-            const title = document.getElementById('action-title');
-            const desc = document.getElementById('action-desc');
-            
-            title.textContent = `管理：${item.name}`;
-            desc.textContent = `当前库存：${item.quantity} (位于 ${item.room})`;
-            
+            document.getElementById('action-title').textContent = `管理：${item.name}`;
+            document.getElementById('action-desc').textContent = `库存：${item.quantity}`;
             modal.classList.remove('hidden');
             
-            // 焦点管理：聚焦第一个按钮
+            // 聚焦第一个按钮
             const firstBtn = modal.querySelector('button');
-            firstBtn.focus();
-            
-            announce(`已打开 ${item.name} 的管理菜单`);
+            if (firstBtn) setTimeout(() => firstBtn.focus(), 100);
+            announce(`已打开管理菜单`);
         }
 
-        // 菜单按钮事件
         document.getElementById('action-buttons-container').addEventListener('click', (e) => {
             const btn = e.target.closest('button');
             if (!btn) return;
             const action = btn.dataset.action;
             
-            if (action === 'put') {
-                openQuantityPicker("放入数量", (qty) => handleUpdate(qty));
-            } else if (action === 'take') {
-                openQuantityPicker("取出数量", (qty) => handleUpdate(-qty));
-            } else if (action === 'delete') {
-                openConfirmModal(currentActionItem);
-            }
+            if (action === 'put') openQuantityPicker("放入数量", (qty) => handleUpdate(qty));
+            if (action === 'take') openQuantityPicker("取出数量", (qty) => handleUpdate(-qty));
+            if (action === 'delete') openConfirmModal(currentActionItem);
         });
 
-        // ================== 功能：通用数量选择器 (Loop Nav) ==================
+        // --- 数量选择器 (核心修复：循环浏览 + 输入) ---
         let qtyCallback = null;
+        let qtyFocusIndex = 0; // 0-9:btns, 10:input
         const qtyGrid = document.getElementById('qty-grid');
         
-        // 初始化生成 1-10 按钮
+        // 生成 1-10 按钮
         qtyGrid.innerHTML = '';
         for(let i=1; i<=10; i++) {
-            const btn = document.createElement('button');
-            btn.className = 'qty-btn';
+            const btn = document.createElement('div');
+            btn.className = 'qty-btn flex items-center justify-center';
             btn.textContent = i;
-            btn.dataset.value = i;
-            btn.tabIndex = -1; // 禁用原生 TAB，全靠 JS 接管
+            btn.setAttribute('role', 'button');
+            // 禁用原生 TAB，全靠 arrow keys 模拟
+            btn.setAttribute('tabindex', '-1'); 
+            btn.addEventListener('click', () => submitQty(i));
             qtyGrid.appendChild(btn);
         }
 
-        function openQuantityPicker(titleText, callback) {
-            qtyCallback = callback;
-            document.getElementById('qty-title').textContent = titleText;
-            
-            // 隐藏其他模态框（如果有）
+        function openQuantityPicker(title, cb) {
+            qtyCallback = cb;
+            document.getElementById('qty-title').textContent = title;
             document.getElementById('modal-action').classList.add('hidden');
             document.getElementById('modal-add').classList.add('hidden');
             document.getElementById('modal-takeout-search').classList.add('hidden');
@@ -447,209 +380,193 @@
             modal.classList.remove('hidden');
             
             // 重置状态
-            resetQtyNav();
-            announce(`请选择${titleText}，使用方向键浏览 1 到 10 及自定义输入`);
-        }
-
-        // --- 数量选择器键盘逻辑 ---
-        let qtyFocusIndex = 0; // 0-9 是按钮，10 是输入框
-        const qtyButtons = Array.from(document.querySelectorAll('.qty-btn'));
-        const customContainer = document.getElementById('qty-custom-container');
-        const customInput = document.getElementById('qty-custom-input');
-        
-        function resetQtyNav() {
             qtyFocusIndex = 0;
-            customInput.value = '';
-            customInput.disabled = true;
-            customContainer.classList.remove('active-focus');
-            highlightQtyIndex(0);
+            const input = document.getElementById('qty-custom-input');
+            input.value = '';
+            input.disabled = true; 
+            renderQtyFocus();
+            
+            announce(`请选择数量。使用方向键浏览 1到10及自定义。`);
         }
 
-        function highlightQtyIndex(index) {
-            // 清除所有高亮
-            qtyButtons.forEach(b => b.classList.remove('active-focus'));
-            customContainer.classList.remove('active-focus');
+        function renderQtyFocus() {
+            const btns = document.querySelectorAll('.qty-btn');
+            const container = document.getElementById('qty-custom-container');
             
-            if (index < 10) {
-                qtyButtons[index].classList.add('active-focus');
-                qtyButtons[index].focus(); // 物理聚焦以便读屏
+            // 清除旧样式
+            btns.forEach(b => b.classList.remove('virtual-focus'));
+            container.classList.remove('virtual-focus');
+            container.setAttribute('tabindex', '-1');
+
+            if (qtyFocusIndex < 10) {
+                // 聚焦数字按钮
+                const target = btns[qtyFocusIndex];
+                target.classList.add('virtual-focus');
+                // 让屏幕阅读器能读到
+                target.setAttribute('tabindex', '0');
+                target.focus();
+                target.setAttribute('tabindex', '-1'); // 读完后设回-1，保持逻辑一致
             } else {
-                customContainer.classList.add('active-focus');
-                customContainer.focus(); // 容器聚焦
+                // 聚焦输入框容器
+                container.classList.add('virtual-focus');
+                container.setAttribute('tabindex', '0');
+                container.focus();
                 announce("自定义数量，按回车输入");
             }
         }
 
-        // 监听键盘 (在 modal-qty 上监听)
-        const modalQty = document.getElementById('modal-qty');
-        modalQty.addEventListener('keydown', (e) => {
-            if (modalQty.classList.contains('hidden')) return;
-
-            // 屏蔽 Input 里的方向键冒泡
-            if (document.activeElement === customInput) {
+        // 监听数量模态框的键盘事件
+        document.getElementById('modal-qty').addEventListener('keydown', (e) => {
+            // 如果是在输入框里打字，只拦截回车
+            const input = document.getElementById('qty-custom-input');
+            if (!input.disabled && document.activeElement === input) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    submitQty(parseInt(customInput.value));
+                    submitQty(parseInt(input.value));
                 }
-                return; 
+                return; // 不执行下面的导航逻辑
             }
 
+            // 导航逻辑
             if (['ArrowRight', 'ArrowDown'].includes(e.key)) {
                 e.preventDefault();
-                qtyFocusIndex = (qtyFocusIndex + 1) % 11; // 0-10 循环
-                highlightQtyIndex(qtyFocusIndex);
-            } else if (['ArrowLeft', 'ArrowUp'].includes(e.key)) {
+                qtyFocusIndex = (qtyFocusIndex + 1) % 11;
+                renderQtyFocus();
+            } 
+            else if (['ArrowLeft', 'ArrowUp'].includes(e.key)) {
                 e.preventDefault();
                 qtyFocusIndex = (qtyFocusIndex - 1 + 11) % 11;
-                highlightQtyIndex(qtyFocusIndex);
-            } else if (e.key === 'Enter') {
+                renderQtyFocus();
+            }
+            else if (e.key === 'Enter') {
                 e.preventDefault();
                 if (qtyFocusIndex < 10) {
-                    // 选中预设
                     submitQty(qtyFocusIndex + 1);
                 } else {
-                    // 激活自定义输入
-                    customInput.disabled = false;
-                    customInput.focus();
+                    // 激活输入框
+                    input.disabled = false;
+                    input.focus();
                     announce("请输入数字，按回车确认");
                 }
-            } else if (e.key === 'Escape') {
+            }
+            else if (e.key === 'Escape') {
                 closeAllModals();
             }
         });
         
-        // 鼠标点击支持
-        qtyButtons.forEach((btn, idx) => {
-            btn.addEventListener('click', () => submitQty(idx + 1));
+        // 点击自定义容器也能激活
+        document.getElementById('qty-custom-container').addEventListener('click', () => {
+             const input = document.getElementById('qty-custom-input');
+             input.disabled = false;
+             input.focus();
         });
 
         function submitQty(val) {
-            if (!val || val <= 0) return announce("请输入有效数量");
+            if (!val || val <= 0) {
+                announce("数量无效");
+                return;
+            }
             if (qtyCallback) qtyCallback(val);
             closeAllModals();
         }
 
-        // ================== 数据库操作 ==================
+        // --- 通用功能 ---
         async function handleUpdate(change) {
             if (!currentActionItem) return;
-            const newQty = currentActionItem.quantity + change;
-            if (newQty < 0) {
-                announce("库存不足，无法取出");
-                return;
-            }
-            
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     quantity: increment(change),
                     updatedBy: document.getElementById('user-identity').value,
                     updatedAt: serverTimestamp()
                 });
-                announce(change > 0 ? `放入 ${change} 个成功` : `取出 ${Math.abs(change)} 个成功`);
-            } catch(e) { announce("操作失败"); }
+                announce("更新成功");
+            } catch(e) { announce("失败"); }
         }
 
         async function handleDelete() {
-            if (!currentActionItem) return;
             try {
                 await deleteDoc(doc(db, "items", currentActionItem.id));
-                announce(`已删除 ${currentActionItem.name}`);
+                announce("已删除");
                 closeAllModals();
             } catch(e) { announce("删除失败"); }
         }
 
-        // ================== 其他模态框逻辑 ==================
         window.closeAllModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            // 焦点复位（简单处理：回到 body，或者回到列表容器）
-            document.getElementById('items-container').focus();
+            document.getElementById('items-container').focus(); // 焦点回归列表
         };
 
         // 删除确认
         function openConfirmModal(item) {
             document.getElementById('modal-action').classList.add('hidden');
-            document.getElementById('modal-confirm').classList.remove('hidden');
-            document.getElementById('confirm-text').textContent = `要删除 ${item.room} 的 ${item.name} 吗？`;
+            const m = document.getElementById('modal-confirm');
+            m.classList.remove('hidden');
+            document.getElementById('confirm-text').textContent = item.name;
             document.getElementById('btn-confirm-ok').onclick = handleDelete;
-            document.getElementById('btn-confirm-cancel').onclick = closeAllModals;
-            document.getElementById('btn-confirm-cancel').focus();
+            m.querySelector('button').focus();
         }
 
-        // 顶部取出 (搜索逻辑)
-        document.getElementById('btn-open-takeout').addEventListener('click', () => {
-            document.getElementById('modal-takeout-search').classList.remove('hidden');
-            document.getElementById('takeout-search-input').value = '';
-            document.getElementById('takeout-search-input').focus();
-        });
-
-        // 顶部取出：输入回车触发
-        document.getElementById('takeout-search-input').addEventListener('change', (e) => {
-            const name = e.target.value;
-            const item = allItems.find(i => i.name === name);
-            if (item) {
-                currentActionItem = item;
-                // 打开数量选择
-                openQuantityPicker(`取出 ${item.name}`, (qty) => handleUpdate(-qty));
-            } else {
-                announce("找不到该物品");
-            }
-        });
-
-        // 辅助：更新 datalist
-        function updateDatalist() {
-            const dl = document.getElementById('takeout-options');
-            dl.innerHTML = '';
-            allItems.forEach(item => {
-                const op = document.createElement('option');
-                op.value = item.name;
-                op.label = `${item.room} (余${item.quantity})`;
-                dl.appendChild(op);
-            });
-        }
-
-        // ================== 新增物品逻辑 ==================
+        // 新增逻辑
         document.getElementById('btn-open-add').addEventListener('click', () => {
             document.getElementById('modal-add').classList.remove('hidden');
             document.getElementById('add-name').focus();
             pendingAddQty = 1;
             updateAddQtyBtn();
         });
-
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
-            openQuantityPicker("设置初始数量", (val) => {
-                pendingAddQty = val;
+            openQuantityPicker("设置初始数量", (v) => {
+                pendingAddQty = v;
                 updateAddQtyBtn();
-                // 回到新增模态框
-                document.getElementById('modal-add').classList.remove('hidden'); 
+                document.getElementById('modal-add').classList.remove('hidden');
                 document.getElementById('btn-add-qty-trigger').focus();
             });
         });
-
         function updateAddQtyBtn() {
-            document.getElementById('btn-add-qty-trigger').textContent = `当前选择：${pendingAddQty} (点击修改)`;
+            document.getElementById('btn-add-qty-trigger').textContent = `数量：${pendingAddQty} (点击修改)`;
         }
-
         document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('add-name').value;
             const room = document.getElementById('add-room').value;
             const loc = document.getElementById('add-location').value;
-            
-            try {
-                await addDoc(itemsRef, {
-                    name, room, location: loc, quantity: pendingAddQty,
-                    updatedBy: document.getElementById('user-identity').value,
-                    updatedAt: serverTimestamp()
-                });
-                announce(`已添加 ${name}`);
-                e.target.reset();
-                closeAllModals();
-            } catch(e) { announce("添加失败"); }
+            await addDoc(itemsRef, {
+                name, room, location: loc, quantity: pendingAddQty,
+                updatedBy: document.getElementById('user-identity').value,
+                updatedAt: serverTimestamp()
+            });
+            announce("添加成功");
+            e.target.reset();
+            closeAllModals();
         });
 
-        // 搜索监听
+        // 顶部取出搜索
+        document.getElementById('btn-open-takeout').addEventListener('click', () => {
+            document.getElementById('modal-takeout-search').classList.remove('hidden');
+            document.getElementById('takeout-search-input').value = '';
+            document.getElementById('takeout-search-input').focus();
+        });
+        document.getElementById('takeout-search-input').addEventListener('change', (e) => {
+            const item = allItems.find(i => i.name === e.target.value);
+            if(item) {
+                currentActionItem = item;
+                openQuantityPicker(`取出 ${item.name}`, (qty) => handleUpdate(-qty));
+            } else announce("未找到");
+        });
+
+        // 搜索/筛选
         document.getElementById('search-input').addEventListener('input', renderList);
         document.getElementById('filter-room').addEventListener('change', renderList);
-
+        
+        function updateDatalist() {
+            const dl = document.getElementById('takeout-options');
+            dl.innerHTML = '';
+            allItems.forEach(i => {
+                const op = document.createElement('option');
+                op.value = i.name;
+                op.label = `${i.room} 余${i.quantity}`;
+                dl.appendChild(op);
+            });
+        }
     </script>
 </body>
 </html>
