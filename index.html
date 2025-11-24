@@ -234,7 +234,7 @@
                     <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：牛奶" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (如：个、箱)</label>
+                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位</label>
                     <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
@@ -305,7 +305,7 @@
                     </div>
                 </div>
                 <div>
-                    <label for="edit-quantity" class="block font-bold mb-2 text-xl">数量 (直接修改)</label>
+                    <label for="edit-quantity" class="block font-bold mb-2 text-xl">数量</label>
                     <input type="number" id="edit-quantity" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-xl rounded-lg" aria-label="数量">
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-5 rounded-lg font-bold text-2xl mt-8 shadow-lg">保存修改</button>
@@ -321,7 +321,7 @@
             </div>
         </div>
         <div class="max-w-lg mx-auto w-full p-8 flex flex-col gap-6 mt-10">
-            <button id="btn-export" class="w-full p-6 bg-green-50 border-2 border-green-500 text-green-900 font-bold rounded-xl text-xl hover:bg-green-100 shadow-sm text-left">⬇ 导出备份数据 (CSV)</button>
+            <button id="btn-export" class="w-full p-6 bg-green-50 border-2 border-green-500 text-green-900 font-bold rounded-xl text-xl hover:bg-green-100 shadow-sm text-left">导出备份数据 (CSV)</button>
             <hr class="border-gray-200 my-2">
             <p class="text-lg font-bold text-gray-700">批量导入：</p>
             <button id="btn-download-template" class="w-full p-6 bg-gray-50 border-2 border-gray-400 text-gray-800 font-bold rounded-xl text-xl hover:bg-gray-100 shadow-sm text-left">下载导入模板</button>
@@ -350,7 +350,7 @@
             <div class="flex flex-col gap-4" id="action-buttons-container">
                 <button id="btn-act-put" class="p-4 bg-blue-100 text-blue-900 font-bold rounded-xl border-2 border-blue-300 text-xl" data-action="put">放入 (增加)</button>
                 <button id="btn-act-take" class="p-4 bg-orange-100 text-orange-900 font-bold rounded-xl border-2 border-orange-300 text-xl" data-action="take">取出 (减少)</button>
-                <button id="btn-act-edit" class="p-4 bg-indigo-100 text-indigo-900 font-bold rounded-xl border-2 border-indigo-300 text-xl" data-action="edit">✎ 修改详情</button>
+                <button id="btn-act-edit" class="p-4 bg-indigo-100 text-indigo-900 font-bold rounded-xl border-2 border-indigo-300 text-xl" data-action="edit">修改详情</button>
                 <button id="btn-act-del" class="p-4 bg-red-100 text-red-900 font-bold rounded-xl border-2 border-red-300 text-xl" data-action="delete">删除物品</button>
                 <button class="p-4 bg-gray-100 text-gray-800 font-bold rounded-xl border-2 border-gray-300 text-xl mt-2" onclick="closeModals()">取消</button>
             </div>
@@ -387,7 +387,7 @@
 
     <div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-red-400">
-            <h2 id="title-confirm" class="text-2xl font-bold mb-4 text-red-700 outline-none" tabindex="-1">⚠ 操作确认</h2>
+            <h2 id="title-confirm" class="text-2xl font-bold mb-4 text-red-700 outline-none" tabindex="-1">操作确认</h2>
             <p id="confirm-text" class="mb-6 text-gray-800 text-lg"></p>
             <div class="flex gap-4">
                 <button id="btn-confirm-cancel" class="flex-1 p-4 bg-gray-200 rounded-xl font-bold text-lg" onclick="closeModals()">取消</button>
@@ -425,7 +425,7 @@
         let takeoutFilterRoom = 'all';
         let unsubscribeItems = null;
         let previousScreen = 'home';
-        let focusTargetId = null; // Auto-focus after update
+        let focusTargetId = null; 
 
         const savedEmail = localStorage.getItem('savedEmail');
         if(savedEmail) document.getElementById('login-email').value = savedEmail;
@@ -505,7 +505,9 @@
             if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
         });
         document.addEventListener('click', (e) => {
-            if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) menuAccount.classList.add('hidden');
+            if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
+                menuAccount.classList.add('hidden');
+            }
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => signOut(auth).then(() => announce("已退出")));
@@ -555,35 +557,29 @@
             }).catch(err => alert(err.message));
         });
 
-        // --- Data & Logic (Stable List) ---
+        // --- Data Logic ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
-            
             unsubscribeItems = onSnapshot(q, snap => {
                 let isFirstLoad = allItems.length === 0;
-                
                 snap.docChanges().forEach(change => {
                     const data = { id: change.doc.id, ...change.doc.data() };
                     if (change.type === "added") {
-                        // First load: just push. Updates: push to start.
                         if (isFirstLoad) allItems.push(data);
                         else allItems.unshift(data); 
                     }
                     if (change.type === "modified") {
                         const idx = allItems.findIndex(i => i.id === data.id);
-                        if (idx > -1) allItems[idx] = data; // Update in place
+                        if (idx > -1) allItems[idx] = data;
                     }
                     if (change.type === "removed") {
                         allItems = allItems.filter(i => i.id !== data.id);
                     }
                 });
-
-                // Sort only on first load
                 if (isFirstLoad) {
                     allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
                 }
-                
                 refreshLists();
             });
         }
@@ -606,7 +602,6 @@
                 return matchSearch && matchRoom;
             });
 
-            // Stats
             if (searchVal && filtered.length > 0) {
                 const totals = {};
                 filtered.forEach(item => {
@@ -631,7 +626,7 @@
                 div.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative";
                 div.setAttribute('role', 'button');
                 div.setAttribute('tabindex', '0');
-                div.dataset.id = item.id; // For focus anchor
+                div.dataset.id = item.id;
                 div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
                 
                 div.innerHTML = `
@@ -654,7 +649,6 @@
                 container.appendChild(div);
             });
 
-            // Restore Focus
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
                 if (target) target.focus();
@@ -662,7 +656,6 @@
             }
         }
 
-        // Listeners
         ['home', 'takeout'].forEach(screen => {
             document.getElementById(`${screen}-search`).addEventListener('input', () => refreshLists());
             document.getElementById(`${screen}-filter`).addEventListener('change', (e) => {
@@ -672,7 +665,6 @@
             });
         });
 
-        // Navigation
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
             switchScreen('screen-takeout');
             document.getElementById('takeout-search').value = ''; refreshLists();
@@ -698,7 +690,7 @@
         });
 
         async function executeEdit(newQty) {
-            focusTargetId = currentActionItem.id; // Set Anchor
+            focusTargetId = currentActionItem.id;
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     name: document.getElementById('edit-name').value,
@@ -841,9 +833,17 @@
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            const container = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
-            if(currentActionItem) focusTargetId = currentActionItem.id; // Fallback anchor
-            document.getElementById(container).querySelector('.item-card')?.focus();
+            const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
+            const container = document.getElementById(containerId);
+            if (currentActionItem && currentActionItem.id) {
+                const specificCard = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
+                if (specificCard) {
+                    specificCard.focus();
+                    return;
+                }
+            }
+            const firstCard = container.querySelector('.item-card');
+            if (firstCard) firstCard.focus();
         };
 
         async function handleUpdate(change) {
@@ -855,7 +855,7 @@
         }
 
         async function execUpdate(change) {
-            focusTargetId = currentActionItem.id; // Set Anchor
+            focusTargetId = currentActionItem.id;
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     quantity: increment(change),
@@ -918,7 +918,6 @@
             } catch(e) { announce("删除失败"); }
         }
 
-        // Add Item
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
             openQtyPicker("设置数量", (v) => {
                 pendingAddQty = v;
@@ -962,7 +961,6 @@
             } catch(e) { announce("失败"); }
         });
 
-        // Export/Import
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n";
             allItems.forEach(item => {
