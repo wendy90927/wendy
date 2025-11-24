@@ -411,16 +411,16 @@
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // --- Screen Switcher (Simplified Stability Version) ---
+        // --- Screen Switcher (Stable Version) ---
         function switchScreen(screenId) {
-            // 1. Hide all screens
+            // Hide all screens
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
             
-            // 2. Show target
+            // Show target
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            // 3. Simple Timeout Focus (Most robust for screen readers)
+            // Standard Timeout Focus (Stable)
             setTimeout(() => {
                 const h1 = target.querySelector('h1');
                 if (h1) h1.focus();
@@ -460,6 +460,14 @@
                 await signInWithEmailAndPassword(auth, e, p);
             } catch(err) {
                 announce("登录失败"); alert("登录失败：" + err.message);
+            }
+        });
+
+        // Enter key on password to login
+        document.getElementById('login-password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('btn-login').click();
             }
         });
 
@@ -526,7 +534,8 @@
 
         document.getElementById('btn-forgot-pass').addEventListener('click', () => {
             document.getElementById('modal-forgot').classList.remove('hidden');
-            document.getElementById('title-forgot').focus();
+            // Simple focus without inert
+            setTimeout(() => document.getElementById('title-forgot').focus(), 100);
         });
         document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
         document.getElementById('btn-send-reset').addEventListener('click', () => {
@@ -656,7 +665,7 @@
             if (act === 'delete') openGenericConfirm(`确定删除 ${currentActionItem.name} 吗？`, execDelete);
         });
 
-        // --- Quantity Picker (Simple & Robust) ---
+        // --- Quantity Picker ---
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         
@@ -666,7 +675,6 @@
             btn.className = 'qty-btn';
             btn.textContent = i;
             const handler = (e) => {
-                // Prevent default ONLY on Enter to avoid form submission/accidental clicks
                 if(e.type === 'keydown' && e.key !== 'Enter') return;
                 e.preventDefault(); e.stopPropagation();
                 submitQty(i);
@@ -921,10 +929,10 @@
             reader.readAsText(file);
         });
 
-        // Global Keydown (Only for Escape)
+        // Global Escape (Simple)
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
-                // Simple Escape Logic
+                e.preventDefault();
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
                 if (modals.length > 0) {
                     closeModals();
