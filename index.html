@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>王府物品管家</title>
+    <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .sr-only {
@@ -18,9 +18,9 @@
             border-width: 0;
         }
         
-        /* 强焦样式：确保盲人用户能清楚看到当前焦点 */
+        /* 强焦样式 */
         *:focus {
-            outline: 4px solid #f97316; /* 橙色高亮，加粗 */
+            outline: 4px solid #f97316;
             outline-offset: 2px;
             z-index: 50;
         }
@@ -31,7 +31,7 @@
             transform: scale(1.02);
         }
 
-        /* 数量按钮样式 */
+        /* 数量按钮 */
         .qty-btn {
             height: 55px;
             font-size: 1.25rem;
@@ -46,7 +46,6 @@
             justify-content: center;
             transition: all 0.2s;
         }
-        /* 当按钮获得焦点时 */
         .qty-btn:focus, .qty-btn:hover {
             background-color: #dbeafe;
             border-color: #2563eb;
@@ -78,19 +77,50 @@
     <div id="screen-login" class="min-h-screen flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
             <h1 class="text-3xl font-bold mb-8 text-center" tabindex="-1">家庭物品管家</h1>
+            
             <label class="block mb-2 font-bold text-lg">邮箱账号</label>
-            <input type="email" id="login-email" class="w-full p-4 border-2 border-gray-300 rounded mb-6 text-lg" placeholder="例如：888@home.com">
-            <label class="block mb-2 font-bold text-lg">家庭密码</label>
+            <input type="email" id="login-email" class="w-full p-4 border-2 border-gray-300 rounded mb-6 text-lg" placeholder="name@email.com">
+            
+            <label class="block mb-2 font-bold text-lg">密码</label>
             <input type="password" id="login-password" class="w-full p-4 border-2 border-gray-300 rounded mb-8 text-lg" placeholder="请输入密码">
-            <button id="btn-login" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-blue-700">登录系统</button>
+            
+            <button id="btn-login" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-blue-700 mb-4">登录</button>
+            
+            <div class="flex justify-between mt-4">
+                <button id="btn-to-register" class="text-blue-700 font-bold hover:underline p-2">注册新账号</button>
+                <button id="btn-forgot-pass" class="text-gray-600 font-bold hover:underline p-2">忘记密码?</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-register" class="hidden min-h-screen flex flex-col justify-center items-center p-4 bg-gray-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <h1 class="text-2xl font-bold mb-6 text-center" tabindex="-1">注册新账号</h1>
+            
+            <label class="block mb-2 font-bold text-lg">邮箱</label>
+            <input type="email" id="reg-email" class="w-full p-3 border-2 border-gray-300 rounded mb-4 text-lg">
+            
+            <label class="block mb-2 font-bold text-lg">设置密码 (至少6位)</label>
+            <input type="password" id="reg-pass" class="w-full p-3 border-2 border-gray-300 rounded mb-4 text-lg">
+            
+            <label class="block mb-2 font-bold text-lg">确认密码</label>
+            <input type="password" id="reg-pass-confirm" class="w-full p-3 border-2 border-gray-300 rounded mb-8 text-lg">
+            
+            <button id="btn-submit-reg" class="w-full bg-green-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-green-700 mb-4">确认注册</button>
+            
+            <button id="btn-back-login" class="w-full bg-gray-200 text-gray-800 p-3 rounded-lg font-bold text-lg">返回登录</button>
         </div>
     </div>
 
     <div id="screen-home" class="hidden min-h-screen flex flex-col pb-20">
         <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
-                
-                <h1 class="text-xl font-bold text-center mb-2">物品管家</h1>
+                <div class="flex justify-between items-center mb-1">
+                    <h1 class="text-xl font-bold">物品管家</h1>
+                    <button id="btn-logout" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-1 rounded border border-blue-500">
+                        退出登录
+                    </button>
+                </div>
 
                 <div class="flex gap-3">
                     <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded shadow text-xl border-2 border-green-400">
@@ -247,6 +277,19 @@
         </div>
     </div>
 
+    <div id="modal-forgot" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
+            <h2 class="text-2xl font-bold mb-4" tabindex="-1">找回密码</h2>
+            <p class="mb-4 text-gray-600">请输入您的注册邮箱，系统将发送重置邮件给您。</p>
+            <input type="email" id="forgot-email" class="w-full p-3 border-2 border-gray-300 rounded mb-6 text-lg" placeholder="邮箱地址">
+            
+            <div class="flex gap-3">
+                <button id="btn-cancel-forgot" class="flex-1 p-3 bg-gray-200 font-bold rounded-lg text-lg">取消</button>
+                <button id="btn-send-reset" class="flex-1 p-3 bg-blue-600 text-white font-bold rounded-lg text-lg">发送邮件</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-action" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
             <h2 id="action-title" class="text-2xl font-bold mb-2 text-gray-900" tabindex="-1">管理物品</h2>
@@ -263,7 +306,6 @@
     <div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-end sm:items-center">
         <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-blue-500">
             <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900" tabindex="-1">选择数量</h2>
-            
             <div class="grid grid-cols-5 gap-3 mb-6" id="qty-grid"></div>
 
             <div class="flex gap-2 mb-6 items-stretch">
@@ -275,7 +317,6 @@
                     确定
                 </button>
             </div>
-
             <button class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
         </div>
     </div>
@@ -305,10 +346,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, updateDoc, deleteDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 配置
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyC3rxfvajIswJADfzJD0lphVra99vka7nE",
             authDomain: "household-item-management.firebaseapp.com",
@@ -327,30 +368,27 @@
         let allItems = [];
         let currentActionItem = null;
         let pendingAddQty = 1;
-        let currentScreen = 'home';
+        let currentScreen = 'login';
         let homeFilterRoom = 'all';
         let takeoutFilterRoom = 'all';
 
-        // 语音
         window.announce = (msg) => {
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // --- 屏幕切换系统 (防穿透核心) ---
+        // --- 屏幕管理 ---
         function switchScreen(screenId) {
-            // 隐藏所有
-            ['screen-login', 'screen-home', 'screen-takeout', 'screen-add', 'screen-data'].forEach(id => {
+            ['screen-login', 'screen-register', 'screen-home', 'screen-takeout', 'screen-add', 'screen-data'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
-            // 显示目标
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            // 焦点管理：聚焦到第一个按钮
+            // 焦点到第一个按钮
             setTimeout(() => {
-                const firstBtn = target.querySelector('button');
+                const firstBtn = target.querySelector('button, input');
                 if (firstBtn) firstBtn.focus();
             }, 100);
 
@@ -360,26 +398,93 @@
             refreshLists();
         }
 
-        // --- 登录 ---
+        // --- 认证系统 (Auth) ---
         onAuthStateChanged(auth, user => {
             if (user) {
                 switchScreen('screen-home');
-                loadItems();
+                loadItems(user.uid);
             } else {
                 switchScreen('screen-login');
             }
         });
+
+        // 登录
         document.getElementById('btn-login').addEventListener('click', () => {
             const e = document.getElementById('login-email').value;
             const p = document.getElementById('login-password').value;
-            signInWithEmailAndPassword(auth, e, p).catch(() => announce("登录失败"));
+            signInWithEmailAndPassword(auth, e, p).catch(err => {
+                announce("登录失败：" + err.message);
+                alert("登录失败，请检查邮箱密码");
+            });
         });
 
-        // --- 数据加载 ---
-        function loadItems() {
-            onSnapshot(query(itemsRef, orderBy("updatedAt", "desc")), snap => {
+        // 退出
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            signOut(auth).then(() => announce("已退出"));
+        });
+
+        // 切换到注册页
+        document.getElementById('btn-to-register').addEventListener('click', () => {
+            switchScreen('screen-register');
+        });
+        document.getElementById('btn-back-login').addEventListener('click', () => {
+            switchScreen('screen-login');
+        });
+
+        // 注册提交
+        document.getElementById('btn-submit-reg').addEventListener('click', () => {
+            const e = document.getElementById('reg-email').value;
+            const p1 = document.getElementById('reg-pass').value;
+            const p2 = document.getElementById('reg-pass-confirm').value;
+
+            if (p1 !== p2) {
+                alert("两次密码输入不一致");
+                return;
+            }
+            if (p1.length < 6) {
+                alert("密码至少需要6位");
+                return;
+            }
+
+            createUserWithEmailAndPassword(auth, e, p1).then(() => {
+                announce("注册成功，已自动登录");
+            }).catch(err => {
+                alert("注册失败：" + err.message);
+            });
+        });
+
+        // 找回密码
+        document.getElementById('btn-forgot-pass').addEventListener('click', () => {
+            document.getElementById('modal-forgot').classList.remove('hidden');
+            document.getElementById('forgot-email').focus();
+        });
+        document.getElementById('btn-cancel-forgot').addEventListener('click', () => {
+            document.getElementById('modal-forgot').classList.add('hidden');
+        });
+        document.getElementById('btn-send-reset').addEventListener('click', () => {
+            const e = document.getElementById('forgot-email').value;
+            if(!e) { alert("请输入邮箱"); return; }
+            sendPasswordResetEmail(auth, e).then(() => {
+                alert("邮件已发送，请检查您的邮箱");
+                document.getElementById('modal-forgot').classList.add('hidden');
+            }).catch(err => alert("发送失败：" + err.message));
+        });
+
+
+        // --- 数据加载 (数据隔离核心) ---
+        function loadItems(uid) {
+            // 使用 where 进行数据隔离，只拉取当前用户的
+            const q = query(itemsRef, where("uid", "==", uid));
+            
+            onSnapshot(q, snap => {
                 allItems = [];
                 snap.forEach(d => allItems.push({ id: d.id, ...d.data() }));
+                // 前端内存排序 (规避索引创建报错)
+                allItems.sort((a, b) => {
+                    const ta = a.updatedAt ? a.updatedAt.toMillis() : 0;
+                    const tb = b.updatedAt ? b.updatedAt.toMillis() : 0;
+                    return tb - ta; // 降序
+                });
                 refreshLists();
             });
         }
@@ -404,7 +509,7 @@
 
             container.innerHTML = '';
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到物品</div>`;
+                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">暂无物品</div>`;
                 return;
             }
 
@@ -437,7 +542,7 @@
             });
         }
 
-        // 监听
+        // 监听搜索筛选
         function setupListListeners(searchId, filterId, screenType) {
             document.getElementById(searchId).addEventListener('input', () => refreshLists());
             document.getElementById(filterId).addEventListener('change', (e) => {
@@ -449,7 +554,7 @@
         setupListListeners('home-search', 'home-filter', 'home');
         setupListListeners('takeout-search', 'takeout-filter', 'takeout');
 
-        // --- 页面跳转逻辑 ---
+        // --- 页面跳转 ---
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
             switchScreen('screen-takeout');
             document.getElementById('takeout-search').value = '';
@@ -465,9 +570,7 @@
         });
         document.getElementById('btn-back-add').addEventListener('click', () => switchScreen('screen-home'));
         
-        document.getElementById('btn-nav-data').addEventListener('click', () => {
-            switchScreen('screen-data');
-        });
+        document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
 
         // --- 操作菜单 ---
@@ -495,25 +598,23 @@
             if (act === 'delete') openConfirm(currentActionItem);
         });
 
-        // --- 数量选择器 (焦点直接绑定法) ---
+        // --- 数量选择器 (焦点即真理版) ---
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         
-        // 生成 1-10，直接绑定事件，不依赖全局监听
         qtyGrid.innerHTML = '';
         for(let i=1; i<=10; i++) {
-            const btn = document.createElement('button'); // 使用真正的 button 获得原生行为
+            const btn = document.createElement('button');
             btn.className = 'qty-btn';
             btn.textContent = i;
-            // 绑定 Click
-            btn.addEventListener('click', () => submitQty(i));
-            // 绑定 Enter (虽然 button 默认支持，但为了保险)
-            btn.addEventListener('keydown', (e) => {
-                if(e.key === 'Enter') {
-                    e.preventDefault(); e.stopPropagation();
-                    submitQty(i);
-                }
-            });
+            // 核心修复：点击或回车直接取当前按钮的值
+            const handler = (e) => {
+                if(e.type === 'keydown' && e.key !== 'Enter') return;
+                e.preventDefault(); e.stopPropagation();
+                submitQty(i);
+            };
+            btn.addEventListener('click', handler);
+            btn.addEventListener('keydown', handler);
             qtyGrid.appendChild(btn);
         }
 
@@ -524,7 +625,6 @@
             const modal = document.getElementById('modal-qty');
             modal.classList.remove('hidden');
             
-            // 重置
             const input = document.getElementById('qty-custom-input');
             const confirm = document.getElementById('btn-qty-confirm');
             const trigger = document.getElementById('qty-custom-trigger');
@@ -534,43 +634,34 @@
             confirm.disabled = true;
             confirm.classList.add('opacity-50');
             confirm.setAttribute('tabindex', '-1');
-            trigger.setAttribute('tabindex', '0'); // 允许聚焦触发器
+            trigger.setAttribute('tabindex', '0');
             
-            // 默认聚焦数字 1
             setTimeout(() => {
                 qtyGrid.firstChild.focus();
                 announce("请选择数量");
             }, 100);
         }
 
-        // 自定义输入逻辑 (强拦截)
+        // 自定义输入强拦截
         const customTrigger = document.getElementById('qty-custom-trigger');
-        
         function activateInput() {
             const input = document.getElementById('qty-custom-input');
             const confirm = document.getElementById('btn-qty-confirm');
-            const trigger = document.getElementById('qty-custom-trigger');
-            
-            trigger.setAttribute('tabindex', '-1'); // 暂时不可聚焦
             input.disabled = false;
             input.focus();
-            
             confirm.disabled = false;
             confirm.classList.remove('opacity-50');
             confirm.setAttribute('tabindex', '0');
             announce("请输入数字");
         }
-
         customTrigger.addEventListener('click', activateInput);
         customTrigger.addEventListener('keydown', (e) => {
-            // 拦截所有回车
             if(e.key === 'Enter' || e.keyCode === 13) {
-                e.preventDefault(); e.stopPropagation(); // 关键！
+                e.preventDefault(); e.stopPropagation();
                 activateInput();
             }
         });
 
-        // 输入框内的回车
         document.getElementById('qty-custom-input').addEventListener('keydown', (e) => {
             if(e.key === 'Enter' || e.keyCode === 13) {
                 e.preventDefault(); e.stopPropagation();
@@ -578,7 +669,6 @@
             }
         });
 
-        // 确定按钮
         document.getElementById('btn-qty-confirm').addEventListener('click', () => {
             submitQty(parseInt(document.getElementById('qty-custom-input').value));
         });
@@ -596,14 +686,11 @@
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            if(currentScreen === 'takeout') {
-                document.getElementById('takeout-list').querySelector('.item-card')?.focus();
-            } else if(currentScreen === 'home') {
-                document.getElementById('home-list').querySelector('.item-card')?.focus();
-            }
+            const container = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
+            document.getElementById(container).querySelector('.item-card')?.focus();
         };
 
-        // --- 更新逻辑 (取消操作支持) ---
+        // --- 更新 (含数据隔离字段 uid) ---
         async function handleUpdate(change) {
             if (!currentActionItem) return;
             const newQty = currentActionItem.quantity + change;
@@ -634,6 +721,7 @@
             } catch(e) { announce("失败"); }
         }
 
+        // 零库存
         function openZeroConfirm() {
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
@@ -642,16 +730,15 @@
             
             keepBtn.onclick = async () => {
                 m.classList.add('hidden');
-                await execUpdate(-currentActionItem.quantity); // 设为0
+                await execUpdate(-currentActionItem.quantity);
             };
             document.getElementById('btn-zero-del').onclick = async () => {
                 m.classList.add('hidden');
                 await execDelete();
             };
-            // 增加：取消操作
             document.getElementById('btn-zero-cancel').onclick = () => {
                 m.classList.add('hidden');
-                announce("操作已撤销");
+                announce("已取消");
                 closeModals();
             };
         }
@@ -671,13 +758,13 @@
                 announce("已删除");
                 closeModals();
                 if (currentScreen === 'takeout') {
-                    const input = document.getElementById('takeout-search');
-                    input.value = ''; input.focus();
+                    document.getElementById('takeout-search').value = '';
+                    document.getElementById('takeout-search').focus();
                 }
             } catch(e) { announce("删除失败"); }
         }
 
-        // --- 新增逻辑 ---
+        // --- 新增 (写入 uid) ---
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
             openQtyPicker("设置数量", (v) => {
                 pendingAddQty = v;
@@ -700,6 +787,7 @@
                     room: document.getElementById('add-room').value,
                     location: document.getElementById('add-location').value,
                     quantity: pendingAddQty,
+                    uid: auth.currentUser.uid, // 数据隔离核心
                     updatedAt: serverTimestamp()
                 });
                 announce(`已添加 ${nameInput.value}`);
@@ -712,7 +800,6 @@
         });
 
         // --- 数据导入/导出 ---
-        // 导出 CSV
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量\n";
             allItems.forEach(item => {
@@ -730,7 +817,6 @@
             announce("导出成功");
         });
 
-        // 下载模板
         document.getElementById('btn-download-template').addEventListener('click', () => {
             const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字)\n大米,厨房,柜子,1\n洗衣液,卫生间,架子,2";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -751,6 +837,7 @@
         document.getElementById('file-upload').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
+            
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const text = e.target.result;
@@ -763,17 +850,18 @@
                     if (cols.length < 1) continue;
                     const name = cols[0]?.trim();
                     if(!name) continue;
+                    
                     await addDoc(itemsRef, {
                         name: name,
                         room: cols[1]?.trim() || '客厅',
                         location: cols[2]?.trim() || '',
                         quantity: parseInt(cols[3]) || 1,
+                        uid: auth.currentUser.uid, // 归属当前用户
                         updatedAt: serverTimestamp()
                     });
                     count++;
                 }
-                announce(`导入 ${count} 个物品`);
-                // 导入完成后回到首页
+                announce(`成功导入 ${count} 个物品`);
                 switchScreen('screen-home');
             };
             reader.readAsText(file);
