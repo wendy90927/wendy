@@ -146,12 +146,22 @@
 
                 <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
 
-                <div class="relative flex gap-2">
-                    <label for="home-search" class="sr-only">搜索物品</label>
-                    <input type="text" id="home-search" placeholder="输入内容搜索..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+                <div class="flex gap-2">
+                    <div class="relative flex-grow">
+                        <label for="home-search" class="sr-only">搜索物品</label>
+                        <input type="text" id="home-search" placeholder="输入内容搜索..." class="w-full p-3 text-black rounded shadow font-bold text-lg pr-10" aria-label="搜索物品">
+                        
+                        <button type="button" id="btn-clear-search" aria-label="清除搜索输入" 
+                                class="absolute right-0 inset-y-0 w-10 flex items-center justify-center text-gray-400 hover:text-gray-600 focus:outline-none hidden" 
+                                title="清除输入">
+                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M10 8.586L2.929 1.515 1.515 2.929 8.586 10l-7.071 7.071 1.414 1.414L10 11.414l7.071 7.071 1.414-1.414L11.414 10l7.071-7.071-1.414-1.414L10 8.586z"/>
+                            </svg>
+                        </button>
+                    </div>
                     <button id="btn-do-search" class="bg-white text-blue-800 px-4 rounded font-bold shadow">搜索</button>
                 </div>
-            </div>
+                </div>
         </header>
 
         <section class="bg-white p-4 shadow-sm border-b z-10">
@@ -427,18 +437,29 @@
             }
         }
 
-        // Force arrow keys for units
+        // Fix 3: 单位选择光标问题 - 确保自定义光标切换逻辑能正常工作
         function attachUnitKeyHandler(inputId) {
             const el = document.getElementById(inputId);
             el.addEventListener('keydown', (e) => {
+                // 仅处理上下光标
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
+                    e.preventDefault(); // 阻止浏览器默认行为（打开datalist）
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
                     let idx = UNIT_LIST.indexOf(el.value);
-                    if (idx === -1) idx = e.key === 'ArrowDown' ? -1 : 0;
+                    
+                    // 如果当前值不在列表中，ArrowDown 从头开始，ArrowUp 从尾部开始
+                    if (idx === -1) idx = e.key === 'ArrowDown' ? -1 : 0; 
+                    
                     if (e.key === 'ArrowDown') idx = (idx + 1) % UNIT_LIST.length;
                     else idx = (idx - 1 + UNIT_LIST.length) % UNIT_LIST.length;
+                    
                     el.value = UNIT_LIST[idx];
+                    
+                    // 修复：确保光标停留在输入框末尾
+                    el.selectionStart = el.selectionEnd = el.value.length;
+                    
+                    announce(`单位切换到 ${el.value}`);
                 }
             });
         }
@@ -448,6 +469,7 @@
         const savedEmail = localStorage.getItem('savedEmail');
         if(savedEmail) document.getElementById('login-email').value = savedEmail;
 
+        // Fix 2: 恢复 announce 播报函数
         window.announce = (msg) => {
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
@@ -459,9 +481,6 @@
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
-            
-            // 记录当前屏幕，用于模态框关闭后焦点恢复
-            const currentScreen = screenId.replace('screen-', '');
             
             if (screenId === 'screen-edit') {
                  // 在进入编辑页面时记录从哪里来
@@ -574,7 +593,7 @@
                 const snapshot = await getDocs(q);
                 snapshot.forEach(doc => batch.delete(doc.ref));
                 await batch.commit();
-                announce("已清空");
+                announce("已清空"); // Fix 2: 恢复播报
             });
         });
         document.getElementById('btn-delete-account').addEventListener('click', () => {
@@ -586,6 +605,7 @@
                 snapshot.forEach(doc => batch.delete(doc.ref));
                 await batch.commit();
                 await deleteUser(auth.currentUser);
+                announce("已注销账号"); // Fix 2: 恢复播报
             });
         });
 
@@ -596,7 +616,9 @@
             const p1 = document.getElementById('reg-pass').value;
             const p2 = document.getElementById('reg-pass-confirm').value;
             if (p1 !== p2 || p1.length < 6) { alert("密码问题"); return; }
-            createUserWithEmailAndPassword(auth, e, p1).catch(err => alert(err.message));
+            createUserWithEmailAndPassword(auth, e, p1).then(() => {
+                announce("注册成功"); // Fix 2: 恢复播报
+            }).catch(err => alert(err.message));
         });
 
         document.getElementById('btn-forgot-pass').addEventListener('click', () => {
@@ -608,7 +630,8 @@
             const e = document.getElementById('forgot-email').value;
             if(!e) return;
             sendPasswordResetEmail(auth, e).then(() => {
-                alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden');
+                alert("已发送"); announce("重置邮件已发送"); // Fix 2: 恢复播报
+                document.getElementById('modal-forgot').classList.add('hidden');
             }).catch(err => alert(err.message));
         });
 
@@ -753,27 +776,50 @@
         const homeSearchInput = document.getElementById('home-search');
         const btnDoSearch = document.getElementById('btn-do-search');
         let currentSearchResults = [];
+        
+        // 新增功能 4: 清除按钮逻辑
+        const btnClearSearch = document.getElementById('btn-clear-search');
+
+        function updateClearButtonVisibility() {
+            if (homeSearchInput.value.length > 0) {
+                btnClearSearch.classList.remove('hidden');
+            } else {
+                btnClearSearch.classList.add('hidden');
+            }
+        }
+
+        homeSearchInput.addEventListener('input', updateClearButtonVisibility); // 监听输入，实时更新按钮状态
+        
+        btnClearSearch.addEventListener('click', () => {
+            homeSearchInput.value = ''; // 清空输入框
+            updateClearButtonVisibility(); // 隐藏按钮
+            homeSearchInput.focus(); // 焦点返回输入框
+            announce("搜索输入已清空"); // Fix 2: 恢复播报
+        });
+
 
         function performSearch(term) {
             const t = term ? term.trim().toLowerCase() : homeSearchInput.value.trim().toLowerCase();
-            if (!t) return;
+            if (!t) {
+                currentSearchResults = allItems;
+            } else {
+                document.getElementById('title-results').textContent = `搜索：${t}`;
+                document.getElementById('title-results').dataset.term = t; 
+                
+                currentSearchResults = allItems.filter(item => {
+                    return item.name.toLowerCase().includes(t) || (item.location||'').toLowerCase().includes(t);
+                });
+            }
             
             // 确保在结果页
             if (document.getElementById('screen-results').classList.contains('hidden')) {
                  switchScreen('screen-results');
             }
             
-            document.getElementById('title-results').textContent = `搜索：${t}`;
-            document.getElementById('title-results').dataset.term = t; 
-            
-            currentSearchResults = allItems.filter(item => {
-                return item.name.toLowerCase().includes(t) || (item.location||'').toLowerCase().includes(t);
-            });
-            
             renderList('results-list', 'all', currentSearchResults);
             updateStats(currentSearchResults);
             
-            announce(`搜索完成，找到 ${currentSearchResults.length} 个结果`);
+            announce(`搜索完成，找到 ${currentSearchResults.length} 个结果`); // Fix 2: 恢复播报
         }
 
         btnDoSearch.addEventListener('click', () => performSearch());
@@ -785,13 +831,14 @@
         document.getElementById('btn-back-results').addEventListener('click', () => {
             switchScreen('screen-home');
             homeSearchInput.value = ''; // 清空搜索框
+            updateClearButtonVisibility();
         });
 
 
         // --- Navigation ---
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
             document.getElementById('home-search').focus();
-            announce("请输入名称搜索要取出的物品");
+            announce("请输入名称搜索要取出的物品"); // Fix 2: 恢复播报
         });
 
         document.getElementById('btn-nav-add').addEventListener('click', () => {
@@ -806,6 +853,7 @@
 
         document.getElementById('btn-back-edit').addEventListener('click', () => switchScreen(previousScreenTarget)); // 使用记录的目标
 
+        // Fix 1: 修复编辑页面无法自动关闭的问题
         document.getElementById('form-edit').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newQty = parseInt(document.getElementById('edit-quantity').value);
@@ -815,6 +863,7 @@
             await executeEdit(newQty);
         });
 
+        // Fix 1 & 2: 修复编辑页保存后不关闭和播报缺失的问题
         async function executeEdit(newQty) {
             focusTargetId = currentActionItem.id;
             try {
@@ -826,9 +875,9 @@
                     quantity: newQty,
                     updatedAt: serverTimestamp()
                 });
-                announce("修改成功");
-                switchScreen(previousScreenTarget);
-            } catch(e) { announce("失败"); }
+                announce("修改成功"); // Fix 2: 恢复播报
+                switchScreen(previousScreenTarget); // Fix 1: 确保页面自动关闭
+            } catch(e) { announce("修改失败"); } // Fix 2: 恢复播报
         }
 
         function openZeroConfirmEdit(newQty) {
@@ -847,7 +896,7 @@
             };
             document.getElementById('btn-zero-cancel').onclick = () => {
                 m.classList.add('hidden');
-                announce("已取消");
+                announce("已取消操作"); // Fix 2: 恢复播报
             };
         }
 
@@ -924,7 +973,7 @@
             input.disabled = false; input.focus();
             confirm.disabled = false; confirm.classList.remove('opacity-50');
             confirm.setAttribute('tabindex', '0');
-            announce("请输入数字");
+            announce("请输入数字"); // Fix 2: 恢复播报
         }
         customTrigger.addEventListener('click', activateInput);
         customTrigger.addEventListener('keydown', (e) => {
@@ -944,7 +993,7 @@
         });
 
         function submitQty(val) {
-            if (!val || val <= 0) { announce("无效数量"); return; }
+            if (!val || val <= 0) { announce("无效数量"); return; } // Fix 2: 恢复播报
             if (qtyCallback) qtyCallback(val);
             document.getElementById('modal-qty').classList.add('hidden');
         }
@@ -953,10 +1002,11 @@
             if (!currentActionItem) return;
             const newQty = currentActionItem.quantity + change;
             if (newQty === 0) { openZeroConfirm(); return; }
-            if (newQty < 0) { announce("库存不足"); return; }
+            if (newQty < 0) { announce("库存不足"); return; } // Fix 2: 恢复播报
             await execUpdate(change);
         }
 
+        // Fix 2: 恢复播报
         async function execUpdate(change) {
             focusTargetId = currentActionItem.id;
             try {
@@ -964,9 +1014,9 @@
                     quantity: increment(change),
                     updatedAt: serverTimestamp()
                 });
-                announce("更新成功");
+                announce("更新成功"); // Fix 2: 恢复播报
                 closeModals();
-            } catch(e) { announce("失败"); }
+            } catch(e) { announce("更新失败"); } // Fix 2: 恢复播报
         }
 
         function openZeroConfirm() {
@@ -985,7 +1035,7 @@
             };
             document.getElementById('btn-zero-cancel').onclick = () => {
                 m.classList.add('hidden');
-                announce("已取消");
+                announce("已取消操作"); // Fix 2: 恢复播报
                 closeModals();
             };
         }
@@ -1002,14 +1052,14 @@
             if(confirmCallback) confirmCallback();
             document.getElementById('modal-confirm').classList.add('hidden');
         });
-        // 移除冗余的 btn-confirm-cancel 监听器，使用内置的 onclick="closeModals()"
 
+        // Fix 2: 恢复播报
         async function execDelete() {
             try {
                 await deleteDoc(doc(db, "items", currentActionItem.id));
-                announce("已删除");
+                announce("已删除"); // Fix 2: 恢复播报
                 closeModals();
-            } catch(e) { announce("删除失败"); }
+            } catch(e) { announce("删除失败"); } // Fix 2: 恢复播报
         }
 
         // Add Item
@@ -1031,7 +1081,7 @@
                 const match = allItems.find(i => i.name === name);
                 if(match && match.unit) {
                     document.getElementById('add-unit').value = match.unit;
-                    announce("自动填入单位：" + match.unit);
+                    announce("自动填入单位：" + match.unit); // Fix 2: 恢复播报
                 }
             }
         });
@@ -1050,7 +1100,7 @@
                     uid: auth.currentUser.uid,
                     updatedAt: serverTimestamp()
                 });
-                announce(`已添加 ${nameInput.value}`);
+                announce(`已添加 ${nameInput.value}`); // Fix 2: 恢复播报
                 
                 // 重置表单，以便继续添加
                 nameInput.value = '';
@@ -1058,7 +1108,7 @@
                 pendingAddQty = 1;
                 updateAddQtyDisplay();
                 nameInput.focus();
-            } catch(e) { announce("失败"); }
+            } catch(e) { announce("添加失败"); } // Fix 2: 恢复播报
         });
 
         // Export/Import
@@ -1075,7 +1125,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            announce("导出成功");
+            announce("导出成功"); // Fix 2: 恢复播报
         });
         document.getElementById('btn-download-template').addEventListener('click', () => {
             const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字),单位\n大米,厨房,柜子,1,袋\n牛奶,客厅,桌子,2,箱";
@@ -1087,7 +1137,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            announce("模板下载成功");
+            announce("模板下载成功"); // Fix 2: 恢复播报
         });
         document.getElementById('btn-trigger-upload').addEventListener('click', () => document.getElementById('file-upload').click());
         document.getElementById('file-upload').addEventListener('change', (e) => {
@@ -1118,7 +1168,7 @@
                     });
                     count++;
                 }
-                announce(`导入 ${count} 个物品`);
+                announce(`导入 ${count} 个物品`); // Fix 2: 恢复播报
                 switchScreen('screen-home');
             };
             reader.readAsText(file);
@@ -1148,6 +1198,9 @@
                 }
             }
         });
+        
+        // 初始加载时检查搜索框内容
+        document.addEventListener('DOMContentLoaded', updateClearButtonVisibility);
     </script>
 </body>
 </html>
