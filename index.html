@@ -19,14 +19,14 @@
             border-width: 0;
         }
         
-        /* 强焦样式：橙色加粗 */
+        /* 强焦样式：橙色加粗边框，层级最高 */
         *:focus {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
             z-index: 100;
         }
 
-        /* 列表卡片 */
+        /* 列表卡片选中态 */
         .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
@@ -77,16 +77,7 @@
     <div id="live-announcer" class="sr-only" aria-live="polite"></div>
 
     <datalist id="unit-presets">
-        <option value="个"></option><option value="包"></option><option value="箱"></option>
-        <option value="瓶"></option><option value="袋"></option><option value="条"></option>
-        <option value="块"></option><option value="只"></option><option value="支"></option>
-        <option value="把"></option><option value="张"></option><option value="双"></option>
-        <option value="套"></option><option value="组"></option><option value="对"></option>
-        <option value="本"></option><option value="册"></option><option value="罐"></option>
-        <option value="桶"></option><option value="壶"></option><option value="杯"></option>
-        <option value="斤"></option><option value="公斤"></option><option value="升"></option>
-        <option value="毫升"></option>
-    </datalist>
+        </datalist>
 
     <div id="screen-login" class="screen min-h-screen flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -222,9 +213,7 @@
 
         <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
             <div id="takeout-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded shadow hidden" aria-live="polite"></div>
-            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表">
-                <p class="text-center text-gray-500 mt-10 text-lg">加载中...</p>
-            </div>
+            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
         </main>
     </div>
 
@@ -243,7 +232,7 @@
                     <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：牛奶" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
+                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位</label>
                     <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
@@ -291,7 +280,7 @@
                     <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
+                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
                     <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
@@ -314,7 +303,7 @@
                     </div>
                 </div>
                 <div>
-                    <label for="edit-quantity" class="block font-bold mb-2 text-xl">数量 (直接修改)</label>
+                    <label for="edit-quantity" class="block font-bold mb-2 text-xl">数量</label>
                     <input type="number" id="edit-quantity" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-xl rounded-lg" aria-label="数量">
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-5 rounded-lg font-bold text-2xl mt-8 shadow-lg">保存修改</button>
@@ -493,6 +482,7 @@
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-takeout') currentScreen = 'takeout';
             
+            // Simple Focus Anchor
             setTimeout(() => {
                 const h1 = target.querySelector('h1');
                 if (h1) h1.focus();
@@ -544,12 +534,20 @@
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
             e.stopPropagation();
-            menuAccount.classList.toggle('hidden');
-            if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
+            const isHidden = menuAccount.classList.contains('hidden');
+            if(isHidden) {
+                menuAccount.classList.remove('hidden');
+                menuAccount.querySelector('button').focus();
+                document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'true');
+            } else {
+                menuAccount.classList.add('hidden');
+                document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
+            }
         });
         document.addEventListener('click', (e) => {
             if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
                 menuAccount.classList.add('hidden');
+                document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
             }
         });
 
@@ -725,6 +723,9 @@
                         searchInput.value = '';
                         toggleClear();
                         refreshLists();
+                    } else {
+                        e.preventDefault();
+                        switchScreen('screen-home');
                     }
                 }
             });
@@ -915,9 +916,29 @@
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            const container = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
-            if(currentActionItem) focusTargetId = currentActionItem.id;
-            document.getElementById(container).querySelector('.item-card')?.focus();
+            const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
+            const container = document.getElementById(containerId);
+            
+            // Priority 1: Explicit Focus Target (from update/edit)
+            if (focusTargetId) {
+                const specificItem = container.querySelector(`.item-card[data-id="${focusTargetId}"]`);
+                if (specificItem) {
+                    specificItem.focus();
+                    focusTargetId = null;
+                    return;
+                }
+            }
+            // Priority 2: Current Item (from simple close)
+            if (currentActionItem && currentActionItem.id) {
+                const specificItem = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
+                if (specificItem) {
+                    specificItem.focus();
+                    return;
+                }
+            }
+            // Priority 3: Fallback
+            const firstItem = container.querySelector('.item-card');
+            if (firstItem) firstItem.focus();
         };
 
         async function handleUpdate(change) {
@@ -936,7 +957,6 @@
                     updatedAt: serverTimestamp()
                 });
                 announce("更新成功");
-                // If in takeout search, refocus input
                 if (currentScreen === 'takeout') {
                     const input = document.getElementById('takeout-search');
                     input.value = ''; input.focus();
@@ -1100,9 +1120,9 @@
 
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
-                e.preventDefault();
                 const menu = document.getElementById('menu-account-dropdown');
                 if (!menu.classList.contains('hidden')) {
+                    e.preventDefault();
                     menu.classList.add('hidden');
                     document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
                     document.getElementById('btn-account-menu').focus();
@@ -1110,11 +1130,15 @@
                 }
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
                 if (modals.length > 0) {
+                    e.preventDefault();
                     closeModals();
                     document.getElementById('modal-qty').classList.add('hidden');
                     return;
                 }
-                if (currentScreen !== 'home' && currentScreen !== 'login') switchScreen('screen-home');
+                if (currentScreen !== 'home' && currentScreen !== 'login') {
+                    e.preventDefault();
+                    switchScreen('screen-home');
+                }
             }
         });
     </script>
