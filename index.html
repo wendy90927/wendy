@@ -138,10 +138,12 @@
                 
                 <div class="flex justify-between items-center mb-1 relative">
                     <h1 id="title-home" class="text-xl font-bold outline-none" tabindex="-1">物品管家</h1>
+                    
                     <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2 focus:ring-2 ring-white">
                         <span id="user-email-display">账号</span>
                         <span aria-hidden="true">▼</span>
                     </button>
+
                     <div id="menu-account-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 text-gray-900 z-50 flex flex-col">
                         <button id="btn-clear-data" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">清空所有数据</button>
                         <button id="btn-delete-account" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">注销账号</button>
@@ -501,12 +503,20 @@
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
             e.stopPropagation();
-            menuAccount.classList.toggle('hidden');
-            if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
+            const isHidden = menuAccount.classList.contains('hidden');
+            if(isHidden) {
+                menuAccount.classList.remove('hidden');
+                menuAccount.querySelector('button').focus();
+                document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'true');
+            } else {
+                menuAccount.classList.add('hidden');
+                document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
+            }
         });
         document.addEventListener('click', (e) => {
             if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
                 menuAccount.classList.add('hidden');
+                document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
             }
         });
 
@@ -724,7 +734,6 @@
             };
         }
 
-        // Menu
         function openActionMenu(item) {
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
@@ -760,7 +769,6 @@
             document.getElementById('edit-quantity').value = item.quantity;
         }
 
-        // Quantity
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         qtyGrid.innerHTML = '';
@@ -833,17 +841,9 @@
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
-            const container = document.getElementById(containerId);
-            if (currentActionItem && currentActionItem.id) {
-                const specificCard = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
-                if (specificCard) {
-                    specificCard.focus();
-                    return;
-                }
-            }
-            const firstCard = container.querySelector('.item-card');
-            if (firstCard) firstCard.focus();
+            const container = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
+            if(currentActionItem) focusTargetId = currentActionItem.id;
+            document.getElementById(container).querySelector('.item-card')?.focus();
         };
 
         async function handleUpdate(change) {
@@ -1024,11 +1024,17 @@
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
                 e.preventDefault();
+                const menu = document.getElementById('menu-account-dropdown');
+                if (!menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                    document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
+                    document.getElementById('btn-account-menu').focus();
+                    return;
+                }
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
                 if (modals.length > 0) {
                     closeModals();
                     document.getElementById('modal-qty').classList.add('hidden');
-                    document.getElementById('menu-account-dropdown').classList.add('hidden');
                     return;
                 }
                 if (currentScreen !== 'home' && currentScreen !== 'login') switchScreen('screen-home');
