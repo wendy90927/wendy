@@ -81,10 +81,10 @@
             <h1 id="title-login" class="text-3xl font-bold mb-8 text-center outline-none" tabindex="-1">家庭物品管家</h1>
             
             <label for="login-email" class="block mb-2 font-bold text-lg">邮箱账号</label>
-            <input type="email" id="login-email" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="name@email.com">
+            <input type="email" id="login-email" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="name@email.com" aria-label="邮箱账号">
             
             <label for="login-password" class="block mb-2 font-bold text-lg">密码</label>
-            <input type="password" id="login-password" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-4 text-lg" placeholder="请输入密码">
+            <input type="password" id="login-password" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-4 text-lg" placeholder="请输入密码" aria-label="密码">
             
             <div class="flex flex-col gap-3 mb-6">
                 <label class="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
@@ -111,13 +111,13 @@
             <h1 id="title-register" class="text-2xl font-bold mb-6 text-center outline-none" tabindex="-1">注册新账号</h1>
             
             <label for="reg-email" class="block mb-2 font-bold text-lg">邮箱</label>
-            <input type="email" id="reg-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 text-lg">
+            <input type="email" id="reg-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 text-lg" aria-label="设置邮箱">
             
             <label for="reg-pass" class="block mb-2 font-bold text-lg">设置密码 (至少6位)</label>
-            <input type="password" id="reg-pass" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 text-lg">
+            <input type="password" id="reg-pass" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 text-lg" aria-label="设置密码">
             
             <label for="reg-pass-confirm" class="block mb-2 font-bold text-lg">确认密码</label>
-            <input type="password" id="reg-pass-confirm" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-8 text-lg">
+            <input type="password" id="reg-pass-confirm" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-8 text-lg" aria-label="确认密码">
             
             <button id="btn-submit-reg" class="w-full bg-green-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-green-700 mb-4">确认注册</button>
             <button id="btn-back-login" class="w-full bg-gray-200 text-gray-800 p-3 rounded-lg font-bold text-lg">返回登录</button>
@@ -170,7 +170,7 @@
         <section class="bg-white p-4 shadow-sm border-b z-10">
             <div class="max-w-3xl mx-auto flex items-center gap-2">
                 <label for="home-filter" class="font-bold whitespace-nowrap text-lg">房间筛选：</label>
-                <select id="home-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black">
+                <select id="home-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选房间">
                     <option value="all">全部房间</option>
                     <option value="客厅">客厅</option>
                     <option value="厨房">厨房</option>
@@ -206,7 +206,7 @@
         <section class="bg-white p-4 shadow-sm border-b z-10">
             <div class="max-w-3xl mx-auto flex items-center gap-2">
                 <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg">房间：</label>
-                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black">
+                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选房间">
                     <option value="all">全部房间</option>
                     <option value="客厅">客厅</option>
                     <option value="厨房">厨房</option>
@@ -299,6 +299,7 @@
             <button id="btn-trigger-upload" class="w-full p-6 bg-blue-50 border-2 border-blue-500 text-blue-900 font-bold rounded-xl text-xl hover:bg-blue-100 shadow-sm text-left">
                 上传填写好的文件
             </button>
+            
             <input type="file" id="file-upload" accept=".csv" class="hidden">
         </div>
     </div>
@@ -308,7 +309,7 @@
             <h2 id="title-forgot" class="text-2xl font-bold mb-4 outline-none" tabindex="-1">找回密码</h2>
             <p class="mb-4 text-gray-600">请输入您的注册邮箱，系统将发送重置邮件给您。</p>
             <label for="forgot-email" class="sr-only">邮箱地址</label>
-            <input type="email" id="forgot-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="邮箱地址">
+            <input type="email" id="forgot-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="邮箱地址" aria-label="找回密码邮箱">
             
             <div class="flex gap-3">
                 <button id="btn-cancel-forgot" class="flex-1 p-3 bg-gray-200 font-bold rounded-lg text-lg">取消</button>
@@ -339,7 +340,7 @@
                 <div id="qty-custom-trigger" class="custom-input-trigger" role="button" tabindex="0" aria-label="自定义数量，按回车输入">
                     <span class="mr-2 font-bold text-gray-700 text-lg">自定义:</span>
                     <label for="qty-custom-input" class="sr-only">输入数量</label>
-                    <input type="number" id="qty-custom-input" class="w-24 p-2 border-b-4 border-gray-400 text-center font-bold text-xl bg-gray-50 text-black" disabled placeholder="#" tabindex="-1">
+                    <input type="number" id="qty-custom-input" class="w-24 p-2 border-b-4 border-gray-400 text-center font-bold text-xl bg-gray-50 text-black" disabled placeholder="#" tabindex="-1" aria-label="输入自定义数量">
                 </div>
                 <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">
                     确定
@@ -411,7 +412,7 @@
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // --- Focus Manager (H1 Anchor) ---
+        // --- Focus & Screen Manager (Safety Net Strategy) ---
         function switchScreen(screenId) {
             ['screen-login', 'screen-register', 'screen-home', 'screen-takeout', 'screen-add', 'screen-data'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
@@ -419,10 +420,20 @@
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            // 关键修复：等待渲染帧，然后强制聚焦到 H1
-            requestAnimationFrame(() => {
+            // 物理隔离：恢复所有屏幕的交互
+            toggleScreenAccessibility(false);
+
+            // 三段式强制聚焦
+            const attemptFocus = () => {
                 const h1 = target.querySelector('h1');
                 if (h1) h1.focus();
+            };
+            
+            attemptFocus(); // 立即
+            requestAnimationFrame(() => {
+                attemptFocus(); // 下一帧
+                setTimeout(attemptFocus, 50); // 补刀
+                setTimeout(attemptFocus, 150); // 兜底
             });
 
             if (screenId === 'screen-home') currentScreen = 'home';
@@ -431,7 +442,24 @@
             refreshLists();
         }
 
-        // --- Auth & Persistence ---
+        // --- 物理隔离 helper ---
+        function toggleScreenAccessibility(disable) {
+            const screens = document.querySelectorAll('[id^="screen-"]');
+            screens.forEach(s => {
+                if (disable) {
+                    s.setAttribute('aria-hidden', 'true');
+                    s.setAttribute('inert', ''); 
+                } else {
+                    // 只有当前显示的屏幕才恢复
+                    if (!s.classList.contains('hidden')) {
+                        s.removeAttribute('aria-hidden');
+                        s.removeAttribute('inert');
+                    }
+                }
+            });
+        }
+
+        // --- Auth ---
         onAuthStateChanged(auth, user => {
             if (user) {
                 document.getElementById('btn-account-menu').setAttribute('aria-label', `当前账号：${user.email}，点击展开菜单`);
@@ -451,32 +479,24 @@
             const autoLogin = document.getElementById('chk-auto-login').checked;
             const rememberEmail = document.getElementById('chk-remember-email').checked;
 
-            // 记住账号
             if(rememberEmail) localStorage.setItem('savedEmail', e);
             else localStorage.removeItem('savedEmail');
 
             try {
-                // 设置持久化
                 await setPersistence(auth, autoLogin ? browserLocalPersistence : browserSessionPersistence);
                 await signInWithEmailAndPassword(auth, e, p);
             } catch(err) {
-                announce("登录失败"); 
-                alert("登录失败：" + err.message);
+                announce("登录失败"); alert("登录失败：" + err.message);
             }
         });
 
-        // 账号菜单逻辑
+        // 账号菜单
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isHidden = menuAccount.classList.contains('hidden');
-            if(isHidden) {
-                menuAccount.classList.remove('hidden');
-                menuAccount.querySelector('button').focus();
-            } else {
-                menuAccount.classList.add('hidden');
-            }
+            menuAccount.classList.toggle('hidden');
+            if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
         });
         document.addEventListener('click', (e) => {
             if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
@@ -488,7 +508,6 @@
             signOut(auth).then(() => announce("已退出"));
         });
 
-        // 清空数据 (只删数据)
         document.getElementById('btn-clear-data').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
             openGenericConfirm("确定清空所有物品数据吗？账号将保留。", async () => {
@@ -504,10 +523,9 @@
             });
         });
 
-        // 注销账号 (删数据+删人)
         document.getElementById('btn-delete-account').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
-            openGenericConfirm("高危操作：永久删除数据并注销账号！无法恢复！", async () => {
+            openGenericConfirm("高危操作：永久删除数据并注销账号！", async () => {
                 try {
                     announce("正在删除...");
                     const batch = writeBatch(db);
@@ -517,7 +535,7 @@
                     await batch.commit();
                     await deleteUser(auth.currentUser);
                     alert("账号已注销");
-                } catch(e) { alert("失败（可能需重登）：" + e.message); }
+                } catch(e) { alert("失败：" + e.message); }
             });
         });
 
@@ -533,18 +551,25 @@
 
         document.getElementById('btn-forgot-pass').addEventListener('click', () => {
             document.getElementById('modal-forgot').classList.remove('hidden');
+            toggleScreenAccessibility(true);
             requestAnimationFrame(() => document.getElementById('title-forgot').focus());
         });
-        document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
+        document.getElementById('btn-cancel-forgot').addEventListener('click', () => {
+            document.getElementById('modal-forgot').classList.add('hidden');
+            toggleScreenAccessibility(false);
+            document.getElementById('btn-forgot-pass').focus();
+        });
         document.getElementById('btn-send-reset').addEventListener('click', () => {
             const e = document.getElementById('forgot-email').value;
             if(!e) return;
             sendPasswordResetEmail(auth, e).then(() => {
-                alert("邮件已发送"); document.getElementById('modal-forgot').classList.add('hidden');
+                alert("邮件已发送"); 
+                document.getElementById('modal-forgot').classList.add('hidden');
+                toggleScreenAccessibility(false);
             }).catch(err => alert("失败：" + err.message));
         });
 
-        // --- 数据处理 ---
+        // --- 数据逻辑 ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -643,12 +668,12 @@
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
             document.getElementById('action-desc').textContent = `剩余：${item.quantity}`;
-            
             const btnPut = document.getElementById('btn-act-put');
             if (currentScreen === 'takeout') btnPut.classList.add('hidden');
             else btnPut.classList.remove('hidden');
 
             modal.classList.remove('hidden');
+            toggleScreenAccessibility(true);
             setTimeout(() => {
                 const v = modal.querySelectorAll('button:not(.hidden)');
                 if(v.length > 0) v[0].focus();
@@ -689,6 +714,7 @@
             document.getElementById('modal-action').classList.add('hidden');
             const modal = document.getElementById('modal-qty');
             modal.classList.remove('hidden');
+            toggleScreenAccessibility(true);
             
             const input = document.getElementById('qty-custom-input');
             const confirm = document.getElementById('btn-qty-confirm');
@@ -701,12 +727,10 @@
             confirm.setAttribute('tabindex', '-1');
             trigger.setAttribute('tabindex', '0');
             
-            // 强制 H1 聚焦防卡死，然后聚焦第一个数字
-            requestAnimationFrame(() => {
-                document.getElementById('qty-title').focus();
-                setTimeout(() => qtyGrid.firstChild.focus(), 100);
-            });
-            announce("请选择数量");
+            setTimeout(() => {
+                qtyGrid.firstChild.focus();
+                announce("请选择数量");
+            }, 100);
         }
 
         const customTrigger = document.getElementById('qty-custom-trigger');
@@ -744,6 +768,7 @@
             if (!val || val <= 0) { announce("无效数量"); return; }
             if (qtyCallback) qtyCallback(val);
             document.getElementById('modal-qty').classList.add('hidden');
+            toggleScreenAccessibility(false);
         }
 
         function closeQtyModal() {
@@ -753,6 +778,7 @@
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
+            toggleScreenAccessibility(false);
             const container = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
             document.getElementById(container).querySelector('.item-card')?.focus();
         };
@@ -776,6 +802,7 @@
                 if (currentScreen === 'takeout') {
                     const input = document.getElementById('takeout-search');
                     input.value = ''; input.focus();
+                    toggleScreenAccessibility(false);
                 } else {
                     closeModals();
                 }
@@ -785,19 +812,25 @@
         function openZeroConfirm() {
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
-            // 聚焦标题
-            requestAnimationFrame(() => document.getElementById('title-zero').focus());
+            toggleScreenAccessibility(true);
             
-            document.getElementById('btn-zero-keep').onclick = async () => {
+            const keepBtn = document.getElementById('btn-zero-keep');
+            // 延时聚焦防穿透
+            requestAnimationFrame(() => keepBtn.focus());
+            
+            keepBtn.onclick = async () => {
                 m.classList.add('hidden');
+                toggleScreenAccessibility(false);
                 await execUpdate(-currentActionItem.quantity);
             };
             document.getElementById('btn-zero-del').onclick = async () => {
                 m.classList.add('hidden');
+                toggleScreenAccessibility(false);
                 await execDelete();
             };
             document.getElementById('btn-zero-cancel').onclick = () => {
                 m.classList.add('hidden');
+                toggleScreenAccessibility(false);
                 announce("已取消");
                 closeModals();
             };
@@ -808,6 +841,8 @@
             document.getElementById('modal-action').classList.add('hidden');
             const m = document.getElementById('modal-confirm');
             m.classList.remove('hidden');
+            toggleScreenAccessibility(true);
+            
             document.getElementById('confirm-text').textContent = msg;
             confirmCallback = cb;
             requestAnimationFrame(() => document.getElementById('title-confirm').focus());
@@ -815,7 +850,9 @@
         document.getElementById('btn-confirm-ok').addEventListener('click', () => {
             if(confirmCallback) confirmCallback();
             document.getElementById('modal-confirm').classList.add('hidden');
+            toggleScreenAccessibility(false);
         });
+        document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModals());
 
         async function execDelete() {
             try {
@@ -835,6 +872,7 @@
                 pendingAddQty = v;
                 updateAddQtyDisplay();
                 document.getElementById('modal-qty').classList.add('hidden');
+                toggleScreenAccessibility(false);
                 document.getElementById('btn-add-qty-trigger').focus();
             });
         });
