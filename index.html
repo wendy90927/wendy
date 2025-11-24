@@ -19,14 +19,14 @@
             border-width: 0;
         }
         
-        /* 强焦样式：橙色加粗边框，层级最高 */
+        /* 强焦样式 */
         *:focus {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
             z-index: 100;
         }
 
-        /* 列表卡片选中态 */
+        /* 列表卡片 */
         .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
@@ -125,6 +125,7 @@
     <div id="screen-home" class="screen hidden min-h-screen flex flex-col pb-20">
         <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
+                
                 <div class="flex justify-between items-center mb-1 relative">
                     <h1 id="title-home" class="text-xl font-bold outline-none" tabindex="-1">物品管家</h1>
                     <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2 focus:ring-2 ring-white">
@@ -137,18 +138,22 @@
                         <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">退出登录</button>
                     </div>
                 </div>
+
                 <div class="flex gap-3">
                     <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">+ 新增物品</button>
                     <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">- 取出物品</button>
                 </div>
+
                 <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
-                <div class="relative">
+
+                <div class="relative flex gap-2">
                     <label for="home-search" class="sr-only">搜索物品</label>
-                    <input type="text" id="home-search" placeholder="输入物品名称搜索..." class="w-full p-3 pr-12 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
-                    <button id="btn-clear-home-search" class="hidden absolute right-2 top-2 text-gray-500 hover:text-gray-800 font-bold p-2" aria-label="清除搜索">清除</button>
+                    <input type="text" id="home-search" placeholder="输入内容搜索..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+                    <button id="btn-do-search" class="bg-white text-blue-800 px-4 rounded font-bold shadow">搜索</button>
                 </div>
             </div>
         </header>
+
         <section class="bg-white p-4 shadow-sm border-b z-10">
             <div class="max-w-3xl mx-auto flex items-center gap-2">
                 <label for="home-filter" class="font-bold whitespace-nowrap text-lg">房间筛选：</label>
@@ -165,45 +170,27 @@
                 </select>
             </div>
         </section>
+
         <main class="flex-grow p-4 bg-gray-50">
-            <div id="home-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded shadow hidden" aria-live="polite"></div>
             <div id="home-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="物品列表"></div>
         </main>
     </div>
 
-    <div id="screen-takeout" class="screen hidden min-h-screen flex flex-col bg-gray-100">
-        <div class="bg-orange-600 text-white p-4 shadow-md sticky top-0 z-20">
+    <div id="screen-results" class="screen hidden min-h-screen flex flex-col bg-gray-100">
+        <div class="bg-purple-700 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <button id="btn-back-takeout" class="bg-white text-orange-700 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">&lt; 返回首页</button>
-                    <h1 id="title-takeout" class="text-xl font-bold outline-none" tabindex="-1">取出物品</h1>
-                </div>
-                <div class="relative">
-                    <label for="takeout-search" class="sr-only">搜索要取出的物品</label>
-                    <input type="text" id="takeout-search" placeholder="搜索要取出的物品..." class="w-full p-3 pr-12 text-black rounded shadow font-bold text-lg" aria-label="搜索要取出的物品">
-                    <button id="btn-clear-takeout-search" class="hidden absolute right-2 top-2 text-gray-500 hover:text-gray-800 font-bold p-2" aria-label="清除搜索">清除</button>
+                    <button id="btn-back-results" class="bg-white text-purple-800 px-6 py-2 rounded-lg font-bold border-2 border-purple-200">&lt; 返回首页</button>
+                    <h1 id="title-results" class="text-xl font-bold outline-none" tabindex="-1">搜索结果</h1>
                 </div>
             </div>
         </div>
-        <section class="bg-white p-4 shadow-sm border-b z-10">
-            <div class="max-w-3xl mx-auto flex items-center gap-2">
-                <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg">房间：</label>
-                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选房间">
-                    <option value="all">全部房间</option>
-                    <option value="客厅">客厅</option>
-                    <option value="厨房">厨房</option>
-                    <option value="卧室">卧室</option>
-                    <option value="书房">书房</option>
-                    <option value="餐厅">餐厅</option>
-                    <option value="玄关">玄关</option>
-                    <option value="卫生间">卫生间</option>
-                    <option value="洗衣房">洗衣房</option>
-                </select>
-            </div>
-        </section>
+
         <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
-            <div id="takeout-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded shadow hidden" aria-live="polite"></div>
-            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
+            <div id="results-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-purple-50 border-l-4 border-purple-500 rounded shadow text-lg font-bold" aria-live="polite">
+                正在计算...
+            </div>
+            <div id="results-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
         </main>
     </div>
 
@@ -214,6 +201,7 @@
                 <h1 id="title-add" class="text-xl font-bold outline-none" tabindex="-1">新增物品</h1>
             </div>
         </div>
+        
         <div class="max-w-lg mx-auto w-full p-6 overflow-y-auto">
             <form id="form-add" class="space-y-6">
                 <div>
@@ -222,7 +210,7 @@
                 </div>
                 <div>
                     <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
-                    <input type="text" id="add-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
+                    <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -261,6 +249,7 @@
                 <h1 id="title-edit" class="text-xl font-bold outline-none" tabindex="-1">编辑物品</h1>
             </div>
         </div>
+        
         <div class="max-w-lg mx-auto w-full p-6 overflow-y-auto">
             <form id="form-edit" class="space-y-6">
                 <div>
@@ -268,8 +257,8 @@
                     <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
-                    <input type="text" id="edit-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
+                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
+                    <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -408,12 +397,12 @@
         let pendingAddQty = 1;
         let currentScreen = 'login';
         let homeFilterRoom = 'all';
-        let takeoutFilterRoom = 'all';
         let unsubscribeItems = null;
         let previousScreen = 'home';
         let focusTargetId = null; 
+        let searchResults = []; // For separate search page
 
-        // Unit Presets & Logic
+        // Unit Presets
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
         UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
@@ -438,21 +427,17 @@
             }
         }
 
-        // FIXED: Custom Arrow Key Handler with preventDefault (Force take over)
+        // FIXED: Force arrow keys for units
         function attachUnitKeyHandler(inputId) {
             const el = document.getElementById(inputId);
             el.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                    e.preventDefault(); // STOP Native behavior
+                    e.preventDefault(); 
                     e.stopPropagation(); 
                     let idx = UNIT_LIST.indexOf(el.value);
                     if (idx === -1) idx = e.key === 'ArrowDown' ? -1 : 0;
-                    
-                    if (e.key === 'ArrowDown') {
-                        idx = (idx + 1) % UNIT_LIST.length;
-                    } else {
-                        idx = (idx - 1 + UNIT_LIST.length) % UNIT_LIST.length;
-                    }
+                    if (e.key === 'ArrowDown') idx = (idx + 1) % UNIT_LIST.length;
+                    else idx = (idx - 1 + UNIT_LIST.length) % UNIT_LIST.length;
                     el.value = UNIT_LIST[idx];
                 }
             });
@@ -480,9 +465,9 @@
             }
             
             if (screenId === 'screen-home') currentScreen = 'home';
-            if (screenId === 'screen-takeout') currentScreen = 'takeout';
+            if (screenId === 'screen-results') currentScreen = 'results';
             
-            // Priority Focus Logic
+            // Priority Focus
             if (!focusTargetId) {
                 setTimeout(() => {
                     const h1 = target.querySelector('h1');
@@ -490,7 +475,7 @@
                 }, 100);
             }
 
-            refreshLists();
+            if(screenId === 'screen-home') refreshHomeList();
         }
 
         // --- Auth ---
@@ -531,7 +516,7 @@
             }
         });
 
-        // Menu
+        // Account Menu
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
@@ -592,7 +577,7 @@
             }).catch(err => alert(err.message));
         });
 
-        // --- Data Logic ---
+        // --- Data Logic (Micro-update) ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -615,75 +600,90 @@
                 if (isFirstLoad) {
                     allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
                 }
-                refreshLists();
+                
+                if (currentScreen === 'home') refreshHomeList();
+                if (currentScreen === 'results') refreshResultsList();
             });
         }
 
-        function refreshLists() {
-            if (currentScreen === 'home') renderList('home-list', 'home-search', 'home-filter', 'home-stats', homeFilterRoom);
-            if (currentScreen === 'takeout') renderList('takeout-list', 'takeout-search', 'takeout-filter', 'takeout-stats', takeoutFilterRoom);
+        function refreshHomeList() {
+            renderList('home-list', homeFilterRoom, allItems);
         }
 
-        function renderList(containerId, searchId, filterId, statsId, currentRoomFilter) {
-            const container = document.getElementById(containerId);
-            const statsContainer = document.getElementById(statsId);
-            const searchVal = document.getElementById(searchId).value.trim().toLowerCase();
-            const selectEl = document.getElementById(filterId);
-            if (selectEl.value !== currentRoomFilter) selectEl.value = currentRoomFilter;
-
-            const filtered = allItems.filter(item => {
-                const matchSearch = item.name.toLowerCase().includes(searchVal) || (item.location||'').toLowerCase().includes(searchVal);
-                const matchRoom = currentRoomFilter === 'all' || item.room === currentRoomFilter;
-                return matchSearch && matchRoom;
-            });
-
-            if (searchVal && filtered.length > 0) {
-                const totals = {};
-                filtered.forEach(item => {
-                    const u = item.unit || '个';
-                    totals[u] = (totals[u] || 0) + item.quantity;
-                });
-                const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
-                statsContainer.innerHTML = `<p class="font-bold text-lg">共 ${filtered.length} 处。合计：${summaryText}</p>`;
-                statsContainer.classList.remove('hidden');
-            } else {
-                statsContainer.classList.add('hidden');
-            }
-
-            // Incremental DOM Update (No innerHTML = '')
-            const existingCards = new Map();
-            container.querySelectorAll('.item-card').forEach(el => existingCards.set(el.dataset.id, el));
+        function refreshResultsList() {
+            // Recalculate filtered results based on current search term
+            // Note: In real search page, we might just want to update existing items in the result set
+            // But simple re-filter is safer for consistency
+            const term = document.getElementById('home-search').value.trim().toLowerCase(); 
+            // Note: Search term is from home search input usually, but we are on results page
+            // Let's store search term globally or just re-use
+            // Actually, we should filter allItems again.
+            if (!searchResults) return; // Safety
             
+            // We need to update searchResults based on allItems changes
+            searchResults = allItems.filter(item => {
+                // Simple check if this item is still in our "search interest"
+                // Or better: Just re-render based on IDs present in searchResults to maintain context?
+                // Simplest: Re-run search filter
+                const st = document.getElementById('title-results').dataset.term || '';
+                return item.name.toLowerCase().includes(st) || (item.location||'').toLowerCase().includes(st);
+            });
+            
+            renderList('results-list', 'all', searchResults);
+            updateStats(searchResults);
+        }
+
+        // --- The Micro-Update Renderer ---
+        function renderList(containerId, filterRoom, sourceArray) {
+            const container = document.getElementById(containerId);
+            
+            const filtered = sourceArray.filter(item => {
+                return filterRoom === 'all' || item.room === filterRoom;
+            });
+
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到</div>`;
+                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">无相关物品</div>`;
                 return;
             }
 
-            existingCards.forEach((el, id) => {
+            // Map existing DOM elements
+            const existingMap = new Map();
+            container.querySelectorAll('.item-card').forEach(el => existingMap.set(el.dataset.id, el));
+
+            // 1. Remove deleted items
+            existingMap.forEach((el, id) => {
                 if (!filtered.find(i => i.id === id)) el.remove();
             });
 
-            filtered.forEach((item, index) => {
-                let card = existingCards.get(item.id);
+            // 2. Update or Create items
+            filtered.forEach(item => {
+                let card = existingMap.get(item.id);
+                const labelText = `${item.name}，${item.room} ${item.location||''}，${item.quantity}${item.unit||'个'}`;
                 const htmlContent = `
                     <div class="flex justify-between items-center pointer-events-none">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900">${item.name}</h3>
-                            <p class="text-base text-gray-600 font-bold">${item.room} - ${item.location || '位置未填'}</p>
+                            <h3 class="text-xl font-bold text-gray-900 item-name">${item.name}</h3>
+                            <p class="text-base text-gray-600 font-bold item-loc">${item.room} - ${item.location || '位置未填'}</p>
                         </div>
-                        <div class="text-3xl font-bold text-blue-700">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
+                        <div class="text-3xl font-bold text-blue-700 item-qty">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
                     </div>
                 `;
 
                 if (card) {
-                    if (card.innerHTML !== htmlContent) card.innerHTML = htmlContent;
-                    container.appendChild(card); 
+                    // Micro-update: Check if content changed
+                    if (card.getAttribute('aria-label') !== (labelText + "。按回车管理。")) {
+                        card.innerHTML = htmlContent;
+                        card.setAttribute('aria-label', labelText + "。按回车管理。");
+                    }
+                    // Re-append to ensure order? No, keep DOM stable for focus.
+                    // Only append if new
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
                     card.setAttribute('role', 'button');
                     card.setAttribute('tabindex', '0');
                     card.dataset.id = item.id;
+                    card.setAttribute('aria-label', labelText + "。按回车管理。");
                     card.innerHTML = htmlContent;
                     
                     const triggerMenu = () => openActionMenu(item);
@@ -695,92 +695,79 @@
                     });
                     container.appendChild(card);
                 }
-                card.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
             });
 
-            // 1. Restore Focus to Explicit Target (from Edit/Add/Next after delete)
+            // Focus Restoration
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
                 if (target) {
                     target.focus();
-                    focusTargetId = null; // Consume anchor
-                    return;
+                    focusTargetId = null;
                 }
             }
+        }
+
+        function updateStats(items) {
+            const statsContainer = document.getElementById('results-stats');
+            if (items.length > 0) {
+                const totals = {};
+                items.forEach(item => {
+                    const u = item.unit || '个';
+                    totals[u] = (totals[u] || 0) + item.quantity;
+                });
+                const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
+                statsContainer.textContent = `共找到 ${items.length} 处。合计：${summaryText}`;
+            }
+        }
+
+        // --- Home Screen Logic ---
+        document.getElementById('home-filter').addEventListener('change', (e) => {
+            homeFilterRoom = e.target.value;
+            refreshHomeList();
+        });
+
+        // Search Trigger
+        const homeSearchInput = document.getElementById('home-search');
+        const btnDoSearch = document.getElementById('btn-do-search');
+        
+        function performSearch() {
+            const term = homeSearchInput.value.trim().toLowerCase();
+            if (!term) return;
             
-            // 2. Restore Focus to Last Active Item (from in-place update)
-            // We check if current active element is inside list and if it's still valid
-            // (Actually the incremental update preserves focus naturally if element wasn't removed)
+            // Switch to Results Page
+            switchScreen('screen-results');
+            document.getElementById('title-results').textContent = `搜索：${term}`;
+            document.getElementById('title-results').dataset.term = term; // Store term
+            
+            searchResults = allItems.filter(item => {
+                return item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term);
+            });
+            
+            renderList('results-list', 'all', searchResults);
+            updateStats(searchResults);
+            
+            announce(`搜索完成，找到 ${searchResults.length} 个结果`);
         }
 
-        function setupListListeners(searchId, filterId, screenType) {
-            const searchInput = document.getElementById(searchId);
-            const clearBtn = document.createElement('button');
-            clearBtn.className = 'hidden absolute right-2 top-2 text-gray-500 hover:text-gray-800 font-bold p-2 text-lg';
-            clearBtn.textContent = '清除';
-            clearBtn.setAttribute('aria-label', '清除搜索内容');
-            searchInput.parentNode.appendChild(clearBtn);
+        btnDoSearch.addEventListener('click', performSearch);
+        homeSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
 
-            const toggleClear = () => {
-                if(searchInput.value) clearBtn.classList.remove('hidden');
-                else clearBtn.classList.add('hidden');
-            };
+        // Results Page Logic
+        document.getElementById('btn-back-results').addEventListener('click', () => {
+            switchScreen('screen-home');
+            homeSearchInput.value = ''; // Clear search on return? Optional.
+        });
 
-            searchInput.addEventListener('input', () => {
-                toggleClear();
-                refreshLists();
-            });
-
-            // GLOBAL ESC Logic for Search
-            window.addEventListener('keydown', (e) => {
-                 if (e.key === 'Escape' && currentScreen === screenType && !document.querySelector('[id^="modal-"]:not(.hidden)')) {
-                     // Check if focus is inside input
-                     if (document.activeElement === searchInput) {
-                         if (searchInput.value) {
-                             e.preventDefault(); e.stopPropagation();
-                             searchInput.value = '';
-                             toggleClear();
-                             refreshLists();
-                             announce("已清空");
-                         } else {
-                             // Empty input, go back
-                             if (screenType === 'takeout') {
-                                 e.preventDefault();
-                                 switchScreen('screen-home');
-                             }
-                         }
-                     } else {
-                         // Focus not in input (e.g. list), go back
-                         if (screenType === 'takeout') {
-                             e.preventDefault();
-                             switchScreen('screen-home');
-                         }
-                     }
-                 }
-            });
-
-            clearBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                toggleClear();
-                refreshLists();
-                searchInput.focus();
-            });
-
-            document.getElementById(filterId).addEventListener('change', (e) => {
-                if (screenType === 'home') homeFilterRoom = e.target.value;
-                if (screenType === 'takeout') takeoutFilterRoom = e.target.value;
-                refreshLists();
-            });
-        }
-        setupListListeners('home-search', 'home-filter', 'home');
-        setupListListeners('takeout-search', 'takeout-filter', 'takeout');
 
         // --- Navigation ---
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
-            switchScreen('screen-takeout');
-            document.getElementById('takeout-search').value = ''; refreshLists();
+            // Reuse search logic for "Takeout" (it's basically search now)
+            document.getElementById('home-search').focus();
+            announce("请输入名称搜索要取出的物品");
         });
-        document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
+
         document.getElementById('btn-nav-add').addEventListener('click', () => {
             switchScreen('screen-add');
             document.getElementById('add-name').focus();
@@ -843,9 +830,14 @@
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
             document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
+            
+            // Show/Hide Put button based on where we are? 
+            // User wanted simplified menu for takeout, but now search is the main interface.
+            // Let's keep all options available in search results for flexibility, or hide PUT if user strictly wants takeout flow.
+            // For now, show all.
             const btnPut = document.getElementById('btn-act-put');
-            if (currentScreen === 'takeout') btnPut.classList.add('hidden');
-            else btnPut.classList.remove('hidden');
+            btnPut.classList.remove('hidden');
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 const v = modal.querySelectorAll('button:not(.hidden)');
@@ -943,10 +935,10 @@
             closeModals();
         }
 
-        // FIXED: Precision Close Focus
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
+            // Focus restoration logic based on current screen
+            const containerId = currentScreen === 'results' ? 'results-list' : 'home-list';
             const container = document.getElementById(containerId);
             
             if (currentActionItem && currentActionItem.id) {
@@ -969,7 +961,6 @@
         }
 
         async function execUpdate(change) {
-            // We rely on incremental DOM to keep focus, but if it fails, this ID helps restore it
             focusTargetId = currentActionItem.id;
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
@@ -977,12 +968,7 @@
                     updatedAt: serverTimestamp()
                 });
                 announce("更新成功");
-                if (currentScreen === 'takeout') {
-                    const input = document.getElementById('takeout-search');
-                    input.value = ''; input.focus();
-                } else {
-                    closeModals();
-                }
+                closeModals();
             } catch(e) { announce("失败"); }
         }
 
@@ -1022,28 +1008,14 @@
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModals());
 
         async function execDelete() {
-            // Calculation for Next Focus Logic
-            const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
-            const idx = allItems.findIndex(i => i.id === currentActionItem.id);
-            let nextId = null;
-            if(idx !== -1) {
-                // Try next, then prev
-                if(idx < allItems.length - 1) nextId = allItems[idx + 1].id;
-                else if(idx > 0) nextId = allItems[idx - 1].id;
-            }
-            focusTargetId = nextId;
-
             try {
                 await deleteDoc(doc(db, "items", currentActionItem.id));
                 announce("已删除");
                 closeModals();
-                if (currentScreen === 'takeout' && !nextId) {
-                    const input = document.getElementById('takeout-search');
-                    input.value = ''; input.focus();
-                }
             } catch(e) { announce("删除失败"); }
         }
 
+        // Add Item
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
             openQtyPicker("设置数量", (v) => {
                 pendingAddQty = v;
@@ -1089,6 +1061,7 @@
             } catch(e) { announce("失败"); }
         });
 
+        // Export/Import
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n";
             allItems.forEach(item => {
@@ -1150,9 +1123,6 @@
         });
 
         window.addEventListener('keydown', (e) => {
-            // Global Escape Logic is now distributed:
-            // 1. Search Input has its own listener (stop prop)
-            // 2. This listener handles Modals & Screen Back
             if(e.key === 'Escape') {
                 const menu = document.getElementById('menu-account-dropdown');
                 if (!menu.classList.contains('hidden')) {
