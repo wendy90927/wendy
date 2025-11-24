@@ -6,6 +6,7 @@
     <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* 无障碍专用隐藏 */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -18,18 +19,21 @@
             border-width: 0;
         }
         
+        /* 强焦样式：橙色加粗边框，层级最高 */
         *:focus {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
             z-index: 100;
         }
 
+        /* 列表卡片选中态 */
         .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
-            transform: scale(1.01);
+            transform: scale(1.02);
         }
 
+        /* 数量按钮 */
         .qty-btn {
             height: 60px;
             font-size: 1.5rem;
@@ -50,6 +54,7 @@
             color: #1e40af;
         }
 
+        /* 自定义输入触发器 */
         .custom-input-trigger {
             flex-grow: 1;
             border: 2px solid #e5e7eb;
@@ -70,6 +75,8 @@
 <body class="bg-gray-100 text-gray-900 font-sans">
 
     <div id="live-announcer" class="sr-only" aria-live="polite"></div>
+
+    <datalist id="unit-presets"></datalist>
 
     <div id="screen-login" class="screen min-h-screen flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -118,7 +125,6 @@
     <div id="screen-home" class="screen hidden min-h-screen flex flex-col pb-20">
         <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
-                
                 <div class="flex justify-between items-center mb-1 relative">
                     <h1 id="title-home" class="text-xl font-bold outline-none" tabindex="-1">物品管家</h1>
                     <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2 focus:ring-2 ring-white">
@@ -131,14 +137,11 @@
                         <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">退出登录</button>
                     </div>
                 </div>
-
                 <div class="flex gap-3">
                     <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">+ 新增物品</button>
                     <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">- 取出物品</button>
                 </div>
-
                 <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
-
                 <div class="relative">
                     <label for="home-search" class="sr-only">搜索物品</label>
                     <input type="text" id="home-search" placeholder="输入物品名称搜索..." class="w-full p-3 pr-12 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
@@ -146,7 +149,6 @@
                 </div>
             </div>
         </header>
-
         <section class="bg-white p-4 shadow-sm border-b z-10">
             <div class="max-w-3xl mx-auto flex items-center gap-2">
                 <label for="home-filter" class="font-bold whitespace-nowrap text-lg">房间筛选：</label>
@@ -163,7 +165,6 @@
                 </select>
             </div>
         </section>
-
         <main class="flex-grow p-4 bg-gray-50">
             <div id="home-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded shadow hidden" aria-live="polite"></div>
             <div id="home-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="物品列表"></div>
@@ -177,7 +178,6 @@
                     <button id="btn-back-takeout" class="bg-white text-orange-700 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">&lt; 返回首页</button>
                     <h1 id="title-takeout" class="text-xl font-bold outline-none" tabindex="-1">取出物品</h1>
                 </div>
-                
                 <div class="relative">
                     <label for="takeout-search" class="sr-only">搜索要取出的物品</label>
                     <input type="text" id="takeout-search" placeholder="搜索要取出的物品..." class="w-full p-3 pr-12 text-black rounded shadow font-bold text-lg" aria-label="搜索要取出的物品">
@@ -185,7 +185,6 @@
                 </div>
             </div>
         </div>
-
         <section class="bg-white p-4 shadow-sm border-b z-10">
             <div class="max-w-3xl mx-auto flex items-center gap-2">
                 <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg">房间：</label>
@@ -202,7 +201,6 @@
                 </select>
             </div>
         </section>
-
         <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
             <div id="takeout-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded shadow hidden" aria-live="polite"></div>
             <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
@@ -216,7 +214,6 @@
                 <h1 id="title-add" class="text-xl font-bold outline-none" tabindex="-1">新增物品</h1>
             </div>
         </div>
-        
         <div class="max-w-lg mx-auto w-full p-6 overflow-y-auto">
             <form id="form-add" class="space-y-6">
                 <div>
@@ -264,7 +261,6 @@
                 <h1 id="title-edit" class="text-xl font-bold outline-none" tabindex="-1">编辑物品</h1>
             </div>
         </div>
-        
         <div class="max-w-lg mx-auto w-full p-6 overflow-y-auto">
             <form id="form-edit" class="space-y-6">
                 <div>
@@ -422,15 +418,27 @@
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
         UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
 
+        function populateUnitDatalist() {
+            const dl = document.getElementById('unit-presets');
+            dl.innerHTML = '';
+            UNIT_LIST.forEach(u => {
+                const op = document.createElement('option');
+                op.value = u;
+                dl.appendChild(op);
+            });
+        }
+        populateUnitDatalist();
+
         function learnNewUnit(unit) {
             if(!unit) return;
             if(!UNIT_LIST.includes(unit)) {
                 UNIT_LIST.push(unit);
                 localStorage.setItem('custom_units', JSON.stringify(UNIT_LIST));
+                populateUnitDatalist();
             }
         }
 
-        // FIXED: Custom Arrow Key Handler without native list interference
+        // FIXED: Custom Arrow Key Handler with preventDefault (Force take over)
         function attachUnitKeyHandler(inputId) {
             const el = document.getElementById(inputId);
             el.addEventListener('keydown', (e) => {
@@ -474,7 +482,7 @@
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-takeout') currentScreen = 'takeout';
             
-            // FIXED: Don't hijack focus if there is a specific target
+            // Priority Focus Logic
             if (!focusTargetId) {
                 setTimeout(() => {
                     const h1 = target.querySelector('h1');
@@ -584,7 +592,7 @@
             }).catch(err => alert(err.message));
         });
 
-        // --- Incremental DOM Logic (Key to Focus Stability) ---
+        // --- Data Logic ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -629,7 +637,6 @@
                 return matchSearch && matchRoom;
             });
 
-            // Stats
             if (searchVal && filtered.length > 0) {
                 const totals = {};
                 filtered.forEach(item => {
@@ -652,12 +659,10 @@
                 return;
             }
 
-            // Remove cards not in filtered list (or move them? simple remove for now)
             existingCards.forEach((el, id) => {
                 if (!filtered.find(i => i.id === id)) el.remove();
             });
 
-            // Upsert cards
             filtered.forEach((item, index) => {
                 let card = existingCards.get(item.id);
                 const htmlContent = `
@@ -671,12 +676,9 @@
                 `;
 
                 if (card) {
-                    // Update existing
                     if (card.innerHTML !== htmlContent) card.innerHTML = htmlContent;
-                    // Ensure order (append moves it to end, but if we iterate sequentially it reorders)
                     container.appendChild(card); 
                 } else {
-                    // Create new
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
                     card.setAttribute('role', 'button');
@@ -696,14 +698,19 @@
                 card.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
             });
 
-            // Restore Focus
+            // 1. Restore Focus to Explicit Target (from Edit/Add/Next after delete)
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
                 if (target) {
                     target.focus();
                     focusTargetId = null; // Consume anchor
+                    return;
                 }
             }
+            
+            // 2. Restore Focus to Last Active Item (from in-place update)
+            // We check if current active element is inside list and if it's still valid
+            // (Actually the incremental update preserves focus naturally if element wasn't removed)
         }
 
         function setupListListeners(searchId, filterId, screenType) {
@@ -724,20 +731,32 @@
                 refreshLists();
             });
 
-            // FIXED: Global ESC for search input
-            searchInput.addEventListener('keydown', (e) => {
-                if(e.key === 'Escape') {
-                    e.stopPropagation();
-                    if(searchInput.value) {
-                        e.preventDefault();
-                        searchInput.value = '';
-                        toggleClear();
-                        refreshLists();
-                        announce("已清空搜索");
-                    } else {
-                        if(screenType === 'takeout') switchScreen('screen-home');
-                    }
-                }
+            // GLOBAL ESC Logic for Search
+            window.addEventListener('keydown', (e) => {
+                 if (e.key === 'Escape' && currentScreen === screenType && !document.querySelector('[id^="modal-"]:not(.hidden)')) {
+                     // Check if focus is inside input
+                     if (document.activeElement === searchInput) {
+                         if (searchInput.value) {
+                             e.preventDefault(); e.stopPropagation();
+                             searchInput.value = '';
+                             toggleClear();
+                             refreshLists();
+                             announce("已清空");
+                         } else {
+                             // Empty input, go back
+                             if (screenType === 'takeout') {
+                                 e.preventDefault();
+                                 switchScreen('screen-home');
+                             }
+                         }
+                     } else {
+                         // Focus not in input (e.g. list), go back
+                         if (screenType === 'takeout') {
+                             e.preventDefault();
+                             switchScreen('screen-home');
+                         }
+                     }
+                 }
             });
 
             clearBtn.addEventListener('click', () => {
@@ -762,7 +781,6 @@
             document.getElementById('takeout-search').value = ''; refreshLists();
         });
         document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
-
         document.getElementById('btn-nav-add').addEventListener('click', () => {
             switchScreen('screen-add');
             document.getElementById('add-name').focus();
@@ -951,6 +969,7 @@
         }
 
         async function execUpdate(change) {
+            // We rely on incremental DOM to keep focus, but if it fails, this ID helps restore it
             focusTargetId = currentActionItem.id;
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
@@ -1003,11 +1022,22 @@
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModals());
 
         async function execDelete() {
+            // Calculation for Next Focus Logic
+            const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
+            const idx = allItems.findIndex(i => i.id === currentActionItem.id);
+            let nextId = null;
+            if(idx !== -1) {
+                // Try next, then prev
+                if(idx < allItems.length - 1) nextId = allItems[idx + 1].id;
+                else if(idx > 0) nextId = allItems[idx - 1].id;
+            }
+            focusTargetId = nextId;
+
             try {
                 await deleteDoc(doc(db, "items", currentActionItem.id));
                 announce("已删除");
                 closeModals();
-                if (currentScreen === 'takeout') {
+                if (currentScreen === 'takeout' && !nextId) {
                     const input = document.getElementById('takeout-search');
                     input.value = ''; input.focus();
                 }
@@ -1120,8 +1150,10 @@
         });
 
         window.addEventListener('keydown', (e) => {
+            // Global Escape Logic is now distributed:
+            // 1. Search Input has its own listener (stop prop)
+            // 2. This listener handles Modals & Screen Back
             if(e.key === 'Escape') {
-                // Global ESC logic
                 const menu = document.getElementById('menu-account-dropdown');
                 if (!menu.classList.contains('hidden')) {
                     e.preventDefault();
