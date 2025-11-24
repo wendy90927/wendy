@@ -6,7 +6,7 @@
     <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 无障碍隐藏 */
+        /* 无障碍专用隐藏 */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -19,7 +19,7 @@
             border-width: 0;
         }
         
-        /* 强焦样式 */
+        /* 强焦样式：橙色加粗 */
         *:focus {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
@@ -54,7 +54,7 @@
             color: #1e40af;
         }
 
-        /* 自定义输入容器 */
+        /* 自定义输入触发器 */
         .custom-input-trigger {
             flex-grow: 1;
             border: 2px solid #e5e7eb;
@@ -77,30 +77,14 @@
     <div id="live-announcer" class="sr-only" aria-live="polite"></div>
 
     <datalist id="unit-presets">
-        <option value="个"></option>
-        <option value="包"></option>
-        <option value="箱"></option>
-        <option value="瓶"></option>
-        <option value="袋"></option>
-        <option value="条"></option>
-        <option value="块"></option>
-        <option value="只"></option>
-        <option value="支"></option>
-        <option value="把"></option>
-        <option value="张"></option>
-        <option value="双"></option>
-        <option value="套"></option>
-        <option value="组"></option>
-        <option value="对"></option>
-        <option value="本"></option>
-        <option value="册"></option>
-        <option value="罐"></option>
-        <option value="桶"></option>
-        <option value="壶"></option>
-        <option value="杯"></option>
-        <option value="斤"></option>
-        <option value="公斤"></option>
-        <option value="升"></option>
+        <option value="个"></option><option value="包"></option><option value="箱"></option>
+        <option value="瓶"></option><option value="袋"></option><option value="条"></option>
+        <option value="块"></option><option value="只"></option><option value="支"></option>
+        <option value="把"></option><option value="张"></option><option value="双"></option>
+        <option value="套"></option><option value="组"></option><option value="对"></option>
+        <option value="本"></option><option value="册"></option><option value="罐"></option>
+        <option value="桶"></option><option value="壶"></option><option value="杯"></option>
+        <option value="斤"></option><option value="公斤"></option><option value="升"></option>
         <option value="毫升"></option>
     </datalist>
 
@@ -117,11 +101,11 @@
             <div class="flex flex-col gap-3 mb-6">
                 <label class="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
                     <input type="checkbox" id="chk-auto-login" class="w-6 h-6 text-blue-600" checked>
-                    <span class="font-bold text-lg">自动登录 (下次免密)</span>
+                    <span class="font-bold text-lg">自动登录</span>
                 </label>
                 <label class="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
                     <input type="checkbox" id="chk-remember-email" class="w-6 h-6 text-blue-600">
-                    <span class="font-bold text-lg">记住账号 (仅填邮箱)</span>
+                    <span class="font-bold text-lg">记住账号</span>
                 </label>
             </div>
 
@@ -151,6 +135,7 @@
     <div id="screen-home" class="screen hidden min-h-screen flex flex-col pb-20">
         <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
+                
                 <div class="flex justify-between items-center mb-1 relative">
                     <h1 id="title-home" class="text-xl font-bold outline-none" tabindex="-1">物品管家</h1>
                     <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2 focus:ring-2 ring-white">
@@ -158,9 +143,9 @@
                         <span aria-hidden="true">▼</span>
                     </button>
                     <div id="menu-account-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 text-gray-900 z-50 flex flex-col">
-                        <button id="btn-clear-data" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">🗑️ 清空所有数据</button>
-                        <button id="btn-delete-account" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">⚠ 注销账号</button>
-                        <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">🚪 退出登录</button>
+                        <button id="btn-clear-data" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">清空所有数据</button>
+                        <button id="btn-delete-account" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">注销账号</button>
+                        <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">退出登录</button>
                     </div>
                 </div>
 
@@ -294,16 +279,16 @@
             <form id="form-edit" class="space-y-6">
                 <div>
                     <label for="edit-name" class="block font-bold mb-2 text-xl">物品名称</label>
-                    <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="编辑物品名称">
+                    <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="物品名称">
                 </div>
                 <div>
                     <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
-                    <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="编辑单位">
+                    <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label for="edit-room" class="block font-bold mb-2 text-xl">房间</label>
-                        <select id="edit-room" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl bg-white text-black" aria-label="编辑房间">
+                        <select id="edit-room" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl bg-white text-black" aria-label="房间">
                             <option value="厨房">厨房</option>
                             <option value="客厅">客厅</option>
                             <option value="卧室">卧室</option>
@@ -316,12 +301,12 @@
                     </div>
                     <div>
                         <label for="edit-location" class="block font-bold mb-2 text-xl">具体位置</label>
-                        <input type="text" id="edit-location" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="编辑具体位置">
+                        <input type="text" id="edit-location" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="具体位置">
                     </div>
                 </div>
                 <div>
                     <label for="edit-quantity" class="block font-bold mb-2 text-xl">数量 (直接修改)</label>
-                    <input type="number" id="edit-quantity" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-xl rounded-lg" aria-label="编辑数量">
+                    <input type="number" id="edit-quantity" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-xl rounded-lg" aria-label="数量">
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-5 rounded-lg font-bold text-2xl mt-8 shadow-lg">保存修改</button>
             </form>
@@ -366,7 +351,6 @@
                 <button id="btn-act-put" class="p-4 bg-blue-100 text-blue-900 font-bold rounded-xl border-2 border-blue-300 text-xl" data-action="put">放入 (增加)</button>
                 <button id="btn-act-take" class="p-4 bg-orange-100 text-orange-900 font-bold rounded-xl border-2 border-orange-300 text-xl" data-action="take">取出 (减少)</button>
                 <button id="btn-act-edit" class="p-4 bg-indigo-100 text-indigo-900 font-bold rounded-xl border-2 border-indigo-300 text-xl" data-action="edit">✎ 修改详情</button>
-                
                 <button id="btn-act-del" class="p-4 bg-red-100 text-red-900 font-bold rounded-xl border-2 border-red-300 text-xl" data-action="delete">删除物品</button>
                 <button class="p-4 bg-gray-100 text-gray-800 font-bold rounded-xl border-2 border-gray-300 text-xl mt-2" onclick="closeModals()">取消</button>
             </div>
@@ -440,7 +424,8 @@
         let homeFilterRoom = 'all';
         let takeoutFilterRoom = 'all';
         let unsubscribeItems = null;
-        let previousScreen = 'home'; // For edit return
+        let previousScreen = 'home';
+        let focusTargetId = null; // Auto-focus after update
 
         const savedEmail = localStorage.getItem('savedEmail');
         if(savedEmail) document.getElementById('login-email').value = savedEmail;
@@ -457,7 +442,6 @@
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            // 记录前一个屏幕以便编辑返回
             if (currentScreen !== 'login' && currentScreen !== 'register' && screenId !== 'screen-edit') {
                 previousScreen = currentScreen;
             }
@@ -465,7 +449,7 @@
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-takeout') currentScreen = 'takeout';
             
-            // Focus anchor
+            // Simple Focus Anchor
             setTimeout(() => {
                 const h1 = target.querySelector('h1');
                 if (h1) h1.focus();
@@ -512,7 +496,7 @@
             }
         });
 
-        // Account Menu
+        // Menu
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
@@ -565,19 +549,41 @@
         document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
         document.getElementById('btn-send-reset').addEventListener('click', () => {
             const e = document.getElementById('forgot-email').value;
+            if(!e) return;
             sendPasswordResetEmail(auth, e).then(() => {
                 alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden');
             }).catch(err => alert(err.message));
         });
 
-        // --- Data ---
+        // --- Data & Logic (Stable List) ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
+            
             unsubscribeItems = onSnapshot(q, snap => {
-                allItems = [];
-                snap.forEach(d => allItems.push({ id: d.id, ...d.data() }));
-                allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
+                let isFirstLoad = allItems.length === 0;
+                
+                snap.docChanges().forEach(change => {
+                    const data = { id: change.doc.id, ...change.doc.data() };
+                    if (change.type === "added") {
+                        // First load: just push. Updates: push to start.
+                        if (isFirstLoad) allItems.push(data);
+                        else allItems.unshift(data); 
+                    }
+                    if (change.type === "modified") {
+                        const idx = allItems.findIndex(i => i.id === data.id);
+                        if (idx > -1) allItems[idx] = data; // Update in place
+                    }
+                    if (change.type === "removed") {
+                        allItems = allItems.filter(i => i.id !== data.id);
+                    }
+                });
+
+                // Sort only on first load
+                if (isFirstLoad) {
+                    allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
+                }
+                
                 refreshLists();
             });
         }
@@ -607,7 +613,7 @@
                     const u = item.unit || '个';
                     totals[u] = (totals[u] || 0) + item.quantity;
                 });
-                const summaryText = Object.entries(totals).map(([u, q]) => `${q}${u}`).join('、');
+                const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
                 statsContainer.innerHTML = `<p class="font-bold text-lg">共 ${filtered.length} 处。合计：${summaryText}</p>`;
                 statsContainer.classList.remove('hidden');
             } else {
@@ -625,6 +631,7 @@
                 div.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative";
                 div.setAttribute('role', 'button');
                 div.setAttribute('tabindex', '0');
+                div.dataset.id = item.id; // For focus anchor
                 div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
                 
                 div.innerHTML = `
@@ -636,6 +643,7 @@
                         <div class="text-3xl font-bold text-blue-700">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
                     </div>
                 `;
+                
                 const triggerMenu = () => openActionMenu(item);
                 div.addEventListener('click', triggerMenu);
                 div.addEventListener('keydown', (e) => {
@@ -645,9 +653,16 @@
                 });
                 container.appendChild(div);
             });
+
+            // Restore Focus
+            if (focusTargetId) {
+                const target = container.querySelector(`[data-id="${focusTargetId}"]`);
+                if (target) target.focus();
+                focusTargetId = null;
+            }
         }
 
-        // Search Listeners
+        // Listeners
         ['home', 'takeout'].forEach(screen => {
             document.getElementById(`${screen}-search`).addEventListener('input', () => refreshLists());
             document.getElementById(`${screen}-filter`).addEventListener('change', (e) => {
@@ -673,23 +688,17 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
 
-        // Edit Screen
         document.getElementById('btn-back-edit').addEventListener('click', () => switchScreen('screen-' + previousScreen));
-        
+
         document.getElementById('form-edit').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newQty = parseInt(document.getElementById('edit-quantity').value);
-            
-            // Edit Zero Check
-            if (newQty === 0) {
-                openZeroConfirmEdit(newQty);
-                return;
-            }
-            
+            if (newQty === 0) { openZeroConfirmEdit(newQty); return; }
             await executeEdit(newQty);
         });
 
         async function executeEdit(newQty) {
+            focusTargetId = currentActionItem.id; // Set Anchor
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     name: document.getElementById('edit-name').value,
@@ -708,7 +717,6 @@
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
             setTimeout(() => document.getElementById('title-zero').focus(), 100);
-            
             document.getElementById('btn-zero-keep').onclick = async () => {
                 m.classList.add('hidden');
                 await executeEdit(0);
@@ -753,7 +761,6 @@
         function openEditScreen(item) {
             document.getElementById('modal-action').classList.add('hidden');
             switchScreen('screen-edit');
-            
             document.getElementById('edit-name').value = item.name;
             document.getElementById('edit-room').value = item.room;
             document.getElementById('edit-location').value = item.location;
@@ -784,7 +791,6 @@
             document.getElementById('qty-title').textContent = title;
             document.getElementById('modal-action').classList.add('hidden');
             document.getElementById('modal-qty').classList.remove('hidden');
-            
             const input = document.getElementById('qty-custom-input');
             const confirm = document.getElementById('btn-qty-confirm');
             const trigger = document.getElementById('qty-custom-trigger');
@@ -836,6 +842,7 @@
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
             const container = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
+            if(currentActionItem) focusTargetId = currentActionItem.id; // Fallback anchor
             document.getElementById(container).querySelector('.item-card')?.focus();
         };
 
@@ -848,6 +855,7 @@
         }
 
         async function execUpdate(change) {
+            focusTargetId = currentActionItem.id; // Set Anchor
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     quantity: increment(change),
