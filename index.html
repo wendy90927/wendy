@@ -6,7 +6,7 @@
     <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 屏幕阅读器专用隐藏 */
+        /* 无障碍辅助 */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -19,14 +19,13 @@
             border-width: 0;
         }
         
-        /* 强焦样式：橙色加粗边框，层级最高 */
+        /* 强焦样式 */
         *:focus {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
-            z-index: 100;
+            z-index: 50;
         }
 
-        /* 列表卡片选中态 */
         .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
@@ -54,7 +53,7 @@
             color: #1e40af;
         }
 
-        /* 自定义输入触发器 */
+        /* 自定义输入容器 */
         .custom-input-trigger {
             flex-grow: 1;
             border: 2px solid #e5e7eb;
@@ -130,37 +129,23 @@
                 
                 <div class="flex justify-between items-center mb-1 relative">
                     <h1 id="title-home" class="text-xl font-bold outline-none" tabindex="-1">物品管家</h1>
-                    
                     <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2 focus:ring-2 ring-white">
                         <span id="user-email-display">账号</span>
                         <span aria-hidden="true">▼</span>
                     </button>
-
                     <div id="menu-account-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 text-gray-900 z-50 flex flex-col">
-                        <button id="btn-clear-data" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">
-                            🗑️ 清空所有数据 (保留账号)
-                        </button>
-                        <button id="btn-delete-account" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">
-                            ⚠ 注销账号 (删号)
-                        </button>
-                        <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">
-                            🚪 退出登录
-                        </button>
+                        <button id="btn-clear-data" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">🗑️ 清空所有数据</button>
+                        <button id="btn-delete-account" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">⚠ 注销账号</button>
+                        <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">🚪 退出登录</button>
                     </div>
                 </div>
 
                 <div class="flex gap-3">
-                    <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">
-                        + 新增物品
-                    </button>
-                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">
-                        - 取出物品
-                    </button>
+                    <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">+ 新增物品</button>
+                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">- 取出物品</button>
                 </div>
 
-                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">
-                    数据管理 (导入/导出)
-                </button>
+                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
 
                 <label for="home-search" class="sr-only">搜索物品</label>
                 <input type="text" id="home-search" placeholder="输入物品名称搜索..." class="w-full p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
@@ -185,6 +170,8 @@
         </section>
 
         <main class="flex-grow p-4 bg-gray-50">
+            <div id="home-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded shadow hidden" aria-live="polite">
+                </div>
             <div id="home-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="物品列表"></div>
         </main>
     </div>
@@ -193,9 +180,7 @@
         <div class="bg-orange-600 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <button id="btn-back-takeout" class="bg-white text-orange-700 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">
-                        &lt; 返回首页
-                    </button>
+                    <button id="btn-back-takeout" class="bg-white text-orange-700 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">&lt; 返回首页</button>
                     <h1 id="title-takeout" class="text-xl font-bold outline-none" tabindex="-1">取出物品</h1>
                 </div>
                 <label for="takeout-search" class="sr-only">搜索要取出的物品</label>
@@ -221,18 +206,15 @@
         </section>
 
         <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
-            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表">
-                <p class="text-center text-gray-500 mt-10 text-lg">加载中...</p>
-            </div>
+            <div id="takeout-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded shadow hidden" aria-live="polite"></div>
+            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
         </main>
     </div>
 
     <div id="screen-add" class="screen hidden min-h-screen flex flex-col bg-white">
         <div class="bg-green-600 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex items-center justify-between">
-                <button id="btn-back-add" class="bg-white text-green-700 px-6 py-2 rounded-lg font-bold border-2 border-green-200">
-                    &lt; 返回首页
-                </button>
+                <button id="btn-back-add" class="bg-white text-green-700 px-6 py-2 rounded-lg font-bold border-2 border-green-200">&lt; 返回首页</button>
                 <h1 id="title-add" class="text-xl font-bold outline-none" tabindex="-1">新增物品</h1>
             </div>
         </div>
@@ -241,8 +223,25 @@
             <form id="form-add" class="space-y-6">
                 <div>
                     <label for="add-name" class="block font-bold mb-2 text-xl">物品名称 (必填)</label>
-                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：大米" aria-label="物品名称">
+                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：牛奶" aria-label="物品名称">
                 </div>
+
+                <div>
+                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (如：个、箱)</label>
+                    <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="输入或选择单位" value="个" aria-label="物品单位">
+                    <datalist id="unit-presets">
+                        <option value="个"></option>
+                        <option value="包"></option>
+                        <option value="箱"></option>
+                        <option value="瓶"></option>
+                        <option value="袋"></option>
+                        <option value="条"></option>
+                        <option value="只"></option>
+                        <option value="斤"></option>
+                        <option value="公斤"></option>
+                    </datalist>
+                </div>
+
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label for="add-room" class="block font-bold mb-2 text-xl">房间</label>
@@ -262,15 +261,14 @@
                         <input type="text" id="add-location" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：柜子第二层" aria-label="具体位置">
                     </div>
                 </div>
+
                 <div>
                     <label class="block font-bold mb-2 text-xl">初始数量</label>
                     <button type="button" id="btn-add-qty-trigger" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-left text-xl rounded-lg" aria-label="设置初始数量">
                         当前选择：1 (点击修改)
                     </button>
                 </div>
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl mt-8 shadow-lg">
-                    保存并继续
-                </button>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl mt-8 shadow-lg">保存并继续</button>
             </form>
         </div>
     </div>
@@ -278,27 +276,16 @@
     <div id="screen-data" class="screen hidden min-h-screen flex flex-col bg-white">
         <div class="bg-blue-700 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex items-center justify-between">
-                <button id="btn-back-data" class="bg-white text-blue-700 px-6 py-2 rounded-lg font-bold border-2 border-blue-200">
-                    &lt; 返回首页
-                </button>
+                <button id="btn-back-data" class="bg-white text-blue-700 px-6 py-2 rounded-lg font-bold border-2 border-blue-200">&lt; 返回首页</button>
                 <h1 id="title-data" class="text-xl font-bold outline-none" tabindex="-1">数据管理</h1>
             </div>
         </div>
-
         <div class="max-w-lg mx-auto w-full p-8 flex flex-col gap-6 mt-10">
-            <button id="btn-export" class="w-full p-6 bg-green-50 border-2 border-green-500 text-green-900 font-bold rounded-xl text-xl hover:bg-green-100 shadow-sm text-left">
-                ⬇ 导出备份数据 (CSV)
-            </button>
-            
+            <button id="btn-export" class="w-full p-6 bg-green-50 border-2 border-green-500 text-green-900 font-bold rounded-xl text-xl hover:bg-green-100 shadow-sm text-left">⬇ 导出备份数据 (CSV)</button>
             <hr class="border-gray-200 my-2">
-            
             <p class="text-lg font-bold text-gray-700">批量导入：</p>
-            <button id="btn-download-template" class="w-full p-6 bg-gray-50 border-2 border-gray-400 text-gray-800 font-bold rounded-xl text-xl hover:bg-gray-100 shadow-sm text-left">
-                下载导入模板
-            </button>
-            <button id="btn-trigger-upload" class="w-full p-6 bg-blue-50 border-2 border-blue-500 text-blue-900 font-bold rounded-xl text-xl hover:bg-blue-100 shadow-sm text-left">
-                上传填写好的文件
-            </button>
+            <button id="btn-download-template" class="w-full p-6 bg-gray-50 border-2 border-gray-400 text-gray-800 font-bold rounded-xl text-xl hover:bg-gray-100 shadow-sm text-left">下载导入模板</button>
+            <button id="btn-trigger-upload" class="w-full p-6 bg-blue-50 border-2 border-blue-500 text-blue-900 font-bold rounded-xl text-xl hover:bg-blue-100 shadow-sm text-left">上传填写好的文件</button>
             <input type="file" id="file-upload" accept=".csv" class="hidden">
         </div>
     </div>
@@ -309,7 +296,6 @@
             <p class="mb-4 text-gray-600">请输入您的注册邮箱，系统将发送重置邮件给您。</p>
             <label for="forgot-email" class="sr-only">邮箱地址</label>
             <input type="email" id="forgot-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="邮箱地址" aria-label="找回密码邮箱">
-            
             <div class="flex gap-3">
                 <button id="btn-cancel-forgot" class="flex-1 p-3 bg-gray-200 font-bold rounded-lg text-lg">取消</button>
                 <button id="btn-send-reset" class="flex-1 p-3 bg-blue-600 text-white font-bold rounded-lg text-lg">发送邮件</button>
@@ -334,16 +320,13 @@
         <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-blue-500">
             <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900 outline-none" tabindex="-1">选择数量</h2>
             <div class="grid grid-cols-5 gap-3 mb-6" id="qty-grid"></div>
-
             <div class="flex gap-2 mb-6 items-stretch">
                 <div id="qty-custom-trigger" class="custom-input-trigger" role="button" tabindex="0" aria-label="自定义数量，按回车输入">
                     <span class="mr-2 font-bold text-gray-700 text-lg">自定义:</span>
                     <label for="qty-custom-input" class="sr-only">输入数量</label>
                     <input type="number" id="qty-custom-input" class="w-24 p-2 border-b-4 border-gray-400 text-center font-bold text-xl bg-gray-50 text-black" disabled placeholder="#" tabindex="-1" aria-label="输入自定义数量">
                 </div>
-                <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">
-                    确定
-                </button>
+                <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">确定</button>
             </div>
             <button class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
         </div>
@@ -392,7 +375,6 @@
         const db = getFirestore(app);
         const itemsRef = collection(db, "items");
 
-        // State
         let allItems = [];
         let currentActionItem = null;
         let pendingAddQty = 1;
@@ -401,7 +383,6 @@
         let takeoutFilterRoom = 'all';
         let unsubscribeItems = null;
 
-        // Load saved email
         const savedEmail = localStorage.getItem('savedEmail');
         if(savedEmail) document.getElementById('login-email').value = savedEmail;
 
@@ -411,16 +392,13 @@
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // --- Screen Switcher (Stable Version) ---
+        // --- Switch Screen (Robust) ---
         function switchScreen(screenId) {
-            // Hide all screens
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
-            
-            // Show target
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            // Standard Timeout Focus (Stable)
+            // Robust focus
             setTimeout(() => {
                 const h1 = target.querySelector('h1');
                 if (h1) h1.focus();
@@ -428,7 +406,6 @@
 
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-takeout') currentScreen = 'takeout';
-            
             refreshLists();
         }
 
@@ -443,6 +420,14 @@
                 if(unsubscribeItems) unsubscribeItems();
                 allItems = [];
                 switchScreen('screen-login');
+            }
+        });
+
+        // Enter key login
+        document.getElementById('login-password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('btn-login').click();
             }
         });
 
@@ -463,15 +448,7 @@
             }
         });
 
-        // Enter key on password to login
-        document.getElementById('login-password').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('btn-login').click();
-            }
-        });
-
-        // Account Menu
+        // Menu & Actions
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
@@ -480,45 +457,30 @@
             if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
         });
         document.addEventListener('click', (e) => {
-            if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
-                menuAccount.classList.add('hidden');
-            }
+            if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) menuAccount.classList.add('hidden');
         });
 
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => announce("已退出"));
-        });
-
-        // Clear Data
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
         document.getElementById('btn-clear-data').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
-            openGenericConfirm("确定清空所有物品数据吗？账号将保留。", async () => {
-                try {
-                    announce("正在清空...");
-                    const batch = writeBatch(db);
-                    const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
-                    const snapshot = await getDocs(q);
-                    snapshot.forEach(doc => batch.delete(doc.ref));
-                    await batch.commit();
-                    announce("数据已清空");
-                } catch(e) { alert("失败：" + e.message); }
+            openGenericConfirm("确定清空数据？", async () => {
+                const batch = writeBatch(db);
+                const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
+                const snapshot = await getDocs(q);
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                announce("已清空");
             });
         });
-
-        // Delete Account
         document.getElementById('btn-delete-account').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
-            openGenericConfirm("高危操作：永久删除数据并注销账号！", async () => {
-                try {
-                    announce("正在删除...");
-                    const batch = writeBatch(db);
-                    const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
-                    const snapshot = await getDocs(q);
-                    snapshot.forEach(doc => batch.delete(doc.ref));
-                    await batch.commit();
-                    await deleteUser(auth.currentUser);
-                    alert("账号已注销");
-                } catch(e) { alert("失败：" + e.message); }
+            openGenericConfirm("确定删除账号？", async () => {
+                const batch = writeBatch(db);
+                const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
+                const snapshot = await getDocs(q);
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                await deleteUser(auth.currentUser);
             });
         });
 
@@ -529,24 +491,23 @@
             const p1 = document.getElementById('reg-pass').value;
             const p2 = document.getElementById('reg-pass-confirm').value;
             if (p1 !== p2 || p1.length < 6) { alert("密码问题"); return; }
-            createUserWithEmailAndPassword(auth, e, p1).catch(err => alert("注册失败：" + err.message));
+            createUserWithEmailAndPassword(auth, e, p1).catch(err => alert(err.message));
         });
 
+        // Forgot Password
         document.getElementById('btn-forgot-pass').addEventListener('click', () => {
             document.getElementById('modal-forgot').classList.remove('hidden');
-            // Simple focus without inert
             setTimeout(() => document.getElementById('title-forgot').focus(), 100);
         });
         document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
         document.getElementById('btn-send-reset').addEventListener('click', () => {
             const e = document.getElementById('forgot-email').value;
-            if(!e) return;
             sendPasswordResetEmail(auth, e).then(() => {
-                alert("邮件已发送"); document.getElementById('modal-forgot').classList.add('hidden');
-            }).catch(err => alert("失败：" + err.message));
+                alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden');
+            }).catch(err => alert(err.message));
         });
 
-        // --- Data Logic ---
+        // --- Data & List ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -559,12 +520,13 @@
         }
 
         function refreshLists() {
-            if (currentScreen === 'home') renderList('home-list', 'home-search', 'home-filter', homeFilterRoom);
-            if (currentScreen === 'takeout') renderList('takeout-list', 'takeout-search', 'takeout-filter', takeoutFilterRoom);
+            if (currentScreen === 'home') renderList('home-list', 'home-search', 'home-filter', 'home-stats', homeFilterRoom);
+            if (currentScreen === 'takeout') renderList('takeout-list', 'takeout-search', 'takeout-filter', 'takeout-stats', takeoutFilterRoom);
         }
 
-        function renderList(containerId, searchId, filterId, currentRoomFilter) {
+        function renderList(containerId, searchId, filterId, statsId, currentRoomFilter) {
             const container = document.getElementById(containerId);
+            const statsContainer = document.getElementById(statsId);
             const searchVal = document.getElementById(searchId).value.trim().toLowerCase();
             const selectEl = document.getElementById(filterId);
             if (selectEl.value !== currentRoomFilter) selectEl.value = currentRoomFilter;
@@ -575,9 +537,25 @@
                 return matchSearch && matchRoom;
             });
 
+            // Calculate Stats (Group by Unit)
+            if (searchVal && filtered.length > 0) {
+                const totals = {};
+                filtered.forEach(item => {
+                    const u = item.unit || '个';
+                    totals[u] = (totals[u] || 0) + item.quantity;
+                });
+                const summaryText = Object.entries(totals).map(([u, q]) => `${q}${u}`).join('、');
+                statsContainer.innerHTML = `<p class="font-bold text-lg">共找到 ${filtered.length} 处。合计：${summaryText}</p>`;
+                statsContainer.classList.remove('hidden');
+                // 仅在搜索内容变化时播报，防止刷屏
+                // announce(`找到${filtered.length}处，合计${summaryText}`); 
+            } else {
+                statsContainer.classList.add('hidden');
+            }
+
             container.innerHTML = '';
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">暂无物品</div>`;
+                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到</div>`;
                 return;
             }
 
@@ -586,7 +564,8 @@
                 div.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative";
                 div.setAttribute('role', 'button');
                 div.setAttribute('tabindex', '0');
-                div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} 个。按回车管理。`);
+                // Update ARIA to read unit
+                div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
                 
                 div.innerHTML = `
                     <div class="flex justify-between items-center pointer-events-none">
@@ -594,7 +573,7 @@
                             <h3 class="text-xl font-bold text-gray-900">${item.name}</h3>
                             <p class="text-base text-gray-600 font-bold">${item.room} - ${item.location || '位置未填'}</p>
                         </div>
-                        <div class="text-3xl font-bold text-blue-700">${item.quantity}</div>
+                        <div class="text-3xl font-bold text-blue-700">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
                     </div>
                 `;
                 
@@ -610,25 +589,23 @@
             });
         }
 
-        function setupListListeners(searchId, filterId, screenType) {
-            document.getElementById(searchId).addEventListener('input', () => refreshLists());
-            document.getElementById(filterId).addEventListener('change', (e) => {
-                if (screenType === 'home') homeFilterRoom = e.target.value;
-                if (screenType === 'takeout') takeoutFilterRoom = e.target.value;
+        // Search Listeners
+        ['home', 'takeout'].forEach(screen => {
+            document.getElementById(`${screen}-search`).addEventListener('input', () => refreshLists());
+            document.getElementById(`${screen}-filter`).addEventListener('change', (e) => {
+                if(screen==='home') homeFilterRoom = e.target.value;
+                else takeoutFilterRoom = e.target.value;
                 refreshLists();
             });
-        }
-        setupListListeners('home-search', 'home-filter', 'home');
-        setupListListeners('takeout-search', 'takeout-filter', 'takeout');
+        });
 
-        // --- Navigation ---
+        // Navigation
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
             switchScreen('screen-takeout');
             document.getElementById('takeout-search').value = '';
             refreshLists();
         });
         document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
-
         document.getElementById('btn-nav-add').addEventListener('click', () => {
             switchScreen('screen-add');
             document.getElementById('add-name').focus();
@@ -639,16 +616,15 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
 
-        // --- Action Menu ---
+        // Action Menu
         function openActionMenu(item) {
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
-            document.getElementById('action-desc').textContent = `剩余：${item.quantity}`;
+            document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
             const btnPut = document.getElementById('btn-act-put');
             if (currentScreen === 'takeout') btnPut.classList.add('hidden');
             else btnPut.classList.remove('hidden');
-
             modal.classList.remove('hidden');
             setTimeout(() => {
                 const v = modal.querySelectorAll('button:not(.hidden)');
@@ -665,10 +641,9 @@
             if (act === 'delete') openGenericConfirm(`确定删除 ${currentActionItem.name} 吗？`, execDelete);
         });
 
-        // --- Quantity Picker ---
+        // Quantity Picker
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
-        
         qtyGrid.innerHTML = '';
         for(let i=1; i<=10; i++) {
             const btn = document.createElement('button');
@@ -688,37 +663,24 @@
             qtyCallback = cb;
             document.getElementById('qty-title').textContent = title;
             document.getElementById('modal-action').classList.add('hidden');
-            const modal = document.getElementById('modal-qty');
-            modal.classList.remove('hidden');
-            
+            document.getElementById('modal-qty').classList.remove('hidden');
             const input = document.getElementById('qty-custom-input');
             const confirm = document.getElementById('btn-qty-confirm');
             const trigger = document.getElementById('qty-custom-trigger');
-            
-            input.value = '';
-            input.disabled = true;
-            confirm.disabled = true;
-            confirm.classList.add('opacity-50');
-            confirm.setAttribute('tabindex', '-1');
-            trigger.setAttribute('tabindex', '0');
-            
-            setTimeout(() => {
-                qtyGrid.firstChild.focus();
-                announce("请选择数量");
-            }, 100);
+            input.value = ''; input.disabled = true;
+            confirm.disabled = true; confirm.classList.add('opacity-50');
+            confirm.setAttribute('tabindex', '-1'); trigger.setAttribute('tabindex', '0');
+            setTimeout(() => { qtyGrid.firstChild.focus(); announce("请选择数量"); }, 100);
         }
 
-        // Custom Input Logic
         const customTrigger = document.getElementById('qty-custom-trigger');
         function activateInput() {
             const input = document.getElementById('qty-custom-input');
             const confirm = document.getElementById('btn-qty-confirm');
             const trigger = document.getElementById('qty-custom-trigger');
             trigger.setAttribute('tabindex', '-1');
-            input.disabled = false;
-            input.focus();
-            confirm.disabled = false;
-            confirm.classList.remove('opacity-50');
+            input.disabled = false; input.focus();
+            confirm.disabled = false; confirm.classList.remove('opacity-50');
             confirm.setAttribute('tabindex', '0');
             announce("请输入数字");
         }
@@ -729,7 +691,6 @@
                 activateInput();
             }
         });
-
         document.getElementById('qty-custom-input').addEventListener('keydown', (e) => {
             if(e.key === 'Enter' || e.keyCode === 13) {
                 e.preventDefault(); e.stopPropagation();
@@ -757,7 +718,7 @@
             document.getElementById(container).querySelector('.item-card')?.focus();
         };
 
-        // --- Update Logic ---
+        // Update & Zero Logic
         async function handleUpdate(change) {
             if (!currentActionItem) return;
             const newQty = currentActionItem.quantity + change;
@@ -785,7 +746,6 @@
         function openZeroConfirm() {
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
-            // Simple timeout focus
             setTimeout(() => document.getElementById('title-zero').focus(), 100);
             
             document.getElementById('btn-zero-keep').onclick = async () => {
@@ -830,7 +790,7 @@
             } catch(e) { announce("删除失败"); }
         }
 
-        // --- Add Item ---
+        // --- Add Item (Smart Unit) ---
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
             openQtyPicker("设置数量", (v) => {
                 pendingAddQty = v;
@@ -842,6 +802,19 @@
         function updateAddQtyDisplay() {
             document.getElementById('btn-add-qty-trigger').textContent = `数量：${pendingAddQty} (点击修改)`;
         }
+        
+        // Smart History: Auto-fill Unit
+        document.getElementById('add-name').addEventListener('change', (e) => {
+            const name = e.target.value.trim();
+            if(name) {
+                const match = allItems.find(i => i.name === name);
+                if(match && match.unit) {
+                    document.getElementById('add-unit').value = match.unit;
+                    announce("已自动填入单位：" + match.unit);
+                }
+            }
+        });
+
         document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('add-name');
@@ -850,6 +823,7 @@
                     name: nameInput.value,
                     room: document.getElementById('add-room').value,
                     location: document.getElementById('add-location').value,
+                    unit: document.getElementById('add-unit').value || '个',
                     quantity: pendingAddQty,
                     uid: auth.currentUser.uid,
                     updatedAt: serverTimestamp()
@@ -863,18 +837,17 @@
             } catch(e) { announce("失败"); }
         });
 
-        // --- Import/Export ---
+        // --- Import/Export (CSV with Unit) ---
         document.getElementById('btn-export').addEventListener('click', () => {
-            let csvContent = "\uFEFF物品名称,房间,具体位置,数量\n";
+            let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n";
             allItems.forEach(item => {
-                csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity}\n`;
+                csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`;
             });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            const date = new Date().toISOString().slice(0,10);
-            link.setAttribute("download", `物品备份_${date}.csv`);
+            link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -882,7 +855,7 @@
         });
 
         document.getElementById('btn-download-template').addEventListener('click', () => {
-            const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字)\n大米,厨房,柜子,1\n洗衣液,卫生间,架子,2";
+            const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字),单位(如:包/箱)\n大米,厨房,柜子,1,袋\n牛奶,客厅,桌子,2,箱";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -894,9 +867,7 @@
             announce("模板下载成功");
         });
 
-        document.getElementById('btn-trigger-upload').addEventListener('click', () => {
-            document.getElementById('file-upload').click();
-        });
+        document.getElementById('btn-trigger-upload').addEventListener('click', () => document.getElementById('file-upload').click());
 
         document.getElementById('file-upload').addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -918,6 +889,7 @@
                         room: cols[1]?.trim() || '客厅',
                         location: cols[2]?.trim() || '',
                         quantity: parseInt(cols[3]) || 1,
+                        unit: cols[4]?.trim() || '个',
                         uid: auth.currentUser.uid,
                         updatedAt: serverTimestamp()
                     });
@@ -929,7 +901,6 @@
             reader.readAsText(file);
         });
 
-        // Global Escape (Simple)
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
                 e.preventDefault();
