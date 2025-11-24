@@ -18,11 +18,11 @@
             border-width: 0;
         }
         
-        /* 强焦样式：让键盘焦点清晰可见 */
+        /* 强焦样式 */
         *:focus {
-            outline: 3px solid #ea580c; /* 橙色高亮 */
+            outline: 3px solid #ea580c;
             outline-offset: 2px;
-            z-index: 10;
+            z-index: 50;
         }
 
         .item-card:focus {
@@ -31,7 +31,7 @@
             transform: scale(1.01);
         }
 
-        /* 数量选择器按钮 */
+        /* 数量按钮 */
         .qty-btn {
             height: 50px;
             font-size: 1.2rem;
@@ -44,7 +44,6 @@
             align-items: center;
             justify-content: center;
         }
-        /* 模拟焦点样式 */
         .qty-btn.virtual-focus {
             background-color: #dbeafe;
             border-color: #2563eb;
@@ -52,7 +51,7 @@
             outline: 3px solid #ea580c;
         }
 
-        /* 自定义输入框容器 */
+        /* 自定义输入容器 */
         .custom-input-group {
             display: flex;
             gap: 8px;
@@ -104,10 +103,10 @@
                     </select>
                 </div>
                 <div class="flex flex-col gap-3">
-                    <input type="text" id="search-input" placeholder="输入物品名称搜索..." class="w-full p-3 text-black rounded shadow font-medium" aria-label="搜索物品">
+                    <input type="text" id="home-search-input" placeholder="输入物品名称搜索..." class="w-full p-3 text-black rounded shadow font-medium" aria-label="在首页搜索物品">
                     <div class="flex gap-3">
                         <button id="btn-open-add" class="flex-1 bg-green-500 text-white font-bold py-3 rounded shadow hover:bg-green-600 text-lg">+ 新增物品</button>
-                        <button id="btn-open-takeout" class="flex-1 bg-orange-500 text-white font-bold py-3 rounded shadow hover:bg-orange-600 text-lg">- 取出物品</button>
+                        <button id="btn-open-takeout-modal" class="flex-1 bg-orange-500 text-white font-bold py-3 rounded shadow hover:bg-orange-600 text-lg">- 取出物品</button>
                     </div>
                 </div>
             </div>
@@ -183,10 +182,11 @@
             <h2 id="action-title" class="text-xl font-bold mb-2 text-gray-800" tabindex="-1">管理物品</h2>
             <p id="action-desc" class="text-gray-500 mb-6">请选择操作</p>
             <div class="flex flex-col gap-3" id="action-buttons-container">
-                <button class="p-4 bg-blue-50 text-blue-700 font-bold rounded border border-blue-200" data-action="put">放入 (增加)</button>
-                <button class="p-4 bg-orange-50 text-orange-700 font-bold rounded border border-orange-200" data-action="take">取出 (减少)</button>
-                <button class="p-4 bg-red-50 text-red-700 font-bold rounded border border-red-200" data-action="delete">删除物品</button>
-                <button class="p-3 text-gray-500 mt-2" onclick="closeAllModals()">取消</button>
+                <button id="btn-action-put" class="p-4 bg-blue-50 text-blue-700 font-bold rounded border border-blue-200" data-action="put">放入 (增加)</button>
+                
+                <button id="btn-action-take" class="p-4 bg-orange-50 text-orange-700 font-bold rounded border border-orange-200" data-action="take">取出 (减少)</button>
+                <button id="btn-action-delete" class="p-4 bg-red-50 text-red-700 font-bold rounded border border-red-200" data-action="delete">删除物品</button>
+                <button class="p-3 text-gray-500 mt-2" onclick="closeActionModal()">取消</button>
             </div>
         </div>
     </div>
@@ -201,9 +201,9 @@
             <div class="custom-input-group mb-6">
                 <div id="qty-custom-trigger" class="custom-input-trigger" role="button" tabindex="0" aria-label="自定义数量，按回车输入">
                     <span class="mr-2 font-bold text-gray-700">自定义:</span>
-                    <input type="number" id="qty-custom-input" class="w-24 p-1 border-b-2 border-gray-300 text-center font-bold text-lg" disabled placeholder="#">
+                    <input type="number" id="qty-custom-input" class="w-24 p-1 border-b-2 border-gray-300 text-center font-bold text-lg" disabled placeholder="#" tabindex="-1">
                 </div>
-                <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow disabled:opacity-50" tabindex="-1">
+                <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow disabled:opacity-50" disabled tabindex="-1">
                     确定
                 </button>
             </div>
@@ -222,15 +222,30 @@
             </div>
         </div>
     </div>
-
-    <div id="modal-takeout-search" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-start pt-20">
-        <div class="bg-white w-full max-w-lg p-6 rounded-xl shadow-2xl mx-4">
-            <h2 class="text-xl font-bold mb-4" tabindex="-1">取出物品：搜索</h2>
-            <input list="takeout-options" id="takeout-search-input" class="w-full p-4 border-2 border-orange-300 rounded text-lg font-bold mb-4" placeholder="输入名称查找...">
-            <datalist id="takeout-options"></datalist>
-            <div class="flex justify-end">
-                <button class="px-6 py-2 bg-gray-200 rounded font-bold" onclick="closeAllModals()">关闭返回</button>
+    
+    <div id="modal-zero-confirm" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+        <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl text-center">
+            <h2 class="text-xl font-bold mb-4 text-orange-600" tabindex="-1">数量已空</h2>
+            <p class="mb-6 text-gray-700">该物品数量已变更为 0。<br>是否直接删除该物品？</p>
+            <div class="flex gap-4">
+                <button id="btn-zero-keep" class="flex-1 p-3 bg-gray-200 rounded font-bold">保留 (数量设为0)</button>
+                <button id="btn-zero-delete" class="flex-1 p-3 bg-red-600 text-white rounded font-bold">删除物品</button>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-takeout-full" class="hidden fixed inset-0 bg-gray-100 z-40 flex flex-col">
+        <div class="bg-orange-600 text-white p-4 shadow-md flex justify-between items-center shrink-0">
+            <h2 class="text-xl font-bold" tabindex="-1">取出物品</h2>
+            <button class="px-4 py-2 bg-white text-orange-600 rounded font-bold" onclick="closeAllModals()">关闭返回</button>
+        </div>
+        
+        <div class="p-4 bg-white shadow-sm shrink-0">
+            <input type="text" id="takeout-search-input" placeholder="搜索要取出的物品..." class="w-full p-4 border-2 border-orange-300 rounded text-lg font-bold" aria-label="搜索物品">
+        </div>
+
+        <div class="flex-grow p-4 overflow-y-auto" id="takeout-list-container" role="list" aria-label="搜索结果列表">
+            <p class="text-center text-gray-500 mt-10">请输入名称搜索...</p>
         </div>
     </div>
 
@@ -256,12 +271,7 @@
         let allItems = [];
         let currentActionItem = null;
         let pendingAddQty = 1;
-        
-        // 标记数量选择器是从哪里打开的，用于决定“连续操作”的返回逻辑
-        // 'add' = 新增页面, 'search' = 搜索取出页面, 'list' = 列表菜单
-        let qtySourceContext = 'list'; 
-
-        // 缓存当前的房间筛选值，防止被 TAB 重置
+        let qtySourceContext = 'home'; // 'home', 'takeout', 'add'
         let cachedFilterRoom = 'all';
 
         window.announce = (msg) => {
@@ -287,22 +297,35 @@
             signInWithEmailAndPassword(auth, e, p).catch(() => announce("登录失败"));
         });
 
-        // --- 列表逻辑 ---
+        // --- 数据加载 ---
         function loadItems() {
             onSnapshot(query(itemsRef, orderBy("updatedAt", "desc")), snap => {
                 allItems = [];
                 snap.forEach(d => allItems.push({ id: d.id, ...d.data() }));
-                renderList();
-                updateDatalist();
+                refreshAllLists();
             });
         }
 
-        function renderList() {
+        // 刷新所有当前可见的列表
+        function refreshAllLists() {
+            // 刷新首页列表
+            if (!document.getElementById('app-screen').classList.contains('hidden')) {
+                renderHomeList();
+            }
+            // 刷新取出弹窗列表 (如果它是打开的)
+            if (!document.getElementById('modal-takeout-full').classList.contains('hidden')) {
+                renderTakeoutList();
+            }
+        }
+
+        // --- 首页列表渲染 ---
+        function renderHomeList() {
             const container = document.getElementById('items-container');
-            const search = document.getElementById('search-input').value.trim().toLowerCase();
-            
-            // 强制使用缓存的筛选值，修复 TAB 重置 BUG
+            const search = document.getElementById('home-search-input').value.trim().toLowerCase();
             const filterSelect = document.getElementById('filter-room');
+            
+            // 严格状态管理：仅当 cachedFilterRoom 变化时才更新 Select
+            // 如果 Select 被 TAB 意外改变但未触发 change，我们在这里纠正它
             if (filterSelect.value !== cachedFilterRoom) {
                 filterSelect.value = cachedFilterRoom;
             }
@@ -314,18 +337,42 @@
                 return matchSearch && matchRoom;
             });
 
+            renderItemsToContainer(container, filtered, 'home');
+        }
+
+        // --- 取出弹窗列表渲染 ---
+        function renderTakeoutList() {
+            const container = document.getElementById('takeout-list-container');
+            const search = document.getElementById('takeout-search-input').value.trim().toLowerCase();
+            
+            if (!search) {
+                container.innerHTML = `<p class="text-center text-gray-500 mt-10">请输入关键词搜索...</p>`;
+                return;
+            }
+
+            const filtered = allItems.filter(item => {
+                return item.name.toLowerCase().includes(search) || (item.location||'').toLowerCase().includes(search);
+            });
+
+            renderItemsToContainer(container, filtered, 'takeout');
+        }
+
+        // --- 通用列表渲染逻辑 (支持 ARIA 和光标导航) ---
+        function renderItemsToContainer(container, items, context) {
             container.innerHTML = '';
-            if (filtered.length === 0) {
+            if (items.length === 0) {
                 container.innerHTML = `<div class="text-center p-6 text-gray-500">未找到物品</div>`;
                 return;
             }
 
-            filtered.forEach(item => {
+            items.forEach(item => {
                 const div = document.createElement('div');
-                div.className = "item-card bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 cursor-pointer relative";
+                div.className = "item-card bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 cursor-pointer relative mb-3";
                 div.setAttribute('role', 'button');
                 div.setAttribute('tabindex', '0'); 
-                div.setAttribute('aria-label', `${item.name}, ${item.room}, 剩余 ${item.quantity} 个。按回车管理。`);
+                
+                // 修复：完整位置播报
+                div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} 个。按回车管理。`);
                 
                 div.innerHTML = `
                     <div class="flex justify-between items-center pointer-events-none">
@@ -338,8 +385,8 @@
                 `;
                 
                 const triggerMenu = () => {
-                    qtySourceContext = 'list';
-                    openActionMenu(item);
+                    qtySourceContext = context;
+                    openActionMenu(item, context); // 传入上下文以决定显示哪些按钮
                 };
                 div.addEventListener('click', triggerMenu);
                 div.addEventListener('keydown', (e) => {
@@ -352,20 +399,45 @@
             });
         }
 
-        // 监听筛选改变，并更新缓存
+        // 首页监听
+        document.getElementById('home-search-input').addEventListener('input', renderHomeList);
         document.getElementById('filter-room').addEventListener('change', (e) => {
             cachedFilterRoom = e.target.value;
-            renderList();
+            renderHomeList();
         });
 
-        // --- 菜单 ---
-        function openActionMenu(item) {
+        // 取出弹窗监听
+        document.getElementById('takeout-search-input').addEventListener('input', renderTakeoutList);
+
+        // --- 操作菜单 ---
+        function openActionMenu(item, context) {
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
-            document.getElementById('action-desc').textContent = `库存：${item.quantity}`;
+            document.getElementById('action-desc').textContent = `剩余：${item.quantity}`;
+            
+            // 根据上下文控制按钮显示
+            const btnPut = document.getElementById('btn-action-put');
+            if (context === 'takeout') {
+                btnPut.classList.add('hidden'); // 取出模式下隐藏放入
+            } else {
+                btnPut.classList.remove('hidden');
+            }
+
             modal.classList.remove('hidden');
-            setTimeout(() => modal.querySelector('button').focus(), 100);
+            // 聚焦第一个可见按钮
+            const visibleBtns = modal.querySelectorAll('button:not(.hidden)');
+            if (visibleBtns.length > 0) setTimeout(() => visibleBtns[0].focus(), 100);
+        }
+        
+        function closeActionModal() {
+            document.getElementById('modal-action').classList.add('hidden');
+            // 焦点回归列表
+            if (qtySourceContext === 'takeout') {
+                document.getElementById('takeout-list-container').querySelector('.item-card')?.focus();
+            } else {
+                document.getElementById('items-container').querySelector('.item-card')?.focus();
+            }
         }
 
         document.getElementById('action-buttons-container').addEventListener('click', (e) => {
@@ -378,11 +450,11 @@
             if (action === 'delete') openConfirmModal(currentActionItem);
         });
 
-        // --- 数量选择器 (全键盘兼容 + 确定按钮) ---
+        // --- 数量选择器 ---
         let qtyCallback = null;
-        let qtyFocusIndex = 0; // 0-9:btns, 10:input
+        let qtyFocusIndex = 0;
         
-        // 生成 1-10 按钮
+        // 初始化按钮
         const qtyGrid = document.getElementById('qty-grid');
         qtyGrid.innerHTML = '';
         for(let i=1; i<=10; i++) {
@@ -398,28 +470,24 @@
         function openQuantityPicker(title, cb) {
             qtyCallback = cb;
             document.getElementById('qty-title').textContent = title;
-            // 暂时隐藏其他层
             document.getElementById('modal-action').classList.add('hidden');
             document.getElementById('modal-add').classList.add('hidden');
-            document.getElementById('modal-takeout-search').classList.add('hidden');
             
             const modal = document.getElementById('modal-qty');
             modal.classList.remove('hidden');
             
-            // 重置状态
+            // 重置
             qtyFocusIndex = 0;
             const input = document.getElementById('qty-custom-input');
             const confirmBtn = document.getElementById('btn-qty-confirm');
-            
             input.value = '';
             input.disabled = true;
-            // 确定按钮设为不可用（直到输入了数字）
             confirmBtn.disabled = true;
             confirmBtn.classList.add('opacity-50');
             confirmBtn.setAttribute('tabindex', '-1');
 
             renderQtyFocus();
-            announce(`请选择数量。使用方向键浏览。`);
+            announce(`请选择数量。`);
         }
 
         function renderQtyFocus() {
@@ -440,32 +508,33 @@
             }
         }
 
-        // 监听数量模态框键盘
         document.getElementById('modal-qty').addEventListener('keydown', (e) => {
             const input = document.getElementById('qty-custom-input');
             const confirmBtn = document.getElementById('btn-qty-confirm');
 
-            // 1. 如果在输入框内
+            // 修复：主键盘 Enter (key='Enter') 和 小键盘 Enter (key='Enter' code='NumpadEnter')
+            const isEnter = e.key === 'Enter' || e.keyCode === 13;
+
+            // 1. 输入框激活状态
             if (!input.disabled && document.activeElement === input) {
-                // 如果按回车 -> 提交
-                if (e.key === 'Enter' || e.keyCode === 13) {
-                    e.preventDefault();
+                if (isEnter) {
+                    e.preventDefault(); // 阻止表单提交
+                    e.stopPropagation();
                     submitQty(parseInt(input.value));
                 }
-                // 输入框内不拦截TAB，允许 TAB 到确定按钮
                 return;
             }
-
-            // 2. 如果在确定按钮上
+            
+            // 2. 确定按钮
             if (document.activeElement === confirmBtn) {
-                if (e.key === 'Enter' || e.keyCode === 13) {
+                if (isEnter) {
                     e.preventDefault();
                     submitQty(parseInt(input.value));
                 }
                 return;
             }
 
-            // 3. 导航逻辑
+            // 3. 导航状态
             if (['ArrowRight', 'ArrowDown'].includes(e.key)) {
                 e.preventDefault();
                 qtyFocusIndex = (qtyFocusIndex + 1) % 11;
@@ -476,12 +545,11 @@
                 qtyFocusIndex = (qtyFocusIndex - 1 + 11) % 11;
                 renderQtyFocus();
             }
-            else if (e.key === 'Enter' || e.keyCode === 13) { // 兼容所有回车
+            else if (isEnter) {
                 e.preventDefault();
                 if (qtyFocusIndex < 10) {
                     submitQty(qtyFocusIndex + 1);
                 } else {
-                    // 激活输入框
                     activateCustomInput();
                 }
             }
@@ -489,8 +557,7 @@
                 closeQtyModal();
             }
         });
-        
-        // 点击自定义框激活
+
         document.getElementById('qty-custom-trigger').addEventListener('click', activateCustomInput);
 
         function activateCustomInput() {
@@ -498,50 +565,56 @@
             const confirmBtn = document.getElementById('btn-qty-confirm');
             input.disabled = false;
             input.focus();
-            
-            // 启用确定按钮
             confirmBtn.disabled = false;
             confirmBtn.classList.remove('opacity-50');
-            confirmBtn.setAttribute('tabindex', '0'); // 允许TAB到达
-            
-            announce("请输入数字，然后按回车，或 TAB 到确定按钮");
+            confirmBtn.setAttribute('tabindex', '0');
+            announce("请输入数字，按回车或点击确定");
         }
         
-        // 点击确定按钮
         document.getElementById('btn-qty-confirm').addEventListener('click', () => {
-             const val = parseInt(document.getElementById('qty-custom-input').value);
-             submitQty(val);
+             submitQty(parseInt(document.getElementById('qty-custom-input').value));
         });
 
         function submitQty(val) {
             if (!val || val <= 0) {
-                announce("数量无效");
+                announce("请输入有效数字");
                 return;
             }
             if (qtyCallback) qtyCallback(val);
-            // 这里不直接 closeAllModals，而是交给 callback 决定，或者在这里做通用处理
-            // 实际上 handleUpdate 会处理逻辑
-            // 为了视觉反馈，这里关闭 Quantity Picker
             document.getElementById('modal-qty').classList.add('hidden');
         }
 
         function closeQtyModal() {
             document.getElementById('modal-qty').classList.add('hidden');
-            // 根据上下文恢复
             if (qtySourceContext === 'add') {
                 document.getElementById('modal-add').classList.remove('hidden');
                 document.getElementById('btn-add-qty-trigger').focus();
-            } else if (qtySourceContext === 'search') {
-                document.getElementById('modal-takeout-search').classList.remove('hidden');
-                document.getElementById('takeout-search-input').focus();
-            } else {
-                closeAllModals(); // 回到首页
+            } else if (qtySourceContext === 'takeout' || qtySourceContext === 'home') {
+                // 如果是列表操作取消，回到列表
+                closeActionModal();
             }
         }
 
-        // --- 核心业务：连续操作逻辑 ---
+        // --- 核心更新逻辑 (含 0 处理) ---
         async function handleUpdate(change) {
             if (!currentActionItem) return;
+            const newQty = currentActionItem.quantity + change;
+            
+            // 修复：数量为 0 时询问删除
+            if (newQty === 0) {
+                openZeroConfirmModal();
+                return; // 等待用户选择，暂停执行
+            }
+
+            if (newQty < 0) {
+                announce("库存不足，无法取出");
+                return;
+            }
+            
+            await executeUpdate(change);
+        }
+
+        async function executeUpdate(change) {
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     quantity: increment(change),
@@ -549,27 +622,49 @@
                     updatedAt: serverTimestamp()
                 });
                 
-                // 成功后的连续操作逻辑
-                if (qtySourceContext === 'search') {
-                    // 取出模式：保持搜索框打开，清空，方便下一个
-                    document.getElementById('modal-takeout-search').classList.remove('hidden');
+                // 连续操作反馈
+                if (qtySourceContext === 'takeout') {
+                    // 取出界面：保持打开，清空搜索，聚焦输入
                     const input = document.getElementById('takeout-search-input');
                     input.value = '';
                     input.focus();
-                    announce("取出成功。请继续搜索下一个。");
-                } else {
-                    // 列表模式：关闭所有
+                    announce("取出成功，请继续搜索。");
+                } else if (qtySourceContext === 'home') {
                     announce("更新成功");
-                    closeAllModals();
+                    closeActionModal();
                 }
             } catch(e) { announce("操作失败"); }
+        }
+
+        // 0 数量确认弹窗逻辑
+        function openZeroConfirmModal() {
+            const modal = document.getElementById('modal-zero-confirm');
+            modal.classList.remove('hidden');
+            setTimeout(() => document.getElementById('btn-zero-keep').focus(), 100);
+            
+            // 绑定一次性事件
+            document.getElementById('btn-zero-keep').onclick = async () => {
+                modal.classList.add('hidden');
+                // 执行更新为 0
+                await executeUpdate(-currentActionItem.quantity); // 减去所有库存即为0
+            };
+            document.getElementById('btn-zero-delete').onclick = async () => {
+                modal.classList.add('hidden');
+                await handleDelete();
+            };
         }
 
         async function handleDelete() {
             try {
                 await deleteDoc(doc(db, "items", currentActionItem.id));
-                announce("已删除");
+                announce("物品已删除");
                 closeAllModals();
+                // 如果在取出界面，清空搜索
+                if (qtySourceContext === 'takeout') {
+                    const input = document.getElementById('takeout-search-input');
+                    input.value = '';
+                    input.focus();
+                }
             } catch(e) { announce("删除失败"); }
         }
 
@@ -578,7 +673,6 @@
             document.getElementById('items-container').focus();
         };
 
-        // 删除确认
         function openConfirmModal(item) {
             document.getElementById('modal-action').classList.add('hidden');
             const m = document.getElementById('modal-confirm');
@@ -588,7 +682,7 @@
             setTimeout(() => m.querySelector('button').focus(), 100);
         }
 
-        // --- 新增逻辑 (连续操作) ---
+        // --- 新增逻辑 (连续) ---
         document.getElementById('btn-open-add').addEventListener('click', () => {
             document.getElementById('modal-add').classList.remove('hidden');
             document.getElementById('add-name').focus();
@@ -597,77 +691,43 @@
             qtySourceContext = 'add';
         });
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
-            qtySourceContext = 'add';
             openQuantityPicker("设置初始数量", (v) => {
                 pendingAddQty = v;
                 updateAddQtyBtn();
-                closeQtyModal(); // 这会回到 add modal
+                closeQtyModal(); 
             });
         });
         function updateAddQtyBtn() {
             document.getElementById('btn-add-qty-trigger').textContent = `数量：${pendingAddQty} (点击修改)`;
         }
-        
         document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('add-name');
             const name = nameInput.value;
             const room = document.getElementById('add-room').value;
             const loc = document.getElementById('add-location').value;
-            
-            try {
-                await addDoc(itemsRef, {
-                    name, room, location: loc, quantity: pendingAddQty,
-                    updatedBy: document.getElementById('user-identity').value,
-                    updatedAt: serverTimestamp()
-                });
-                
-                // 连续添加模式
-                announce(`已添加 ${name}。请继续输入下一个。`);
-                // 清空关键字段，保留房间选择（通常连续录入是在同一个房间）
-                nameInput.value = '';
-                document.getElementById('add-location').value = '';
-                pendingAddQty = 1;
-                updateAddQtyBtn();
-                // 焦点回到名称
-                nameInput.focus();
-                
-            } catch(e) { announce("添加失败"); }
+            await addDoc(itemsRef, {
+                name, room, location: loc, quantity: pendingAddQty,
+                updatedBy: document.getElementById('user-identity').value,
+                updatedAt: serverTimestamp()
+            });
+            announce(`已添加 ${name}。请继续。`);
+            nameInput.value = '';
+            document.getElementById('add-location').value = '';
+            pendingAddQty = 1;
+            updateAddQtyBtn();
+            nameInput.focus();
         });
 
-        // --- 顶部取出搜索 (连续操作) ---
-        document.getElementById('btn-open-takeout').addEventListener('click', () => {
-            document.getElementById('modal-takeout-search').classList.remove('hidden');
+        // --- 取出物品 (全屏模式) ---
+        document.getElementById('btn-open-takeout-modal').addEventListener('click', () => {
+            document.getElementById('modal-takeout-full').classList.remove('hidden');
             const input = document.getElementById('takeout-search-input');
             input.value = '';
             input.focus();
-            qtySourceContext = 'search';
-        });
-        
-        document.getElementById('takeout-search-input').addEventListener('change', (e) => {
-            const item = allItems.find(i => i.name === e.target.value);
-            if(item) {
-                currentActionItem = item;
-                // 打开数量选择，回调是 handleUpdate
-                qtySourceContext = 'search';
-                openQuantityPicker(`取出 ${item.name}`, (qty) => handleUpdate(-qty));
-            } else {
-                announce("未找到该物品");
-            }
+            renderTakeoutList(); // 初始可能为空
         });
 
-        document.getElementById('search-input').addEventListener('input', renderList);
-        
-        function updateDatalist() {
-            const dl = document.getElementById('takeout-options');
-            dl.innerHTML = '';
-            allItems.forEach(i => {
-                const op = document.createElement('option');
-                op.value = i.name;
-                op.label = `${i.room} 余${i.quantity}`;
-                dl.appendChild(op);
-            });
-        }
     </script>
 </body>
 </html>
