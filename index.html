@@ -6,6 +6,7 @@
     <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* 屏幕阅读器专用隐藏 */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -18,44 +19,47 @@
             border-width: 0;
         }
         
-        /* 强焦样式 */
+        /* 强焦样式：橙色加粗边框，层级最高 */
         *:focus {
-            outline: 4px solid #f97316;
+            outline: 4px solid #f97316; 
             outline-offset: 2px;
-            z-index: 50;
+            z-index: 100;
         }
 
+        /* 列表卡片选中态 */
         .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
             transform: scale(1.02);
         }
 
+        /* 数量按钮 */
         .qty-btn {
-            height: 55px;
-            font-size: 1.25rem;
+            height: 60px;
+            font-size: 1.5rem;
             font-weight: bold;
             border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             background: white;
             color: #374151;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
+            transition: background 0.2s;
         }
-        .qty-btn:focus, .qty-btn:hover {
+        .qty-btn:hover, .qty-btn:focus {
             background-color: #dbeafe;
             border-color: #2563eb;
             color: #1e40af;
         }
 
+        /* 自定义输入触发器 */
         .custom-input-trigger {
             flex-grow: 1;
             border: 2px solid #e5e7eb;
             padding: 0.5rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -73,15 +77,26 @@
     <div id="live-announcer" class="sr-only" aria-live="polite"></div>
 
     <div id="screen-login" class="min-h-screen flex flex-col justify-center items-center p-4">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-            <h1 class="text-3xl font-bold mb-8 text-center" tabindex="-1">家庭物品管家</h1>
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h1 id="title-login" class="text-3xl font-bold mb-8 text-center outline-none" tabindex="-1">家庭物品管家</h1>
             
             <label for="login-email" class="block mb-2 font-bold text-lg">邮箱账号</label>
-            <input type="email" id="login-email" class="w-full p-4 border-2 border-gray-300 rounded mb-6 text-lg" placeholder="name@email.com" aria-label="邮箱账号">
+            <input type="email" id="login-email" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="name@email.com">
             
             <label for="login-password" class="block mb-2 font-bold text-lg">密码</label>
-            <input type="password" id="login-password" class="w-full p-4 border-2 border-gray-300 rounded mb-8 text-lg" placeholder="请输入密码" aria-label="密码">
+            <input type="password" id="login-password" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-4 text-lg" placeholder="请输入密码">
             
+            <div class="flex flex-col gap-3 mb-6">
+                <label class="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" id="chk-auto-login" class="w-6 h-6 text-blue-600" checked>
+                    <span class="font-bold text-lg">自动登录 (下次免密)</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" id="chk-remember-email" class="w-6 h-6 text-blue-600">
+                    <span class="font-bold text-lg">记住账号 (仅填邮箱)</span>
+                </label>
+            </div>
+
             <button id="btn-login" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-blue-700 mb-4">登录</button>
             
             <div class="flex justify-between mt-4">
@@ -92,17 +107,17 @@
     </div>
 
     <div id="screen-register" class="hidden min-h-screen flex flex-col justify-center items-center p-4 bg-gray-50">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-            <h1 class="text-2xl font-bold mb-6 text-center" tabindex="-1">注册新账号</h1>
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h1 id="title-register" class="text-2xl font-bold mb-6 text-center outline-none" tabindex="-1">注册新账号</h1>
             
             <label for="reg-email" class="block mb-2 font-bold text-lg">邮箱</label>
-            <input type="email" id="reg-email" class="w-full p-3 border-2 border-gray-300 rounded mb-4 text-lg" aria-label="设置邮箱">
+            <input type="email" id="reg-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 text-lg">
             
             <label for="reg-pass" class="block mb-2 font-bold text-lg">设置密码 (至少6位)</label>
-            <input type="password" id="reg-pass" class="w-full p-3 border-2 border-gray-300 rounded mb-4 text-lg" aria-label="设置密码">
+            <input type="password" id="reg-pass" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 text-lg">
             
             <label for="reg-pass-confirm" class="block mb-2 font-bold text-lg">确认密码</label>
-            <input type="password" id="reg-pass-confirm" class="w-full p-3 border-2 border-gray-300 rounded mb-8 text-lg" aria-label="确认密码">
+            <input type="password" id="reg-pass-confirm" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-8 text-lg">
             
             <button id="btn-submit-reg" class="w-full bg-green-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-green-700 mb-4">确认注册</button>
             <button id="btn-back-login" class="w-full bg-gray-200 text-gray-800 p-3 rounded-lg font-bold text-lg">返回登录</button>
@@ -114,28 +129,36 @@
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
                 
                 <div class="flex justify-between items-center mb-1 relative">
-                    <h1 class="text-xl font-bold">物品管家</h1>
+                    <h1 id="title-home" class="text-xl font-bold outline-none" tabindex="-1">物品管家</h1>
                     
-                    <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2">
+                    <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2 focus:ring-2 ring-white">
                         <span id="user-email-display">账号</span>
                         <span aria-hidden="true">▼</span>
                     </button>
 
-                    <div id="menu-account-dropdown" class="hidden absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 text-gray-900 z-50">
-                        <button id="btn-logout" class="w-full text-left px-4 py-3 hover:bg-gray-100 font-bold">退出登录</button>
+                    <div id="menu-account-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 text-gray-900 z-50 flex flex-col">
+                        <button id="btn-clear-data" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">
+                            🗑️ 清空所有数据 (保留账号)
+                        </button>
+                        <button id="btn-delete-account" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">
+                            ⚠ 注销账号 (删号)
+                        </button>
+                        <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">
+                            🚪 退出登录
+                        </button>
                     </div>
                 </div>
 
                 <div class="flex gap-3">
-                    <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded shadow text-xl border-2 border-green-400">
+                    <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">
                         + 新增物品
                     </button>
-                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded shadow text-xl border-2 border-orange-400">
+                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">
                         - 取出物品
                     </button>
                 </div>
 
-                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded border border-blue-400 font-bold">
+                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">
                     数据管理 (导入/导出)
                 </button>
 
@@ -146,8 +169,8 @@
 
         <section class="bg-white p-4 shadow-sm border-b z-10">
             <div class="max-w-3xl mx-auto flex items-center gap-2">
-                <label for="home-filter" class="font-bold whitespace-nowrap text-lg">房间：</label>
-                <select id="home-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold" aria-label="筛选房间">
+                <label for="home-filter" class="font-bold whitespace-nowrap text-lg">房间筛选：</label>
+                <select id="home-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black">
                     <option value="all">全部房间</option>
                     <option value="客厅">客厅</option>
                     <option value="厨房">厨房</option>
@@ -173,7 +196,7 @@
                     <button id="btn-back-takeout" class="bg-white text-orange-700 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">
                         &lt; 返回首页
                     </button>
-                    <h2 class="text-xl font-bold" aria-hidden="true">取出</h2>
+                    <h1 id="title-takeout" class="text-xl font-bold outline-none" tabindex="-1">取出物品</h1>
                 </div>
                 <label for="takeout-search" class="sr-only">搜索要取出的物品</label>
                 <input type="text" id="takeout-search" placeholder="搜索要取出的物品..." class="w-full p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索要取出的物品">
@@ -183,7 +206,7 @@
         <section class="bg-white p-4 shadow-sm border-b z-10">
             <div class="max-w-3xl mx-auto flex items-center gap-2">
                 <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg">房间：</label>
-                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold" aria-label="筛选房间">
+                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black">
                     <option value="all">全部房间</option>
                     <option value="客厅">客厅</option>
                     <option value="厨房">厨房</option>
@@ -198,7 +221,9 @@
         </section>
 
         <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
-            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
+            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表">
+                <p class="text-center text-gray-500 mt-10 text-lg">加载中...</p>
+            </div>
         </main>
     </div>
 
@@ -208,7 +233,7 @@
                 <button id="btn-back-add" class="bg-white text-green-700 px-6 py-2 rounded-lg font-bold border-2 border-green-200">
                     &lt; 返回首页
                 </button>
-                <h2 class="text-xl font-bold">新增物品</h2>
+                <h1 id="title-add" class="text-xl font-bold outline-none" tabindex="-1">新增物品</h1>
             </div>
         </div>
         
@@ -221,7 +246,7 @@
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label for="add-room" class="block font-bold mb-2 text-xl">房间</label>
-                        <select id="add-room" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl bg-white" aria-label="选择房间">
+                        <select id="add-room" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl bg-white text-black" aria-label="选择房间">
                             <option value="厨房">厨房</option>
                             <option value="客厅">客厅</option>
                             <option value="卧室">卧室</option>
@@ -256,7 +281,7 @@
                 <button id="btn-back-data" class="bg-white text-blue-700 px-6 py-2 rounded-lg font-bold border-2 border-blue-200">
                     &lt; 返回首页
                 </button>
-                <h2 class="text-xl font-bold">数据管理</h2>
+                <h1 id="title-data" class="text-xl font-bold outline-none" tabindex="-1">数据管理</h1>
             </div>
         </div>
 
@@ -275,22 +300,16 @@
                 上传填写好的文件
             </button>
             <input type="file" id="file-upload" accept=".csv" class="hidden">
-
-            <hr class="border-gray-200 my-6">
-            
-            <p class="text-lg font-bold text-red-700">危险区域：</p>
-            <button id="btn-delete-account-trigger" class="w-full p-6 bg-red-50 border-2 border-red-500 text-red-800 font-bold rounded-xl text-xl hover:bg-red-100 shadow-sm text-left">
-                ⚠ 注销账号 (永久删除所有数据)
-            </button>
         </div>
     </div>
 
     <div id="modal-forgot" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
-            <h2 class="text-2xl font-bold mb-4" tabindex="-1">找回密码</h2>
-            <p class="mb-4 text-gray-600">输入注册邮箱，系统将发送重置邮件。</p>
+            <h2 id="title-forgot" class="text-2xl font-bold mb-4 outline-none" tabindex="-1">找回密码</h2>
+            <p class="mb-4 text-gray-600">请输入您的注册邮箱，系统将发送重置邮件给您。</p>
             <label for="forgot-email" class="sr-only">邮箱地址</label>
-            <input type="email" id="forgot-email" class="w-full p-3 border-2 border-gray-300 rounded mb-6 text-lg" placeholder="邮箱地址" aria-label="邮箱地址">
+            <input type="email" id="forgot-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="邮箱地址">
+            
             <div class="flex gap-3">
                 <button id="btn-cancel-forgot" class="flex-1 p-3 bg-gray-200 font-bold rounded-lg text-lg">取消</button>
                 <button id="btn-send-reset" class="flex-1 p-3 bg-blue-600 text-white font-bold rounded-lg text-lg">发送邮件</button>
@@ -300,7 +319,7 @@
 
     <div id="modal-action" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
-            <h2 id="action-title" class="text-2xl font-bold mb-2 text-gray-900" tabindex="-1">管理物品</h2>
+            <h2 id="action-title" class="text-2xl font-bold mb-2 text-gray-900 outline-none" tabindex="-1">管理物品</h2>
             <p id="action-desc" class="text-lg text-gray-600 mb-6">详情</p>
             <div class="flex flex-col gap-4" id="action-buttons-container">
                 <button id="btn-act-put" class="p-4 bg-blue-100 text-blue-900 font-bold rounded-xl border-2 border-blue-300 text-xl" data-action="put">放入 (增加)</button>
@@ -313,15 +332,18 @@
 
     <div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-end sm:items-center">
         <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-blue-500">
-            <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900" tabindex="-1">选择数量</h2>
+            <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900 outline-none" tabindex="-1">选择数量</h2>
             <div class="grid grid-cols-5 gap-3 mb-6" id="qty-grid"></div>
+
             <div class="flex gap-2 mb-6 items-stretch">
                 <div id="qty-custom-trigger" class="custom-input-trigger" role="button" tabindex="0" aria-label="自定义数量，按回车输入">
                     <span class="mr-2 font-bold text-gray-700 text-lg">自定义:</span>
                     <label for="qty-custom-input" class="sr-only">输入数量</label>
-                    <input type="number" id="qty-custom-input" class="w-24 p-2 border-b-4 border-gray-400 text-center font-bold text-xl bg-gray-50 text-black" disabled placeholder="#" tabindex="-1" aria-label="输入数量">
+                    <input type="number" id="qty-custom-input" class="w-24 p-2 border-b-4 border-gray-400 text-center font-bold text-xl bg-gray-50 text-black" disabled placeholder="#" tabindex="-1">
                 </div>
-                <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">确定</button>
+                <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">
+                    确定
+                </button>
             </div>
             <button class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
         </div>
@@ -329,7 +351,7 @@
 
     <div id="modal-zero" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-orange-400">
-            <h2 class="text-2xl font-bold mb-4 text-orange-700" tabindex="-1">数量已空</h2>
+            <h2 id="title-zero" class="text-2xl font-bold mb-4 text-orange-700 outline-none" tabindex="-1">数量已空</h2>
             <p class="mb-6 text-gray-800 text-lg">物品数量已归零，请选择操作：</p>
             <div class="flex flex-col gap-4">
                 <button id="btn-zero-keep" class="p-4 bg-blue-100 text-blue-900 rounded-xl font-bold border-2 border-blue-200 text-lg">保留物品 (数量设为0)</button>
@@ -341,21 +363,21 @@
 
     <div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-red-400">
-            <h2 class="text-2xl font-bold mb-4 text-red-700" tabindex="-1">⚠ 确定执行吗？</h2>
+            <h2 id="title-confirm" class="text-2xl font-bold mb-4 text-red-700 outline-none" tabindex="-1">⚠ 操作确认</h2>
             <p id="confirm-text" class="mb-6 text-gray-800 text-lg"></p>
             <div class="flex gap-4">
                 <button id="btn-confirm-cancel" class="flex-1 p-4 bg-gray-200 rounded-xl font-bold text-lg" onclick="closeModals()">取消</button>
-                <button id="btn-confirm-ok" class="flex-1 p-4 bg-red-600 text-white rounded-xl font-bold text-lg shadow">确认</button>
+                <button id="btn-confirm-ok" class="flex-1 p-4 bg-red-600 text-white rounded-xl font-bold text-lg shadow">确认执行</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, deleteUser, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, doc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 配置
+        // Config
         const firebaseConfig = {
             apiKey: "AIzaSyC3rxfvajIswJADfzJD0lphVra99vka7nE",
             authDomain: "household-item-management.firebaseapp.com",
@@ -370,14 +392,18 @@
         const db = getFirestore(app);
         const itemsRef = collection(db, "items");
 
-        // 全局变量
+        // State
         let allItems = [];
         let currentActionItem = null;
         let pendingAddQty = 1;
         let currentScreen = 'login';
         let homeFilterRoom = 'all';
         let takeoutFilterRoom = 'all';
-        let unsubscribeItems = null; // 关键：数据库监听器句柄
+        let unsubscribeItems = null;
+
+        // Load saved email
+        const savedEmail = localStorage.getItem('savedEmail');
+        if(savedEmail) document.getElementById('login-email').value = savedEmail;
 
         window.announce = (msg) => {
             const el = document.getElementById('live-announcer');
@@ -385,7 +411,7 @@
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // --- 屏幕切换 (修复焦点卡死) ---
+        // --- Focus Manager (H1 Anchor) ---
         function switchScreen(screenId) {
             ['screen-login', 'screen-register', 'screen-home', 'screen-takeout', 'screen-add', 'screen-data'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
@@ -393,11 +419,11 @@
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            // 延迟聚焦，确保DOM已渲染
-            setTimeout(() => {
-                const firstBtn = target.querySelector('button, input');
-                if (firstBtn) firstBtn.focus();
-            }, 100);
+            // 关键修复：等待渲染帧，然后强制聚焦到 H1
+            requestAnimationFrame(() => {
+                const h1 = target.querySelector('h1');
+                if (h1) h1.focus();
+            });
 
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-takeout') currentScreen = 'takeout';
@@ -405,34 +431,52 @@
             refreshLists();
         }
 
-        // --- 认证 ---
+        // --- Auth & Persistence ---
         onAuthStateChanged(auth, user => {
             if (user) {
+                document.getElementById('btn-account-menu').setAttribute('aria-label', `当前账号：${user.email}，点击展开菜单`);
                 document.getElementById('user-email-display').textContent = user.email.split('@')[0];
                 switchScreen('screen-home');
                 setupDataListener(user.uid);
             } else {
-                if(unsubscribeItems) unsubscribeItems(); // 退出时取消监听
-                allItems = []; // 清空本地数据
+                if(unsubscribeItems) unsubscribeItems();
+                allItems = [];
                 switchScreen('screen-login');
             }
         });
 
-        document.getElementById('btn-login').addEventListener('click', () => {
+        document.getElementById('btn-login').addEventListener('click', async () => {
             const e = document.getElementById('login-email').value;
             const p = document.getElementById('login-password').value;
-            signInWithEmailAndPassword(auth, e, p).catch(err => {
-                announce("登录失败"); alert("登录失败，请检查账号密码");
-            });
+            const autoLogin = document.getElementById('chk-auto-login').checked;
+            const rememberEmail = document.getElementById('chk-remember-email').checked;
+
+            // 记住账号
+            if(rememberEmail) localStorage.setItem('savedEmail', e);
+            else localStorage.removeItem('savedEmail');
+
+            try {
+                // 设置持久化
+                await setPersistence(auth, autoLogin ? browserLocalPersistence : browserSessionPersistence);
+                await signInWithEmailAndPassword(auth, e, p);
+            } catch(err) {
+                announce("登录失败"); 
+                alert("登录失败：" + err.message);
+            }
         });
 
-        // 账号菜单
+        // 账号菜单逻辑
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
             e.stopPropagation();
-            menuAccount.classList.toggle('hidden');
-            if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
+            const isHidden = menuAccount.classList.contains('hidden');
+            if(isHidden) {
+                menuAccount.classList.remove('hidden');
+                menuAccount.querySelector('button').focus();
+            } else {
+                menuAccount.classList.add('hidden');
+            }
         });
         document.addEventListener('click', (e) => {
             if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
@@ -441,13 +485,31 @@
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => announce("已退出登录"));
+            signOut(auth).then(() => announce("已退出"));
         });
 
-        document.getElementById('btn-delete-account-trigger').addEventListener('click', () => {
-            openGenericConfirm("警告：此操作将永久删除您的所有数据并注销账号！确定吗？", async () => {
+        // 清空数据 (只删数据)
+        document.getElementById('btn-clear-data').addEventListener('click', () => {
+            menuAccount.classList.add('hidden');
+            openGenericConfirm("确定清空所有物品数据吗？账号将保留。", async () => {
                 try {
-                    announce("正在删除数据...");
+                    announce("正在清空...");
+                    const batch = writeBatch(db);
+                    const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
+                    const snapshot = await getDocs(q);
+                    snapshot.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                    announce("数据已清空");
+                } catch(e) { alert("失败：" + e.message); }
+            });
+        });
+
+        // 注销账号 (删数据+删人)
+        document.getElementById('btn-delete-account').addEventListener('click', () => {
+            menuAccount.classList.add('hidden');
+            openGenericConfirm("高危操作：永久删除数据并注销账号！无法恢复！", async () => {
+                try {
+                    announce("正在删除...");
                     const batch = writeBatch(db);
                     const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
                     const snapshot = await getDocs(q);
@@ -455,7 +517,7 @@
                     await batch.commit();
                     await deleteUser(auth.currentUser);
                     alert("账号已注销");
-                } catch (e) { alert("失败：" + e.message); }
+                } catch(e) { alert("失败（可能需重登）：" + e.message); }
             });
         });
 
@@ -471,7 +533,7 @@
 
         document.getElementById('btn-forgot-pass').addEventListener('click', () => {
             document.getElementById('modal-forgot').classList.remove('hidden');
-            document.getElementById('forgot-email').focus();
+            requestAnimationFrame(() => document.getElementById('title-forgot').focus());
         });
         document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
         document.getElementById('btn-send-reset').addEventListener('click', () => {
@@ -482,7 +544,7 @@
             }).catch(err => alert("失败：" + err.message));
         });
 
-        // --- 数据监听 (核心修复：退出清理) ---
+        // --- 数据处理 ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -499,7 +561,6 @@
             if (currentScreen === 'takeout') renderList('takeout-list', 'takeout-search', 'takeout-filter', takeoutFilterRoom);
         }
 
-        // --- 列表渲染 ---
         function renderList(containerId, searchId, filterId, currentRoomFilter) {
             const container = document.getElementById(containerId);
             const searchVal = document.getElementById(searchId).value.trim().toLowerCase();
@@ -514,7 +575,7 @@
 
             container.innerHTML = '';
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到</div>`;
+                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">暂无物品</div>`;
                 return;
             }
 
@@ -523,7 +584,6 @@
                 div.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative";
                 div.setAttribute('role', 'button');
                 div.setAttribute('tabindex', '0');
-                // 修复标签朗读
                 div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} 个。按回车管理。`);
                 
                 div.innerHTML = `
@@ -548,7 +608,6 @@
             });
         }
 
-        // Setup Listeners
         function setupListListeners(searchId, filterId, screenType) {
             document.getElementById(searchId).addEventListener('input', () => refreshLists());
             document.getElementById(filterId).addEventListener('change', (e) => {
@@ -584,9 +643,11 @@
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
             document.getElementById('action-desc').textContent = `剩余：${item.quantity}`;
+            
             const btnPut = document.getElementById('btn-act-put');
             if (currentScreen === 'takeout') btnPut.classList.add('hidden');
             else btnPut.classList.remove('hidden');
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 const v = modal.querySelectorAll('button:not(.hidden)');
@@ -640,10 +701,12 @@
             confirm.setAttribute('tabindex', '-1');
             trigger.setAttribute('tabindex', '0');
             
-            setTimeout(() => {
-                qtyGrid.firstChild.focus();
-                announce("请选择数量");
-            }, 100);
+            // 强制 H1 聚焦防卡死，然后聚焦第一个数字
+            requestAnimationFrame(() => {
+                document.getElementById('qty-title').focus();
+                setTimeout(() => qtyGrid.firstChild.focus(), 100);
+            });
+            announce("请选择数量");
         }
 
         const customTrigger = document.getElementById('qty-custom-trigger');
@@ -722,9 +785,10 @@
         function openZeroConfirm() {
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
-            const keepBtn = document.getElementById('btn-zero-keep');
-            keepBtn.focus();
-            keepBtn.onclick = async () => {
+            // 聚焦标题
+            requestAnimationFrame(() => document.getElementById('title-zero').focus());
+            
+            document.getElementById('btn-zero-keep').onclick = async () => {
                 m.classList.add('hidden');
                 await execUpdate(-currentActionItem.quantity);
             };
@@ -746,7 +810,7 @@
             m.classList.remove('hidden');
             document.getElementById('confirm-text').textContent = msg;
             confirmCallback = cb;
-            setTimeout(() => m.querySelector('button').focus(), 100);
+            requestAnimationFrame(() => document.getElementById('title-confirm').focus());
         }
         document.getElementById('btn-confirm-ok').addEventListener('click', () => {
             if(confirmCallback) confirmCallback();
@@ -864,7 +928,6 @@
             reader.readAsText(file);
         });
 
-        // ESC 关闭
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
                 e.preventDefault();
