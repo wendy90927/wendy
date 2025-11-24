@@ -26,14 +26,12 @@
             z-index: 100;
         }
 
-        /* 列表卡片 */
         .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
             transform: scale(1.02);
         }
 
-        /* 数量按钮 */
         .qty-btn {
             height: 60px;
             font-size: 1.5rem;
@@ -54,7 +52,6 @@
             color: #1e40af;
         }
 
-        /* 自定义输入触发器 */
         .custom-input-trigger {
             flex-grow: 1;
             border: 2px solid #e5e7eb;
@@ -146,10 +143,10 @@
 
                 <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
 
-                <div class="relative flex gap-2">
+                <div class="relative">
                     <label for="home-search" class="sr-only">搜索物品</label>
-                    <input type="text" id="home-search" placeholder="输入内容搜索..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
-                    <button id="btn-do-search" class="bg-white text-blue-800 px-4 rounded font-bold shadow">搜索</button>
+                    <input type="text" id="home-search" placeholder="输入物品名称搜索..." class="w-full p-3 pr-20 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+                    <button id="btn-clear-home" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300">清除</button>
                 </div>
             </div>
         </header>
@@ -172,25 +169,47 @@
         </section>
 
         <main class="flex-grow p-4 bg-gray-50">
+            <div id="home-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded shadow hidden" aria-live="polite"></div>
             <div id="home-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="物品列表"></div>
         </main>
     </div>
 
-    <div id="screen-results" class="screen hidden min-h-screen flex flex-col bg-gray-100">
-        <div class="bg-purple-700 text-white p-4 shadow-md sticky top-0 z-20">
+    <div id="screen-takeout" class="screen hidden min-h-screen flex flex-col bg-gray-100">
+        <div class="bg-orange-600 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <button id="btn-back-results" class="bg-white text-purple-800 px-6 py-2 rounded-lg font-bold border-2 border-purple-200">&lt; 返回首页</button>
-                    <h1 id="title-results" class="text-xl font-bold outline-none" tabindex="-1">搜索结果</h1>
+                    <button id="btn-back-takeout" class="bg-white text-orange-700 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">&lt; 返回首页</button>
+                    <h1 id="title-takeout" class="text-xl font-bold outline-none" tabindex="-1">取出物品</h1>
+                </div>
+                
+                <div class="relative">
+                    <label for="takeout-search" class="sr-only">搜索要取出的物品</label>
+                    <input type="text" id="takeout-search" placeholder="搜索要取出的物品..." class="w-full p-3 pr-20 text-black rounded shadow font-bold text-lg" aria-label="搜索要取出的物品">
+                    <button id="btn-clear-takeout" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300">清除</button>
                 </div>
             </div>
         </div>
 
-        <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
-            <div id="results-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-purple-50 border-l-4 border-purple-500 rounded shadow text-lg font-bold" aria-live="polite">
-                正在计算...
+        <section class="bg-white p-4 shadow-sm border-b z-10">
+            <div class="max-w-3xl mx-auto flex items-center gap-2">
+                <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg">房间：</label>
+                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选房间">
+                    <option value="all">全部房间</option>
+                    <option value="客厅">客厅</option>
+                    <option value="厨房">厨房</option>
+                    <option value="卧室">卧室</option>
+                    <option value="书房">书房</option>
+                    <option value="餐厅">餐厅</option>
+                    <option value="玄关">玄关</option>
+                    <option value="卫生间">卫生间</option>
+                    <option value="洗衣房">洗衣房</option>
+                </select>
             </div>
-            <div id="results-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
+        </section>
+
+        <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
+            <div id="takeout-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded shadow hidden" aria-live="polite"></div>
+            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
         </main>
     </div>
 
@@ -257,7 +276,7 @@
                     <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
+                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
                     <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
@@ -397,12 +416,12 @@
         let pendingAddQty = 1;
         let currentScreen = 'login';
         let homeFilterRoom = 'all';
+        let takeoutFilterRoom = 'all';
         let unsubscribeItems = null;
         let previousScreen = 'home';
         let focusTargetId = null; 
-        let searchResults = []; // For separate search page
 
-        // Unit Presets
+        // Unit Presets & Logic
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
         UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
@@ -432,7 +451,7 @@
             const el = document.getElementById(inputId);
             el.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                    e.preventDefault(); 
+                    e.preventDefault(); // STOP Native behavior
                     e.stopPropagation(); 
                     let idx = UNIT_LIST.indexOf(el.value);
                     if (idx === -1) idx = e.key === 'ArrowDown' ? -1 : 0;
@@ -465,9 +484,9 @@
             }
             
             if (screenId === 'screen-home') currentScreen = 'home';
-            if (screenId === 'screen-results') currentScreen = 'results';
+            if (screenId === 'screen-takeout') currentScreen = 'takeout';
             
-            // Priority Focus
+            // Priority Focus Logic
             if (!focusTargetId) {
                 setTimeout(() => {
                     const h1 = target.querySelector('h1');
@@ -475,7 +494,7 @@
                 }, 100);
             }
 
-            if(screenId === 'screen-home') refreshHomeList();
+            refreshLists();
         }
 
         // --- Auth ---
@@ -516,7 +535,7 @@
             }
         });
 
-        // Account Menu
+        // Menu
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
@@ -577,7 +596,7 @@
             }).catch(err => alert(err.message));
         });
 
-        // --- Data Logic (Micro-update) ---
+        // --- Data Logic (Incremental DOM) ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -600,90 +619,76 @@
                 if (isFirstLoad) {
                     allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
                 }
-                
-                if (currentScreen === 'home') refreshHomeList();
-                if (currentScreen === 'results') refreshResultsList();
+                refreshLists();
             });
         }
 
-        function refreshHomeList() {
-            renderList('home-list', homeFilterRoom, allItems);
+        function refreshLists() {
+            if (currentScreen === 'home') renderList('home-list', 'home-search', 'home-filter', 'home-stats', homeFilterRoom);
+            if (currentScreen === 'takeout') renderList('takeout-list', 'takeout-search', 'takeout-filter', 'takeout-stats', takeoutFilterRoom);
         }
 
-        function refreshResultsList() {
-            // Recalculate filtered results based on current search term
-            // Note: In real search page, we might just want to update existing items in the result set
-            // But simple re-filter is safer for consistency
-            const term = document.getElementById('home-search').value.trim().toLowerCase(); 
-            // Note: Search term is from home search input usually, but we are on results page
-            // Let's store search term globally or just re-use
-            // Actually, we should filter allItems again.
-            if (!searchResults) return; // Safety
-            
-            // We need to update searchResults based on allItems changes
-            searchResults = allItems.filter(item => {
-                // Simple check if this item is still in our "search interest"
-                // Or better: Just re-render based on IDs present in searchResults to maintain context?
-                // Simplest: Re-run search filter
-                const st = document.getElementById('title-results').dataset.term || '';
-                return item.name.toLowerCase().includes(st) || (item.location||'').toLowerCase().includes(st);
-            });
-            
-            renderList('results-list', 'all', searchResults);
-            updateStats(searchResults);
-        }
-
-        // --- The Micro-Update Renderer ---
-        function renderList(containerId, filterRoom, sourceArray) {
+        function renderList(containerId, searchId, filterId, statsId, currentRoomFilter) {
             const container = document.getElementById(containerId);
-            
-            const filtered = sourceArray.filter(item => {
-                return filterRoom === 'all' || item.room === filterRoom;
+            const statsContainer = document.getElementById(statsId);
+            const searchVal = document.getElementById(searchId).value.trim().toLowerCase();
+            const selectEl = document.getElementById(filterId);
+            if (selectEl.value !== currentRoomFilter) selectEl.value = currentRoomFilter;
+
+            const filtered = allItems.filter(item => {
+                const matchSearch = item.name.toLowerCase().includes(searchVal) || (item.location||'').toLowerCase().includes(searchVal);
+                const matchRoom = currentRoomFilter === 'all' || item.room === currentRoomFilter;
+                return matchSearch && matchRoom;
             });
 
+            // Stats
+            if (searchVal && filtered.length > 0) {
+                const totals = {};
+                filtered.forEach(item => {
+                    const u = item.unit || '个';
+                    totals[u] = (totals[u] || 0) + item.quantity;
+                });
+                const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
+                statsContainer.innerHTML = `<p class="font-bold text-lg">共 ${filtered.length} 处。合计：${summaryText}</p>`;
+                statsContainer.classList.remove('hidden');
+            } else {
+                statsContainer.classList.add('hidden');
+            }
+
+            // Incremental DOM Update (No innerHTML = '')
+            const existingCards = new Map();
+            container.querySelectorAll('.item-card').forEach(el => existingCards.set(el.dataset.id, el));
+            
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">无相关物品</div>`;
+                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到</div>`;
                 return;
             }
 
-            // Map existing DOM elements
-            const existingMap = new Map();
-            container.querySelectorAll('.item-card').forEach(el => existingMap.set(el.dataset.id, el));
-
-            // 1. Remove deleted items
-            existingMap.forEach((el, id) => {
+            existingCards.forEach((el, id) => {
                 if (!filtered.find(i => i.id === id)) el.remove();
             });
 
-            // 2. Update or Create items
-            filtered.forEach(item => {
-                let card = existingMap.get(item.id);
-                const labelText = `${item.name}，${item.room} ${item.location||''}，${item.quantity}${item.unit||'个'}`;
+            filtered.forEach((item, index) => {
+                let card = existingCards.get(item.id);
                 const htmlContent = `
                     <div class="flex justify-between items-center pointer-events-none">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 item-name">${item.name}</h3>
-                            <p class="text-base text-gray-600 font-bold item-loc">${item.room} - ${item.location || '位置未填'}</p>
+                            <h3 class="text-xl font-bold text-gray-900">${item.name}</h3>
+                            <p class="text-base text-gray-600 font-bold">${item.room} - ${item.location || '位置未填'}</p>
                         </div>
-                        <div class="text-3xl font-bold text-blue-700 item-qty">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
+                        <div class="text-3xl font-bold text-blue-700">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
                     </div>
                 `;
 
                 if (card) {
-                    // Micro-update: Check if content changed
-                    if (card.getAttribute('aria-label') !== (labelText + "。按回车管理。")) {
-                        card.innerHTML = htmlContent;
-                        card.setAttribute('aria-label', labelText + "。按回车管理。");
-                    }
-                    // Re-append to ensure order? No, keep DOM stable for focus.
-                    // Only append if new
+                    if (card.innerHTML !== htmlContent) card.innerHTML = htmlContent;
+                    container.appendChild(card); 
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
                     card.setAttribute('role', 'button');
                     card.setAttribute('tabindex', '0');
                     card.dataset.id = item.id;
-                    card.setAttribute('aria-label', labelText + "。按回车管理。");
                     card.innerHTML = htmlContent;
                     
                     const triggerMenu = () => openActionMenu(item);
@@ -695,6 +700,7 @@
                     });
                     container.appendChild(card);
                 }
+                card.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
             });
 
             // Focus Restoration
@@ -702,71 +708,67 @@
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
                 if (target) {
                     target.focus();
-                    focusTargetId = null;
+                    focusTargetId = null; // Consume anchor
                 }
             }
         }
 
-        function updateStats(items) {
-            const statsContainer = document.getElementById('results-stats');
-            if (items.length > 0) {
-                const totals = {};
-                items.forEach(item => {
-                    const u = item.unit || '个';
-                    totals[u] = (totals[u] || 0) + item.quantity;
-                });
-                const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
-                statsContainer.textContent = `共找到 ${items.length} 处。合计：${summaryText}`;
-            }
-        }
+        function setupListListeners(searchId, filterId, screenType) {
+            const searchInput = document.getElementById(searchId);
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300';
+            clearBtn.textContent = '清除';
+            clearBtn.setAttribute('aria-label', '清除搜索内容');
+            searchInput.parentNode.appendChild(clearBtn);
 
-        // --- Home Screen Logic ---
-        document.getElementById('home-filter').addEventListener('change', (e) => {
-            homeFilterRoom = e.target.value;
-            refreshHomeList();
-        });
+            const toggleClear = () => {
+                if(searchInput.value) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            };
 
-        // Search Trigger
-        const homeSearchInput = document.getElementById('home-search');
-        const btnDoSearch = document.getElementById('btn-do-search');
-        
-        function performSearch() {
-            const term = homeSearchInput.value.trim().toLowerCase();
-            if (!term) return;
-            
-            // Switch to Results Page
-            switchScreen('screen-results');
-            document.getElementById('title-results').textContent = `搜索：${term}`;
-            document.getElementById('title-results').dataset.term = term; // Store term
-            
-            searchResults = allItems.filter(item => {
-                return item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term);
+            searchInput.addEventListener('input', () => {
+                toggleClear();
+                refreshLists();
             });
-            
-            renderList('results-list', 'all', searchResults);
-            updateStats(searchResults);
-            
-            announce(`搜索完成，找到 ${searchResults.length} 个结果`);
+
+            // FIXED: Global ESC for search input
+            searchInput.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape') {
+                    e.stopPropagation();
+                    if(searchInput.value) {
+                        e.preventDefault();
+                        searchInput.value = '';
+                        toggleClear();
+                        refreshLists();
+                        announce("已清空搜索");
+                    } else {
+                        if(screenType === 'takeout') switchScreen('screen-home');
+                    }
+                }
+            });
+
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                toggleClear();
+                refreshLists();
+                searchInput.focus();
+            });
+
+            document.getElementById(filterId).addEventListener('change', (e) => {
+                if (screenType === 'home') homeFilterRoom = e.target.value;
+                if (screenType === 'takeout') takeoutFilterRoom = e.target.value;
+                refreshLists();
+            });
         }
-
-        btnDoSearch.addEventListener('click', performSearch);
-        homeSearchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') performSearch();
-        });
-
-        // Results Page Logic
-        document.getElementById('btn-back-results').addEventListener('click', () => {
-            switchScreen('screen-home');
-            homeSearchInput.value = ''; // Clear search on return? Optional.
-        });
-
+        setupListListeners('home-search', 'home-filter', 'home');
+        setupListListeners('takeout-search', 'takeout-filter', 'takeout');
 
         // --- Navigation ---
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
-            // Reuse search logic for "Takeout" (it's basically search now)
-            document.getElementById('home-search').focus();
-            announce("请输入名称搜索要取出的物品");
+            switchScreen('screen-takeout');
+            document.getElementById('takeout-search').value = ''; refreshLists();
         });
+        document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
 
         document.getElementById('btn-nav-add').addEventListener('click', () => {
             switchScreen('screen-add');
@@ -830,14 +832,9 @@
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
             document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
-            
-            // Show/Hide Put button based on where we are? 
-            // User wanted simplified menu for takeout, but now search is the main interface.
-            // Let's keep all options available in search results for flexibility, or hide PUT if user strictly wants takeout flow.
-            // For now, show all.
             const btnPut = document.getElementById('btn-act-put');
-            btnPut.classList.remove('hidden');
-
+            if (currentScreen === 'takeout') btnPut.classList.add('hidden');
+            else btnPut.classList.remove('hidden');
             modal.classList.remove('hidden');
             setTimeout(() => {
                 const v = modal.querySelectorAll('button:not(.hidden)');
@@ -935,10 +932,10 @@
             closeModals();
         }
 
+        // FIXED: Precision Close Focus
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            // Focus restoration logic based on current screen
-            const containerId = currentScreen === 'results' ? 'results-list' : 'home-list';
+            const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
             const container = document.getElementById(containerId);
             
             if (currentActionItem && currentActionItem.id) {
@@ -968,7 +965,12 @@
                     updatedAt: serverTimestamp()
                 });
                 announce("更新成功");
-                closeModals();
+                if (currentScreen === 'takeout') {
+                    const input = document.getElementById('takeout-search');
+                    input.value = ''; input.focus();
+                } else {
+                    closeModals();
+                }
             } catch(e) { announce("失败"); }
         }
 
@@ -1012,10 +1014,13 @@
                 await deleteDoc(doc(db, "items", currentActionItem.id));
                 announce("已删除");
                 closeModals();
+                if (currentScreen === 'takeout') {
+                    const input = document.getElementById('takeout-search');
+                    input.value = ''; input.focus();
+                }
             } catch(e) { announce("删除失败"); }
         }
 
-        // Add Item
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
             openQtyPicker("设置数量", (v) => {
                 pendingAddQty = v;
@@ -1061,7 +1066,6 @@
             } catch(e) { announce("失败"); }
         });
 
-        // Export/Import
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n";
             allItems.forEach(item => {
@@ -1124,9 +1128,9 @@
 
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
+                e.preventDefault();
                 const menu = document.getElementById('menu-account-dropdown');
                 if (!menu.classList.contains('hidden')) {
-                    e.preventDefault();
                     menu.classList.add('hidden');
                     document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
                     document.getElementById('btn-account-menu').focus();
@@ -1134,15 +1138,11 @@
                 }
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
                 if (modals.length > 0) {
-                    e.preventDefault();
                     closeModals();
                     document.getElementById('modal-qty').classList.add('hidden');
                     return;
                 }
-                if (currentScreen !== 'home' && currentScreen !== 'login') {
-                    e.preventDefault();
-                    switchScreen('screen-home');
-                }
+                if (currentScreen !== 'home' && currentScreen !== 'login') switchScreen('screen-home');
             }
         });
     </script>
