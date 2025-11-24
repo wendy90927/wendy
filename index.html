@@ -18,10 +18,12 @@
             border-width: 0;
         }
         
+        /* 强焦样式：Z-Index 设为 50，避免遮挡模态框 */
         *:focus {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
-            z-index: 100;
+            z-index: 50; 
+            position: relative;
         }
 
         .item-card:focus {
@@ -64,6 +66,11 @@
         .custom-input-trigger:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
+        }
+
+        /* 模态框层级极高，确保覆盖一切 */
+        .modal-overlay {
+            z-index: 9999 !important;
         }
     </style>
 </head>
@@ -126,14 +133,11 @@
                         <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">退出登录</button>
                     </div>
                 </div>
-
                 <div class="flex gap-3">
                     <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">+ 新增物品</button>
                     <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">- 取出物品</button>
                 </div>
-
                 <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
-
                 <div class="relative flex gap-2">
                     <div class="relative flex-grow">
                         <label for="home-search" class="sr-only">搜索物品</label>
@@ -144,7 +148,6 @@
                 </div>
             </div>
         </header>
-
         <section class="bg-white p-4 shadow-sm border-b z-10">
             <div class="max-w-3xl mx-auto flex items-center gap-2">
                 <label for="home-filter" class="font-bold whitespace-nowrap text-lg">房间筛选：</label>
@@ -161,7 +164,6 @@
                 </select>
             </div>
         </section>
-
         <main class="flex-grow p-4 bg-gray-50">
             <div id="home-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded shadow hidden" aria-live="polite"></div>
             <div id="home-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="物品列表"></div>
@@ -175,7 +177,6 @@
                     <button id="btn-back-results" class="bg-white text-purple-800 px-6 py-2 rounded-lg font-bold border-2 border-purple-200">&lt; 返回首页</button>
                     <h1 id="title-results" class="text-xl font-bold outline-none" tabindex="-1">搜索结果</h1>
                 </div>
-                
                 <div class="relative">
                     <label for="results-search" class="sr-only">搜索结果</label>
                     <input type="text" id="results-search" placeholder="继续搜索..." class="w-full p-3 pr-10 text-black rounded shadow font-bold text-lg">
@@ -183,7 +184,6 @@
                 </div>
             </div>
         </div>
-
         <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
             <div id="results-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-purple-50 border-l-4 border-purple-500 rounded shadow text-lg font-bold" aria-live="polite">
                 正在计算...
@@ -301,7 +301,7 @@
         </div>
     </div>
 
-    <div id="modal-forgot" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+    <div id="modal-forgot" class="hidden fixed inset-0 bg-black bg-opacity-70 modal-overlay flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
             <h2 id="title-forgot" class="text-2xl font-bold mb-4 outline-none" tabindex="-1">找回密码</h2>
             <p class="mb-4 text-gray-600">请输入注册邮箱，系统将发送重置邮件。</p>
@@ -314,7 +314,7 @@
         </div>
     </div>
 
-    <div id="modal-action" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+    <div id="modal-action" class="hidden fixed inset-0 bg-black bg-opacity-70 modal-overlay flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
             <h2 id="action-title" class="text-2xl font-bold mb-2 text-gray-900 outline-none" tabindex="-1">管理物品</h2>
             <p id="action-desc" class="text-lg text-gray-600 mb-6">详情</p>
@@ -323,12 +323,12 @@
                 <button id="btn-act-take" class="p-4 bg-orange-100 text-orange-900 font-bold rounded-xl border-2 border-orange-300 text-xl" data-action="take">取出 (减少)</button>
                 <button id="btn-act-edit" class="p-4 bg-indigo-100 text-indigo-900 font-bold rounded-xl border-2 border-indigo-300 text-xl" data-action="edit">修改详情</button>
                 <button id="btn-act-del" class="p-4 bg-red-100 text-red-900 font-bold rounded-xl border-2 border-red-300 text-xl" data-action="delete">删除物品</button>
-                <button class="p-4 bg-gray-100 text-gray-800 font-bold rounded-xl border-2 border-gray-300 text-xl mt-2" onclick="closeModals()">取消</button>
+                <button id="btn-act-cancel" class="p-4 bg-gray-100 text-gray-800 font-bold rounded-xl border-2 border-gray-300 text-xl mt-2">取消</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-end sm:items-center">
+    <div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-80 modal-overlay flex justify-center items-end sm:items-center">
         <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-blue-500">
             <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900 outline-none" tabindex="-1">选择数量</h2>
             <div class="grid grid-cols-5 gap-3 mb-6" id="qty-grid"></div>
@@ -340,11 +340,11 @@
                 </div>
                 <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">确定</button>
             </div>
-            <button class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
+            <button id="btn-qty-cancel" class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl">取消</button>
         </div>
     </div>
 
-    <div id="modal-zero" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+    <div id="modal-zero" class="hidden fixed inset-0 bg-black bg-opacity-70 modal-overlay flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-orange-400">
             <h2 id="title-zero" class="text-2xl font-bold mb-4 text-orange-700 outline-none" tabindex="-1">数量已空</h2>
             <p class="mb-6 text-gray-800 text-lg">物品数量已归零，请选择操作：</p>
@@ -356,12 +356,12 @@
         </div>
     </div>
 
-    <div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+    <div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-70 modal-overlay flex justify-center items-center">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-red-400">
             <h2 id="title-confirm" class="text-2xl font-bold mb-4 text-red-700 outline-none" tabindex="-1">操作确认</h2>
             <p id="confirm-text" class="mb-6 text-gray-800 text-lg"></p>
             <div class="flex gap-4">
-                <button id="btn-confirm-cancel" class="flex-1 p-4 bg-gray-200 rounded-xl font-bold text-lg" onclick="closeModals()">取消</button>
+                <button id="btn-confirm-cancel" class="flex-1 p-4 bg-gray-200 rounded-xl font-bold text-lg">取消</button>
                 <button id="btn-confirm-ok" class="flex-1 p-4 bg-red-600 text-white rounded-xl font-bold text-lg shadow">确认执行</button>
             </div>
         </div>
@@ -447,13 +447,12 @@
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // --- Screen Switcher ---
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            if (currentScreen !== 'login' && currentScreen !== 'register' && screenId !== 'screen-edit' && screenId !== 'screen-results') {
+            if (currentScreen !== 'login' && currentScreen !== 'register' && screenId !== 'screen-edit') {
                 previousScreen = currentScreen;
             }
             
@@ -471,7 +470,6 @@
             if(screenId === 'screen-home') refreshHomeList();
         }
 
-        // --- Auth ---
         onAuthStateChanged(auth, user => {
             if (user) {
                 document.getElementById('btn-account-menu').setAttribute('aria-label', `当前账号：${user.email}，点击展开菜单`);
@@ -523,6 +521,34 @@
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => signOut(auth).then(() => announce("已退出")));
+        
+        // Modal Close Helpers (JS only)
+        function closeModals() {
+            document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
+            
+            // Focus Logic
+            let containerId = 'home-list';
+            if (currentScreen === 'results') containerId = 'results-list';
+            else if (currentScreen === 'takeout') containerId = 'takeout-list';
+            
+            const container = document.getElementById(containerId);
+            
+            if (currentActionItem && currentActionItem.id) {
+                const target = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
+                if (target) { target.focus(); return; }
+            }
+            const first = container.querySelector('.item-card');
+            if (first) first.focus();
+        }
+        // Attach to window for any inline use, though we removed them
+        window.closeModals = closeModals;
+        
+        // Cancel Buttons
+        document.getElementById('btn-act-cancel').addEventListener('click', closeModals);
+        document.getElementById('btn-qty-cancel').addEventListener('click', closeModals);
+        document.getElementById('btn-confirm-cancel').addEventListener('click', closeModals);
+
+        // Other Actions
         document.getElementById('btn-clear-data').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
             openGenericConfirm("确定清空数据？", async () => {
@@ -569,7 +595,6 @@
             }).catch(err => alert(err.message));
         });
 
-        // --- Data Logic (Incremental DOM) ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -592,30 +617,13 @@
                 if (isFirstLoad) {
                     allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
                 }
-                
                 if (currentScreen === 'home') refreshHomeList();
                 if (currentScreen === 'results') refreshResultsList();
             });
         }
 
         function refreshHomeList() {
-            renderList('home-list', homeFilterRoom, allItems);
-        }
-
-        // --- Search Results Logic ---
-        function performSearch() {
-            const term = document.getElementById('home-search').value.trim().toLowerCase() || 
-                         document.getElementById('results-search').value.trim().toLowerCase();
-            if (!term) return;
-
-            switchScreen('screen-results');
-            document.getElementById('title-results').textContent = `搜索：${term}`;
-            document.getElementById('title-results').dataset.term = term;
-            
-            document.getElementById('results-search').value = term;
-            
-            refreshResultsList();
-            announce("搜索完成");
+            renderList('home-list', 'home-search', 'home-filter', 'home-stats', homeFilterRoom);
         }
 
         function refreshResultsList() {
@@ -624,7 +632,6 @@
                 return item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term);
             });
             renderList('results-list', 'all', searchResults);
-            
             const statsContainer = document.getElementById('results-stats');
             if (searchResults.length > 0) {
                 const totals = {};
@@ -633,23 +640,27 @@
                     totals[u] = (totals[u] || 0) + item.quantity;
                 });
                 const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
-                statsContainer.textContent = `共找到 ${searchResults.length} 处。合计：${summaryText}`;
+                statsContainer.innerHTML = `<p class="font-bold text-lg">共 ${searchResults.length} 处。合计：${summaryText}</p>`;
                 statsContainer.classList.remove('hidden');
             } else {
                 statsContainer.classList.add('hidden');
             }
         }
 
-        // --- Renderer ---
-        function renderList(containerId, filterRoom, sourceArray) {
+        function renderList(containerId, filterId, sourceArray) {
             const container = document.getElementById(containerId);
-            
+            let filterRoom = 'all';
+            if(filterId !== 'all') {
+               const el = document.getElementById(filterId);
+               if(el) filterRoom = el.value;
+            }
+
             const filtered = sourceArray.filter(item => {
                 return filterRoom === 'all' || item.room === filterRoom;
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">无相关物品</div>`;
+                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到</div>`;
                 return;
             }
 
@@ -708,20 +719,26 @@
             }
         }
 
-        document.getElementById('home-filter').addEventListener('change', (e) => {
-            homeFilterRoom = e.target.value;
-            refreshHomeList();
-        });
+        function performSearch() {
+            const term = document.getElementById('home-search').value.trim().toLowerCase() || 
+                         document.getElementById('results-search').value.trim().toLowerCase();
+            if (!term) return;
+
+            switchScreen('screen-results');
+            document.getElementById('title-results').textContent = `搜索：${term}`;
+            document.getElementById('title-results').dataset.term = term;
+            document.getElementById('results-search').value = term;
+            refreshResultsList();
+            announce("搜索完成");
+        }
 
         const homeSearchInput = document.getElementById('home-search');
         const btnDoSearch = document.getElementById('btn-do-search');
-        
         btnDoSearch.addEventListener('click', performSearch);
         homeSearchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') performSearch();
         });
 
-        // Search Listeners with Clear
         function setupSearch(inputId, clearBtnId, isHome) {
             const input = document.getElementById(inputId);
             const clearBtn = document.getElementById(clearBtnId);
@@ -744,19 +761,24 @@
                         input.value = ''; toggle();
                         if(!isHome) refreshResultsList();
                         announce("已清空");
+                    } else {
+                        if(!isHome) switchScreen('screen-home');
                     }
                 }
             });
 
             clearBtn.addEventListener('click', () => {
-                input.value = '';
-                toggle();
-                input.focus();
+                input.value = ''; toggle(); input.focus();
                 if (!isHome) refreshResultsList();
             });
         }
         setupSearch('home-search', 'btn-clear-home', true);
         setupSearch('results-search', 'btn-clear-results', false);
+
+        document.getElementById('home-filter').addEventListener('change', (e) => {
+            homeFilterRoom = e.target.value;
+            refreshHomeList();
+        });
 
         document.getElementById('btn-back-results').addEventListener('click', () => {
             switchScreen('screen-home');
@@ -830,7 +852,7 @@
             document.getElementById('action-title').textContent = `管理：${item.name}`;
             document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
             const btnPut = document.getElementById('btn-act-put');
-            if (currentScreen === 'results') btnPut.classList.add('hidden'); // Or remove per need
+            if (currentScreen === 'results') btnPut.classList.add('hidden'); 
             else btnPut.classList.remove('hidden');
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -929,22 +951,6 @@
             closeModals();
         }
 
-        window.closeModals = () => {
-            document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            const containerId = currentScreen === 'results' ? 'results-list' : 'home-list';
-            const container = document.getElementById(containerId);
-            
-            if (currentActionItem && currentActionItem.id) {
-                const target = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
-                if (target) {
-                    target.focus();
-                    return;
-                }
-            }
-            const first = container.querySelector('.item-card');
-            if (first) first.focus();
-        };
-
         async function handleUpdate(change) {
             if (!currentActionItem) return;
             const newQty = currentActionItem.quantity + change;
@@ -969,6 +975,7 @@
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
             setTimeout(() => document.getElementById('title-zero').focus(), 100);
+            
             document.getElementById('btn-zero-keep').onclick = async () => {
                 m.classList.add('hidden');
                 await execUpdate(-currentActionItem.quantity);
@@ -1004,6 +1011,9 @@
                 await deleteDoc(doc(db, "items", currentActionItem.id));
                 announce("已删除");
                 closeModals();
+                if(currentScreen === 'results') {
+                     document.getElementById('results-search').focus();
+                }
             } catch(e) { announce("删除失败"); }
         }
 
