@@ -344,7 +344,7 @@
                 </div>
                 <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">确定</button>
             </div>
-            <button class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
+            <button class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeModals()">取消</button>
         </div>
     </div>
 
@@ -395,12 +395,12 @@
         let allItems = [];
         let currentActionItem = null;
         let pendingAddQty = 1;
-        let currentScreen = 'login';
         let homeFilterRoom = 'all';
         let unsubscribeItems = null;
-        let previousScreen = 'home';
         let focusTargetId = null; 
-        let searchResults = []; // For separate search page
+        let qtyCallback = null;
+        let confirmCallback = null;
+        let previousScreenTarget = 'screen-home'; // 简化：用于编辑后的返回
 
         // Unit Presets
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
@@ -427,7 +427,7 @@
             }
         }
 
-        // FIXED: Force arrow keys for units
+        // Force arrow keys for units
         function attachUnitKeyHandler(inputId) {
             const el = document.getElementById(inputId);
             el.addEventListener('keydown', (e) => {
@@ -460,12 +460,16 @@
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            if (currentScreen !== 'login' && currentScreen !== 'register' && screenId !== 'screen-edit') {
-                previousScreen = currentScreen;
-            }
+            // 记录当前屏幕，用于模态框关闭后焦点恢复
+            const currentScreen = screenId.replace('screen-', '');
             
-            if (screenId === 'screen-home') currentScreen = 'home';
-            if (screenId === 'screen-results') currentScreen = 'results';
+            if (screenId === 'screen-edit') {
+                 // 在进入编辑页面时记录从哪里来
+                 const visibleScreen = Array.from(document.querySelectorAll('.screen')).find(el => !el.classList.contains('hidden'));
+                 if(visibleScreen && visibleScreen.id !== 'screen-login' && visibleScreen.id !== 'screen-register') {
+                    previousScreenTarget = visibleScreen.id;
+                 }
+            }
             
             // Priority Focus
             if (!focusTargetId) {
@@ -476,7 +480,36 @@
             }
 
             if(screenId === 'screen-home') refreshHomeList();
+            // 在切换到结果页时，确保执行搜索并渲染
+            if (screenId === 'screen-results') performSearch(document.getElementById('title-results').dataset.term);
         }
+
+        // 通用模态框关闭
+        window.closeModals = () => {
+            document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
+            
+            // 焦点恢复逻辑
+            const currentVisibleScreen = Array.from(document.querySelectorAll('.screen')).find(el => !el.classList.contains('hidden'));
+            if (!currentVisibleScreen) return;
+            const currentScreenId = currentVisibleScreen.id;
+
+            let containerId;
+            if (currentScreenId === 'screen-results') containerId = 'results-list';
+            else if (currentScreenId === 'screen-home') containerId = 'home-list';
+            else return; 
+            
+            const container = document.getElementById(containerId);
+            
+            if (currentActionItem && currentActionItem.id) {
+                const target = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
+                if (target) {
+                    target.focus();
+                    return;
+                }
+            }
+            const first = container.querySelector('.item-card');
+            if (first) first.focus();
+        };
 
         // --- Auth ---
         onAuthStateChanged(auth, user => {
@@ -522,11 +555,13 @@
         btnAccount.addEventListener('click', (e) => {
             e.stopPropagation();
             menuAccount.classList.toggle('hidden');
+            btnAccount.setAttribute('aria-expanded', menuAccount.classList.contains('hidden') ? 'false' : 'true');
             if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
         });
         document.addEventListener('click', (e) => {
             if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
                 menuAccount.classList.add('hidden');
+                btnAccount.setAttribute('aria-expanded', 'false');
             }
         });
 
@@ -585,12 +620,15 @@
                 let isFirstLoad = allItems.length === 0;
                 snap.docChanges().forEach(change => {
                     const data = { id: change.doc.id, ...change.doc.data() };
+                    // 使用 Array.prototype.findIndex 查找索引
+                    const idx = allItems.findIndex(i => i.id === data.id);
+
                     if (change.type === "added") {
+                        // 首次加载按时间戳排序，后续新增则直接放在最前面
                         if (isFirstLoad) allItems.push(data);
                         else allItems.unshift(data); 
                     }
                     if (change.type === "modified") {
-                        const idx = allItems.findIndex(i => i.id === data.id);
                         if (idx > -1) allItems[idx] = data;
                     }
                     if (change.type === "removed") {
@@ -601,36 +639,21 @@
                     allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
                 }
                 
-                if (currentScreen === 'home') refreshHomeList();
-                if (currentScreen === 'results') refreshResultsList();
+                // 优化：检查当前可见屏幕，只在当前屏幕更新列表
+                const currentScreen = Array.from(document.querySelectorAll('.screen')).find(el => !el.classList.contains('hidden'));
+                
+                if (currentScreen && currentScreen.id === 'screen-home') {
+                    refreshHomeList();
+                } else if (currentScreen && currentScreen.id === 'screen-results') {
+                    // 当搜索页面可见时，重新执行搜索/过滤
+                    const term = document.getElementById('title-results').dataset.term;
+                    if (term) performSearch(term);
+                }
             });
         }
 
         function refreshHomeList() {
             renderList('home-list', homeFilterRoom, allItems);
-        }
-
-        function refreshResultsList() {
-            // Recalculate filtered results based on current search term
-            // Note: In real search page, we might just want to update existing items in the result set
-            // But simple re-filter is safer for consistency
-            const term = document.getElementById('home-search').value.trim().toLowerCase(); 
-            // Note: Search term is from home search input usually, but we are on results page
-            // Let's store search term globally or just re-use
-            // Actually, we should filter allItems again.
-            if (!searchResults) return; // Safety
-            
-            // We need to update searchResults based on allItems changes
-            searchResults = allItems.filter(item => {
-                // Simple check if this item is still in our "search interest"
-                // Or better: Just re-render based on IDs present in searchResults to maintain context?
-                // Simplest: Re-run search filter
-                const st = document.getElementById('title-results').dataset.term || '';
-                return item.name.toLowerCase().includes(st) || (item.location||'').toLowerCase().includes(st);
-            });
-            
-            renderList('results-list', 'all', searchResults);
-            updateStats(searchResults);
         }
 
         // --- The Micro-Update Renderer ---
@@ -675,8 +698,6 @@
                         card.innerHTML = htmlContent;
                         card.setAttribute('aria-label', labelText + "。按回车管理。");
                     }
-                    // Re-append to ensure order? No, keep DOM stable for focus.
-                    // Only append if new
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
@@ -717,6 +738,8 @@
                 });
                 const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
                 statsContainer.textContent = `共找到 ${items.length} 处。合计：${summaryText}`;
+            } else {
+                 statsContainer.textContent = `无相关物品`;
             }
         }
 
@@ -729,27 +752,31 @@
         // Search Trigger
         const homeSearchInput = document.getElementById('home-search');
         const btnDoSearch = document.getElementById('btn-do-search');
-        
-        function performSearch() {
-            const term = homeSearchInput.value.trim().toLowerCase();
-            if (!term) return;
+        let currentSearchResults = [];
+
+        function performSearch(term) {
+            const t = term ? term.trim().toLowerCase() : homeSearchInput.value.trim().toLowerCase();
+            if (!t) return;
             
-            // Switch to Results Page
-            switchScreen('screen-results');
-            document.getElementById('title-results').textContent = `搜索：${term}`;
-            document.getElementById('title-results').dataset.term = term; // Store term
+            // 确保在结果页
+            if (document.getElementById('screen-results').classList.contains('hidden')) {
+                 switchScreen('screen-results');
+            }
             
-            searchResults = allItems.filter(item => {
-                return item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term);
+            document.getElementById('title-results').textContent = `搜索：${t}`;
+            document.getElementById('title-results').dataset.term = t; 
+            
+            currentSearchResults = allItems.filter(item => {
+                return item.name.toLowerCase().includes(t) || (item.location||'').toLowerCase().includes(t);
             });
             
-            renderList('results-list', 'all', searchResults);
-            updateStats(searchResults);
+            renderList('results-list', 'all', currentSearchResults);
+            updateStats(currentSearchResults);
             
-            announce(`搜索完成，找到 ${searchResults.length} 个结果`);
+            announce(`搜索完成，找到 ${currentSearchResults.length} 个结果`);
         }
 
-        btnDoSearch.addEventListener('click', performSearch);
+        btnDoSearch.addEventListener('click', () => performSearch());
         homeSearchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') performSearch();
         });
@@ -757,13 +784,12 @@
         // Results Page Logic
         document.getElementById('btn-back-results').addEventListener('click', () => {
             switchScreen('screen-home');
-            homeSearchInput.value = ''; // Clear search on return? Optional.
+            homeSearchInput.value = ''; // 清空搜索框
         });
 
 
         // --- Navigation ---
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
-            // Reuse search logic for "Takeout" (it's basically search now)
             document.getElementById('home-search').focus();
             announce("请输入名称搜索要取出的物品");
         });
@@ -778,7 +804,7 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
 
-        document.getElementById('btn-back-edit').addEventListener('click', () => switchScreen('screen-' + previousScreen));
+        document.getElementById('btn-back-edit').addEventListener('click', () => switchScreen(previousScreenTarget)); // 使用记录的目标
 
         document.getElementById('form-edit').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -801,13 +827,14 @@
                     updatedAt: serverTimestamp()
                 });
                 announce("修改成功");
-                switchScreen('screen-' + previousScreen);
+                switchScreen(previousScreenTarget);
             } catch(e) { announce("失败"); }
         }
 
         function openZeroConfirmEdit(newQty) {
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
+            closeModals(); // 确保其他模态框关闭
             setTimeout(() => document.getElementById('title-zero').focus(), 100);
             document.getElementById('btn-zero-keep').onclick = async () => {
                 m.classList.add('hidden');
@@ -816,7 +843,7 @@
             document.getElementById('btn-zero-del').onclick = async () => {
                 m.classList.add('hidden');
                 await execDelete();
-                switchScreen('screen-' + previousScreen);
+                switchScreen(previousScreenTarget);
             };
             document.getElementById('btn-zero-cancel').onclick = () => {
                 m.classList.add('hidden');
@@ -831,13 +858,6 @@
             document.getElementById('action-title').textContent = `管理：${item.name}`;
             document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
             
-            // Show/Hide Put button based on where we are? 
-            // User wanted simplified menu for takeout, but now search is the main interface.
-            // Let's keep all options available in search results for flexibility, or hide PUT if user strictly wants takeout flow.
-            // For now, show all.
-            const btnPut = document.getElementById('btn-act-put');
-            btnPut.classList.remove('hidden');
-
             modal.classList.remove('hidden');
             setTimeout(() => {
                 const v = modal.querySelectorAll('button:not(.hidden)');
@@ -865,7 +885,6 @@
             document.getElementById('edit-quantity').value = item.quantity;
         }
 
-        let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         qtyGrid.innerHTML = '';
         for(let i=1; i<=10; i++) {
@@ -930,28 +949,6 @@
             document.getElementById('modal-qty').classList.add('hidden');
         }
 
-        function closeQtyModal() {
-            document.getElementById('modal-qty').classList.add('hidden');
-            closeModals();
-        }
-
-        window.closeModals = () => {
-            document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            // Focus restoration logic based on current screen
-            const containerId = currentScreen === 'results' ? 'results-list' : 'home-list';
-            const container = document.getElementById(containerId);
-            
-            if (currentActionItem && currentActionItem.id) {
-                const target = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
-                if (target) {
-                    target.focus();
-                    return;
-                }
-            }
-            const first = container.querySelector('.item-card');
-            if (first) first.focus();
-        };
-
         async function handleUpdate(change) {
             if (!currentActionItem) return;
             const newQty = currentActionItem.quantity + change;
@@ -975,6 +972,7 @@
         function openZeroConfirm() {
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
+            closeModals(); // 确保其他模态框关闭
             setTimeout(() => document.getElementById('title-zero').focus(), 100);
             
             document.getElementById('btn-zero-keep').onclick = async () => {
@@ -992,7 +990,6 @@
             };
         }
 
-        let confirmCallback = null;
         function openGenericConfirm(msg, cb) {
             document.getElementById('modal-action').classList.add('hidden');
             const m = document.getElementById('modal-confirm');
@@ -1005,7 +1002,7 @@
             if(confirmCallback) confirmCallback();
             document.getElementById('modal-confirm').classList.add('hidden');
         });
-        document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModals());
+        // 移除冗余的 btn-confirm-cancel 监听器，使用内置的 onclick="closeModals()"
 
         async function execDelete() {
             try {
@@ -1021,6 +1018,7 @@
                 pendingAddQty = v;
                 updateAddQtyDisplay();
                 document.getElementById('modal-qty').classList.add('hidden');
+                // 焦点回传
                 document.getElementById('btn-add-qty-trigger').focus();
             });
         });
@@ -1043,7 +1041,7 @@
             const unitVal = document.getElementById('add-unit').value || '个';
             learnNewUnit(unitVal);
             try {
-                await addDoc(itemsRef, {
+                const newDocRef = await addDoc(itemsRef, {
                     name: nameInput.value,
                     room: document.getElementById('add-room').value,
                     location: document.getElementById('add-location').value,
@@ -1053,6 +1051,8 @@
                     updatedAt: serverTimestamp()
                 });
                 announce(`已添加 ${nameInput.value}`);
+                
+                // 重置表单，以便继续添加
                 nameInput.value = '';
                 document.getElementById('add-location').value = '';
                 pendingAddQty = 1;
@@ -1098,9 +1098,11 @@
                 const text = e.target.result;
                 const rows = text.split('\n');
                 let count = 0;
-                for (let i = 1; i < rows.length; i++) {
+                // 从第 1 行开始（跳过标题行）
+                for (let i = 1; i < rows.length; i++) { 
                     const row = rows[i].trim();
                     if (!row) continue;
+                    // 简单的 CSV 解析：按逗号分割
                     const cols = row.split(',');
                     if (cols.length < 1) continue;
                     const name = cols[0]?.trim();
@@ -1136,10 +1138,11 @@
                 if (modals.length > 0) {
                     e.preventDefault();
                     closeModals();
-                    document.getElementById('modal-qty').classList.add('hidden');
                     return;
                 }
-                if (currentScreen !== 'home' && currentScreen !== 'login') {
+                // 仅当不在登录或注册页面时才返回首页
+                const currentScreen = Array.from(document.querySelectorAll('.screen')).find(el => !el.classList.contains('hidden'));
+                if (currentScreen && currentScreen.id !== 'screen-home' && currentScreen.id !== 'screen-login' && currentScreen.id !== 'screen-register') {
                     e.preventDefault();
                     switchScreen('screen-home');
                 }
