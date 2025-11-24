@@ -76,7 +76,7 @@
 
     <div id="live-announcer" class="sr-only" aria-live="polite"></div>
 
-    <div id="screen-login" class="min-h-screen flex flex-col justify-center items-center p-4">
+    <div id="screen-login" class="screen min-h-screen flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
             <h1 id="title-login" class="text-3xl font-bold mb-8 text-center outline-none" tabindex="-1">家庭物品管家</h1>
             
@@ -106,7 +106,7 @@
         </div>
     </div>
 
-    <div id="screen-register" class="hidden min-h-screen flex flex-col justify-center items-center p-4 bg-gray-50">
+    <div id="screen-register" class="screen hidden min-h-screen flex flex-col justify-center items-center p-4 bg-gray-50">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
             <h1 id="title-register" class="text-2xl font-bold mb-6 text-center outline-none" tabindex="-1">注册新账号</h1>
             
@@ -124,7 +124,7 @@
         </div>
     </div>
 
-    <div id="screen-home" class="hidden min-h-screen flex flex-col pb-20">
+    <div id="screen-home" class="screen hidden min-h-screen flex flex-col pb-20">
         <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
                 
@@ -189,7 +189,7 @@
         </main>
     </div>
 
-    <div id="screen-takeout" class="hidden min-h-screen flex flex-col bg-gray-100">
+    <div id="screen-takeout" class="screen hidden min-h-screen flex flex-col bg-gray-100">
         <div class="bg-orange-600 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
                 <div class="flex items-center justify-between">
@@ -227,7 +227,7 @@
         </main>
     </div>
 
-    <div id="screen-add" class="hidden min-h-screen flex flex-col bg-white">
+    <div id="screen-add" class="screen hidden min-h-screen flex flex-col bg-white">
         <div class="bg-green-600 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex items-center justify-between">
                 <button id="btn-back-add" class="bg-white text-green-700 px-6 py-2 rounded-lg font-bold border-2 border-green-200">
@@ -275,7 +275,7 @@
         </div>
     </div>
 
-    <div id="screen-data" class="hidden min-h-screen flex flex-col bg-white">
+    <div id="screen-data" class="screen hidden min-h-screen flex flex-col bg-white">
         <div class="bg-blue-700 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex items-center justify-between">
                 <button id="btn-back-data" class="bg-white text-blue-700 px-6 py-2 rounded-lg font-bold border-2 border-blue-200">
@@ -299,7 +299,6 @@
             <button id="btn-trigger-upload" class="w-full p-6 bg-blue-50 border-2 border-blue-500 text-blue-900 font-bold rounded-xl text-xl hover:bg-blue-100 shadow-sm text-left">
                 上传填写好的文件
             </button>
-            
             <input type="file" id="file-upload" accept=".csv" class="hidden">
         </div>
     </div>
@@ -412,51 +411,25 @@
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // --- Focus & Screen Manager (Safety Net Strategy) ---
+        // --- Screen Switcher (Simplified Stability Version) ---
         function switchScreen(screenId) {
-            ['screen-login', 'screen-register', 'screen-home', 'screen-takeout', 'screen-add', 'screen-data'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
+            // 1. Hide all screens
+            document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+            
+            // 2. Show target
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            // 物理隔离：恢复所有屏幕的交互
-            toggleScreenAccessibility(false);
-
-            // 三段式强制聚焦
-            const attemptFocus = () => {
+            // 3. Simple Timeout Focus (Most robust for screen readers)
+            setTimeout(() => {
                 const h1 = target.querySelector('h1');
                 if (h1) h1.focus();
-            };
-            
-            attemptFocus(); // 立即
-            requestAnimationFrame(() => {
-                attemptFocus(); // 下一帧
-                setTimeout(attemptFocus, 50); // 补刀
-                setTimeout(attemptFocus, 150); // 兜底
-            });
+            }, 100);
 
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-takeout') currentScreen = 'takeout';
             
             refreshLists();
-        }
-
-        // --- 物理隔离 helper ---
-        function toggleScreenAccessibility(disable) {
-            const screens = document.querySelectorAll('[id^="screen-"]');
-            screens.forEach(s => {
-                if (disable) {
-                    s.setAttribute('aria-hidden', 'true');
-                    s.setAttribute('inert', ''); 
-                } else {
-                    // 只有当前显示的屏幕才恢复
-                    if (!s.classList.contains('hidden')) {
-                        s.removeAttribute('aria-hidden');
-                        s.removeAttribute('inert');
-                    }
-                }
-            });
         }
 
         // --- Auth ---
@@ -490,7 +463,7 @@
             }
         });
 
-        // 账号菜单
+        // Account Menu
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
@@ -508,6 +481,7 @@
             signOut(auth).then(() => announce("已退出"));
         });
 
+        // Clear Data
         document.getElementById('btn-clear-data').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
             openGenericConfirm("确定清空所有物品数据吗？账号将保留。", async () => {
@@ -523,6 +497,7 @@
             });
         });
 
+        // Delete Account
         document.getElementById('btn-delete-account').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
             openGenericConfirm("高危操作：永久删除数据并注销账号！", async () => {
@@ -551,25 +526,18 @@
 
         document.getElementById('btn-forgot-pass').addEventListener('click', () => {
             document.getElementById('modal-forgot').classList.remove('hidden');
-            toggleScreenAccessibility(true);
-            requestAnimationFrame(() => document.getElementById('title-forgot').focus());
+            document.getElementById('title-forgot').focus();
         });
-        document.getElementById('btn-cancel-forgot').addEventListener('click', () => {
-            document.getElementById('modal-forgot').classList.add('hidden');
-            toggleScreenAccessibility(false);
-            document.getElementById('btn-forgot-pass').focus();
-        });
+        document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
         document.getElementById('btn-send-reset').addEventListener('click', () => {
             const e = document.getElementById('forgot-email').value;
             if(!e) return;
             sendPasswordResetEmail(auth, e).then(() => {
-                alert("邮件已发送"); 
-                document.getElementById('modal-forgot').classList.add('hidden');
-                toggleScreenAccessibility(false);
+                alert("邮件已发送"); document.getElementById('modal-forgot').classList.add('hidden');
             }).catch(err => alert("失败：" + err.message));
         });
 
-        // --- 数据逻辑 ---
+        // --- Data Logic ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -644,7 +612,7 @@
         setupListListeners('home-search', 'home-filter', 'home');
         setupListListeners('takeout-search', 'takeout-filter', 'takeout');
 
-        // --- 导航 ---
+        // --- Navigation ---
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
             switchScreen('screen-takeout');
             document.getElementById('takeout-search').value = '';
@@ -662,7 +630,7 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
 
-        // --- 菜单 ---
+        // --- Action Menu ---
         function openActionMenu(item) {
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
@@ -673,7 +641,6 @@
             else btnPut.classList.remove('hidden');
 
             modal.classList.remove('hidden');
-            toggleScreenAccessibility(true);
             setTimeout(() => {
                 const v = modal.querySelectorAll('button:not(.hidden)');
                 if(v.length > 0) v[0].focus();
@@ -689,7 +656,7 @@
             if (act === 'delete') openGenericConfirm(`确定删除 ${currentActionItem.name} 吗？`, execDelete);
         });
 
-        // --- 数量选择器 ---
+        // --- Quantity Picker (Simple & Robust) ---
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         
@@ -699,6 +666,7 @@
             btn.className = 'qty-btn';
             btn.textContent = i;
             const handler = (e) => {
+                // Prevent default ONLY on Enter to avoid form submission/accidental clicks
                 if(e.type === 'keydown' && e.key !== 'Enter') return;
                 e.preventDefault(); e.stopPropagation();
                 submitQty(i);
@@ -714,7 +682,6 @@
             document.getElementById('modal-action').classList.add('hidden');
             const modal = document.getElementById('modal-qty');
             modal.classList.remove('hidden');
-            toggleScreenAccessibility(true);
             
             const input = document.getElementById('qty-custom-input');
             const confirm = document.getElementById('btn-qty-confirm');
@@ -733,6 +700,7 @@
             }, 100);
         }
 
+        // Custom Input Logic
         const customTrigger = document.getElementById('qty-custom-trigger');
         function activateInput() {
             const input = document.getElementById('qty-custom-input');
@@ -768,7 +736,6 @@
             if (!val || val <= 0) { announce("无效数量"); return; }
             if (qtyCallback) qtyCallback(val);
             document.getElementById('modal-qty').classList.add('hidden');
-            toggleScreenAccessibility(false);
         }
 
         function closeQtyModal() {
@@ -778,12 +745,11 @@
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            toggleScreenAccessibility(false);
             const container = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
             document.getElementById(container).querySelector('.item-card')?.focus();
         };
 
-        // --- 更新 ---
+        // --- Update Logic ---
         async function handleUpdate(change) {
             if (!currentActionItem) return;
             const newQty = currentActionItem.quantity + change;
@@ -802,7 +768,6 @@
                 if (currentScreen === 'takeout') {
                     const input = document.getElementById('takeout-search');
                     input.value = ''; input.focus();
-                    toggleScreenAccessibility(false);
                 } else {
                     closeModals();
                 }
@@ -812,25 +777,19 @@
         function openZeroConfirm() {
             const m = document.getElementById('modal-zero');
             m.classList.remove('hidden');
-            toggleScreenAccessibility(true);
+            // Simple timeout focus
+            setTimeout(() => document.getElementById('title-zero').focus(), 100);
             
-            const keepBtn = document.getElementById('btn-zero-keep');
-            // 延时聚焦防穿透
-            requestAnimationFrame(() => keepBtn.focus());
-            
-            keepBtn.onclick = async () => {
+            document.getElementById('btn-zero-keep').onclick = async () => {
                 m.classList.add('hidden');
-                toggleScreenAccessibility(false);
                 await execUpdate(-currentActionItem.quantity);
             };
             document.getElementById('btn-zero-del').onclick = async () => {
                 m.classList.add('hidden');
-                toggleScreenAccessibility(false);
                 await execDelete();
             };
             document.getElementById('btn-zero-cancel').onclick = () => {
                 m.classList.add('hidden');
-                toggleScreenAccessibility(false);
                 announce("已取消");
                 closeModals();
             };
@@ -841,16 +800,13 @@
             document.getElementById('modal-action').classList.add('hidden');
             const m = document.getElementById('modal-confirm');
             m.classList.remove('hidden');
-            toggleScreenAccessibility(true);
-            
             document.getElementById('confirm-text').textContent = msg;
             confirmCallback = cb;
-            requestAnimationFrame(() => document.getElementById('title-confirm').focus());
+            setTimeout(() => document.getElementById('title-confirm').focus(), 100);
         }
         document.getElementById('btn-confirm-ok').addEventListener('click', () => {
             if(confirmCallback) confirmCallback();
             document.getElementById('modal-confirm').classList.add('hidden');
-            toggleScreenAccessibility(false);
         });
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModals());
 
@@ -866,13 +822,12 @@
             } catch(e) { announce("删除失败"); }
         }
 
-        // --- 新增 ---
+        // --- Add Item ---
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
             openQtyPicker("设置数量", (v) => {
                 pendingAddQty = v;
                 updateAddQtyDisplay();
                 document.getElementById('modal-qty').classList.add('hidden');
-                toggleScreenAccessibility(false);
                 document.getElementById('btn-add-qty-trigger').focus();
             });
         });
@@ -900,7 +855,7 @@
             } catch(e) { announce("失败"); }
         });
 
-        // --- 导入导出 ---
+        // --- Import/Export ---
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量\n";
             allItems.forEach(item => {
@@ -966,9 +921,10 @@
             reader.readAsText(file);
         });
 
+        // Global Keydown (Only for Escape)
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
-                e.preventDefault();
+                // Simple Escape Logic
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
                 if (modals.length > 0) {
                     closeModals();
