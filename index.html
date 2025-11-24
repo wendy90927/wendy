@@ -6,7 +6,6 @@
     <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 无障碍专用隐藏 */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -19,21 +18,18 @@
             border-width: 0;
         }
         
-        /* 强焦样式 */
         *:focus {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
             z-index: 100;
         }
 
-        /* 列表卡片 */
         .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
-            transform: scale(1.02);
+            transform: scale(1.01);
         }
 
-        /* 数量按钮 */
         .qty-btn {
             height: 60px;
             font-size: 1.5rem;
@@ -54,7 +50,6 @@
             color: #1e40af;
         }
 
-        /* 自定义输入触发器 */
         .custom-input-trigger {
             flex-grow: 1;
             border: 2px solid #e5e7eb;
@@ -75,8 +70,6 @@
 <body class="bg-gray-100 text-gray-900 font-sans">
 
     <div id="live-announcer" class="sr-only" aria-live="polite"></div>
-
-    <datalist id="unit-presets"></datalist>
 
     <div id="screen-login" class="screen min-h-screen flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -212,9 +205,7 @@
 
         <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
             <div id="takeout-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded shadow hidden" aria-live="polite"></div>
-            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表">
-                <p class="text-center text-gray-500 mt-10 text-lg">加载中...</p>
-            </div>
+            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
         </main>
     </div>
 
@@ -234,7 +225,7 @@
                 </div>
                 <div>
                     <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
-                    <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
+                    <input type="text" id="add-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -282,7 +273,7 @@
                 </div>
                 <div>
                     <label for="edit-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
-                    <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
+                    <input type="text" id="edit-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -426,42 +417,34 @@
         let previousScreen = 'home';
         let focusTargetId = null; 
 
-        // Unit Presets
+        // Unit Presets & Logic
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
-        // Load saved units
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
         UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
-
-        function populateUnitDatalist() {
-            const dl = document.getElementById('unit-presets');
-            dl.innerHTML = '';
-            UNIT_LIST.forEach(u => {
-                const op = document.createElement('option');
-                op.value = u;
-                dl.appendChild(op);
-            });
-        }
-        populateUnitDatalist();
 
         function learnNewUnit(unit) {
             if(!unit) return;
             if(!UNIT_LIST.includes(unit)) {
                 UNIT_LIST.push(unit);
                 localStorage.setItem('custom_units', JSON.stringify(UNIT_LIST));
-                populateUnitDatalist();
             }
         }
 
+        // FIXED: Custom Arrow Key Handler without native list interference
         function attachUnitKeyHandler(inputId) {
             const el = document.getElementById(inputId);
             el.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                    e.preventDefault(); // STOP Native
+                    e.preventDefault(); // STOP Native behavior
                     e.stopPropagation(); 
                     let idx = UNIT_LIST.indexOf(el.value);
                     if (idx === -1) idx = e.key === 'ArrowDown' ? -1 : 0;
-                    if (e.key === 'ArrowDown') idx = (idx + 1) % UNIT_LIST.length;
-                    else idx = (idx - 1 + UNIT_LIST.length) % UNIT_LIST.length;
+                    
+                    if (e.key === 'ArrowDown') {
+                        idx = (idx + 1) % UNIT_LIST.length;
+                    } else {
+                        idx = (idx - 1 + UNIT_LIST.length) % UNIT_LIST.length;
+                    }
                     el.value = UNIT_LIST[idx];
                 }
             });
@@ -491,7 +474,7 @@
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-takeout') currentScreen = 'takeout';
             
-            // Priority Focus Logic
+            // FIXED: Don't hijack focus if there is a specific target
             if (!focusTargetId) {
                 setTimeout(() => {
                     const h1 = target.querySelector('h1');
@@ -601,7 +584,7 @@
             }).catch(err => alert(err.message));
         });
 
-        // --- Data Logic ---
+        // --- Incremental DOM Logic (Key to Focus Stability) ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -646,6 +629,7 @@
                 return matchSearch && matchRoom;
             });
 
+            // Stats
             if (searchVal && filtered.length > 0) {
                 const totals = {};
                 filtered.forEach(item => {
@@ -659,21 +643,24 @@
                 statsContainer.classList.add('hidden');
             }
 
-            container.innerHTML = '';
+            // Incremental DOM Update (No innerHTML = '')
+            const existingCards = new Map();
+            container.querySelectorAll('.item-card').forEach(el => existingCards.set(el.dataset.id, el));
+            
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到</div>`;
                 return;
             }
 
-            filtered.forEach(item => {
-                const div = document.createElement('div');
-                div.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative";
-                div.setAttribute('role', 'button');
-                div.setAttribute('tabindex', '0');
-                div.dataset.id = item.id;
-                div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
-                
-                div.innerHTML = `
+            // Remove cards not in filtered list (or move them? simple remove for now)
+            existingCards.forEach((el, id) => {
+                if (!filtered.find(i => i.id === id)) el.remove();
+            });
+
+            // Upsert cards
+            filtered.forEach((item, index) => {
+                let card = existingCards.get(item.id);
+                const htmlContent = `
                     <div class="flex justify-between items-center pointer-events-none">
                         <div>
                             <h3 class="text-xl font-bold text-gray-900">${item.name}</h3>
@@ -682,21 +669,40 @@
                         <div class="text-3xl font-bold text-blue-700">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
                     </div>
                 `;
-                
-                const triggerMenu = () => openActionMenu(item);
-                div.addEventListener('click', triggerMenu);
-                div.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault(); triggerMenu();
-                    }
-                });
-                container.appendChild(div);
+
+                if (card) {
+                    // Update existing
+                    if (card.innerHTML !== htmlContent) card.innerHTML = htmlContent;
+                    // Ensure order (append moves it to end, but if we iterate sequentially it reorders)
+                    container.appendChild(card); 
+                } else {
+                    // Create new
+                    card = document.createElement('div');
+                    card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
+                    card.setAttribute('role', 'button');
+                    card.setAttribute('tabindex', '0');
+                    card.dataset.id = item.id;
+                    card.innerHTML = htmlContent;
+                    
+                    const triggerMenu = () => openActionMenu(item);
+                    card.addEventListener('click', triggerMenu);
+                    card.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault(); triggerMenu();
+                        }
+                    });
+                    container.appendChild(card);
+                }
+                card.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
             });
 
+            // Restore Focus
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
-                if (target) target.focus();
-                focusTargetId = null;
+                if (target) {
+                    target.focus();
+                    focusTargetId = null; // Consume anchor
+                }
             }
         }
 
@@ -718,6 +724,7 @@
                 refreshLists();
             });
 
+            // FIXED: Global ESC for search input
             searchInput.addEventListener('keydown', (e) => {
                 if(e.key === 'Escape') {
                     e.stopPropagation();
@@ -918,12 +925,12 @@
             closeModals();
         }
 
+        // FIXED: Precision Close Focus
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
             const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
             const container = document.getElementById(containerId);
             
-            // FIX: Precision focus anchor
             if (currentActionItem && currentActionItem.id) {
                 const target = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
                 if (target) {
@@ -1114,9 +1121,10 @@
 
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
-                e.preventDefault();
+                // Global ESC logic
                 const menu = document.getElementById('menu-account-dropdown');
                 if (!menu.classList.contains('hidden')) {
+                    e.preventDefault();
                     menu.classList.add('hidden');
                     document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
                     document.getElementById('btn-account-menu').focus();
@@ -1124,11 +1132,15 @@
                 }
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
                 if (modals.length > 0) {
+                    e.preventDefault();
                     closeModals();
                     document.getElementById('modal-qty').classList.add('hidden');
                     return;
                 }
-                if (currentScreen !== 'home' && currentScreen !== 'login') switchScreen('screen-home');
+                if (currentScreen !== 'home' && currentScreen !== 'login') {
+                    e.preventDefault();
+                    switchScreen('screen-home');
+                }
             }
         });
     </script>
