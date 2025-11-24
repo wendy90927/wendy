@@ -19,19 +19,21 @@
             border-width: 0;
         }
         
-        /* 强焦样式 */
+        /* 强焦样式：橙色加粗 */
         *:focus {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
             z-index: 100;
         }
 
+        /* 列表卡片 */
         .item-card:focus {
             border-color: #2563eb;
             background-color: #eff6ff;
             transform: scale(1.02);
         }
 
+        /* 数量按钮 */
         .qty-btn {
             height: 60px;
             font-size: 1.5rem;
@@ -52,6 +54,7 @@
             color: #1e40af;
         }
 
+        /* 自定义输入触发器 */
         .custom-input-trigger {
             flex-grow: 1;
             border: 2px solid #e5e7eb;
@@ -78,13 +81,10 @@
     <div id="screen-login" class="screen min-h-screen flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
             <h1 id="title-login" class="text-3xl font-bold mb-8 text-center outline-none" tabindex="-1">家庭物品管家</h1>
-            
             <label for="login-email" class="block mb-2 font-bold text-lg">邮箱账号</label>
             <input type="email" id="login-email" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="name@email.com" aria-label="邮箱账号">
-            
             <label for="login-password" class="block mb-2 font-bold text-lg">密码</label>
             <input type="password" id="login-password" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-4 text-lg" placeholder="请输入密码" aria-label="密码">
-            
             <div class="flex flex-col gap-3 mb-6">
                 <label class="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
                     <input type="checkbox" id="chk-auto-login" class="w-6 h-6 text-blue-600" checked>
@@ -95,9 +95,7 @@
                     <span class="font-bold text-lg">记住账号</span>
                 </label>
             </div>
-
             <button id="btn-login" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-blue-700 mb-4">登录</button>
-            
             <div class="flex justify-between mt-4">
                 <button id="btn-to-register" class="text-blue-700 font-bold hover:underline p-2">注册新账号</button>
                 <button id="btn-forgot-pass" class="text-gray-600 font-bold hover:underline p-2">忘记密码?</button>
@@ -145,8 +143,8 @@
 
                 <div class="relative">
                     <label for="home-search" class="sr-only">搜索物品</label>
-                    <input type="text" id="home-search" placeholder="输入物品名称搜索..." class="w-full p-3 pr-20 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
-                    <button id="btn-clear-home" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300">清除</button>
+                    <input type="text" id="home-search" placeholder="输入物品名称搜索..." class="w-full p-3 pr-12 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+                    <button id="btn-clear-home" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300" aria-label="清除搜索内容">清除</button>
                 </div>
             </div>
         </header>
@@ -184,8 +182,8 @@
                 
                 <div class="relative">
                     <label for="takeout-search" class="sr-only">搜索要取出的物品</label>
-                    <input type="text" id="takeout-search" placeholder="搜索要取出的物品..." class="w-full p-3 pr-20 text-black rounded shadow font-bold text-lg" aria-label="搜索要取出的物品">
-                    <button id="btn-clear-takeout" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300">清除</button>
+                    <input type="text" id="takeout-search" placeholder="搜索要取出的物品..." class="w-full p-3 pr-12 text-black rounded shadow font-bold text-lg" aria-label="搜索要取出的物品">
+                    <button id="btn-clear-takeout" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300" aria-label="清除搜索内容">清除</button>
                 </div>
             </div>
         </div>
@@ -229,7 +227,7 @@
                 </div>
                 <div>
                     <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
-                    <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
+                    <input type="text" id="add-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -276,8 +274,8 @@
                     <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
-                    <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
+                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
+                    <input type="text" id="edit-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -446,7 +444,7 @@
             }
         }
 
-        // FIXED: Force arrow keys for units
+        // FIXED: Custom Arrow Key Handler with preventDefault
         function attachUnitKeyHandler(inputId) {
             const el = document.getElementById(inputId);
             el.addEventListener('keydown', (e) => {
@@ -486,8 +484,10 @@
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-takeout') currentScreen = 'takeout';
             
-            // Priority Focus Logic
-            if (!focusTargetId) {
+            // Priority Focus Logic (Target ID > H1)
+            if (focusTargetId) {
+                // handled by renderList
+            } else {
                 setTimeout(() => {
                     const h1 = target.querySelector('h1');
                     if (h1) h1.focus();
@@ -596,7 +596,7 @@
             }).catch(err => alert(err.message));
         });
 
-        // --- Data Logic (Incremental DOM) ---
+        // --- Data Logic ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -655,22 +655,21 @@
                 statsContainer.classList.add('hidden');
             }
 
-            // Incremental DOM Update (No innerHTML = '')
-            const existingCards = new Map();
-            container.querySelectorAll('.item-card').forEach(el => existingCards.set(el.dataset.id, el));
-            
+            container.innerHTML = '';
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到</div>`;
                 return;
             }
 
-            existingCards.forEach((el, id) => {
-                if (!filtered.find(i => i.id === id)) el.remove();
-            });
-
-            filtered.forEach((item, index) => {
-                let card = existingCards.get(item.id);
-                const htmlContent = `
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative";
+                div.setAttribute('role', 'button');
+                div.setAttribute('tabindex', '0');
+                div.dataset.id = item.id;
+                div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
+                
+                div.innerHTML = `
                     <div class="flex justify-between items-center pointer-events-none">
                         <div>
                             <h3 class="text-xl font-bold text-gray-900">${item.name}</h3>
@@ -679,36 +678,22 @@
                         <div class="text-3xl font-bold text-blue-700">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
                     </div>
                 `;
-
-                if (card) {
-                    if (card.innerHTML !== htmlContent) card.innerHTML = htmlContent;
-                    container.appendChild(card); 
-                } else {
-                    card = document.createElement('div');
-                    card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
-                    card.setAttribute('role', 'button');
-                    card.setAttribute('tabindex', '0');
-                    card.dataset.id = item.id;
-                    card.innerHTML = htmlContent;
-                    
-                    const triggerMenu = () => openActionMenu(item);
-                    card.addEventListener('click', triggerMenu);
-                    card.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault(); triggerMenu();
-                        }
-                    });
-                    container.appendChild(card);
-                }
-                card.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
+                
+                const triggerMenu = () => openActionMenu(item);
+                div.addEventListener('click', triggerMenu);
+                div.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault(); triggerMenu();
+                    }
+                });
+                container.appendChild(div);
             });
 
-            // Focus Restoration
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
                 if (target) {
                     target.focus();
-                    focusTargetId = null; // Consume anchor
+                    focusTargetId = null; // Consume
                 }
             }
         }
@@ -716,7 +701,7 @@
         function setupListListeners(searchId, filterId, screenType) {
             const searchInput = document.getElementById(searchId);
             const clearBtn = document.createElement('button');
-            clearBtn.className = 'hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300';
+            clearBtn.className = 'hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-800 px-3 py-1 rounded font-bold text-sm border border-gray-300 hover:bg-gray-300';
             clearBtn.textContent = '清除';
             clearBtn.setAttribute('aria-label', '清除搜索内容');
             searchInput.parentNode.appendChild(clearBtn);
@@ -932,12 +917,12 @@
             closeModals();
         }
 
-        // FIXED: Precision Close Focus
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
             const containerId = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
             const container = document.getElementById(containerId);
             
+            // FIXED: Focus restoration on close
             if (currentActionItem && currentActionItem.id) {
                 const target = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
                 if (target) {
@@ -1021,6 +1006,7 @@
             } catch(e) { announce("删除失败"); }
         }
 
+        // Add Item
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
             openQtyPicker("设置数量", (v) => {
                 pendingAddQty = v;
@@ -1066,6 +1052,7 @@
             } catch(e) { announce("失败"); }
         });
 
+        // Export/Import
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n";
             allItems.forEach(item => {
@@ -1128,9 +1115,9 @@
 
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
-                e.preventDefault();
                 const menu = document.getElementById('menu-account-dropdown');
                 if (!menu.classList.contains('hidden')) {
+                    e.preventDefault();
                     menu.classList.add('hidden');
                     document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
                     document.getElementById('btn-account-menu').focus();
@@ -1138,11 +1125,15 @@
                 }
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
                 if (modals.length > 0) {
+                    e.preventDefault();
                     closeModals();
                     document.getElementById('modal-qty').classList.add('hidden');
                     return;
                 }
-                if (currentScreen !== 'home' && currentScreen !== 'login') switchScreen('screen-home');
+                if (currentScreen !== 'home' && currentScreen !== 'login') {
+                    e.preventDefault();
+                    switchScreen('screen-home');
+                }
             }
         });
     </script>
