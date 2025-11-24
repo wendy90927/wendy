@@ -1,2 +1,921 @@
-# wendy
-It's my APP.
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭物品管家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 无障碍辅助 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        
+        /* 强焦样式 */
+        *:focus {
+            outline: 4px solid #f97316; 
+            outline-offset: 2px;
+            z-index: 50;
+        }
+
+        .item-card:focus {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            transform: scale(1.02);
+        }
+
+        /* 数量按钮 */
+        .qty-btn {
+            height: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .qty-btn:hover, .qty-btn:focus {
+            background-color: #dbeafe;
+            border-color: #2563eb;
+            color: #1e40af;
+        }
+
+        /* 自定义输入容器 */
+        .custom-input-trigger {
+            flex-grow: 1;
+            border: 2px solid #e5e7eb;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            cursor: pointer;
+        }
+        .custom-input-trigger:focus {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+
+    <div id="live-announcer" class="sr-only" aria-live="polite"></div>
+
+    <div id="screen-login" class="screen min-h-screen flex flex-col justify-center items-center p-4">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h1 id="title-login" class="text-3xl font-bold mb-8 text-center outline-none" tabindex="-1">家庭物品管家</h1>
+            
+            <label for="login-email" class="block mb-2 font-bold text-lg">邮箱账号</label>
+            <input type="email" id="login-email" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="name@email.com" aria-label="邮箱账号">
+            
+            <label for="login-password" class="block mb-2 font-bold text-lg">密码</label>
+            <input type="password" id="login-password" class="w-full p-4 border-2 border-gray-300 rounded-lg mb-4 text-lg" placeholder="请输入密码" aria-label="密码">
+            
+            <div class="flex flex-col gap-3 mb-6">
+                <label class="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" id="chk-auto-login" class="w-6 h-6 text-blue-600" checked>
+                    <span class="font-bold text-lg">自动登录 (下次免密)</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" id="chk-remember-email" class="w-6 h-6 text-blue-600">
+                    <span class="font-bold text-lg">记住账号 (仅填邮箱)</span>
+                </label>
+            </div>
+
+            <button id="btn-login" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-blue-700 mb-4">登录</button>
+            
+            <div class="flex justify-between mt-4">
+                <button id="btn-to-register" class="text-blue-700 font-bold hover:underline p-2">注册新账号</button>
+                <button id="btn-forgot-pass" class="text-gray-600 font-bold hover:underline p-2">忘记密码?</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-register" class="screen hidden min-h-screen flex flex-col justify-center items-center p-4 bg-gray-50">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h1 id="title-register" class="text-2xl font-bold mb-6 text-center outline-none" tabindex="-1">注册新账号</h1>
+            
+            <label for="reg-email" class="block mb-2 font-bold text-lg">邮箱</label>
+            <input type="email" id="reg-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 text-lg" aria-label="设置邮箱">
+            
+            <label for="reg-pass" class="block mb-2 font-bold text-lg">设置密码 (至少6位)</label>
+            <input type="password" id="reg-pass" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-4 text-lg" aria-label="设置密码">
+            
+            <label for="reg-pass-confirm" class="block mb-2 font-bold text-lg">确认密码</label>
+            <input type="password" id="reg-pass-confirm" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-8 text-lg" aria-label="确认密码">
+            
+            <button id="btn-submit-reg" class="w-full bg-green-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-green-700 mb-4">确认注册</button>
+            <button id="btn-back-login" class="w-full bg-gray-200 text-gray-800 p-3 rounded-lg font-bold text-lg">返回登录</button>
+        </div>
+    </div>
+
+    <div id="screen-home" class="screen hidden min-h-screen flex flex-col pb-20">
+        <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex flex-col gap-4">
+                
+                <div class="flex justify-between items-center mb-1 relative">
+                    <h1 id="title-home" class="text-xl font-bold outline-none" tabindex="-1">物品管家</h1>
+                    <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2 focus:ring-2 ring-white">
+                        <span id="user-email-display">账号</span>
+                        <span aria-hidden="true">▼</span>
+                    </button>
+                    <div id="menu-account-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 text-gray-900 z-50 flex flex-col">
+                        <button id="btn-clear-data" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">🗑️ 清空所有数据</button>
+                        <button id="btn-delete-account" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">⚠ 注销账号</button>
+                        <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">🚪 退出登录</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">+ 新增物品</button>
+                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">- 取出物品</button>
+                </div>
+
+                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
+
+                <label for="home-search" class="sr-only">搜索物品</label>
+                <input type="text" id="home-search" placeholder="输入物品名称搜索..." class="w-full p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+            </div>
+        </header>
+
+        <section class="bg-white p-4 shadow-sm border-b z-10">
+            <div class="max-w-3xl mx-auto flex items-center gap-2">
+                <label for="home-filter" class="font-bold whitespace-nowrap text-lg">房间筛选：</label>
+                <select id="home-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选房间">
+                    <option value="all">全部房间</option>
+                    <option value="客厅">客厅</option>
+                    <option value="厨房">厨房</option>
+                    <option value="卧室">卧室</option>
+                    <option value="书房">书房</option>
+                    <option value="餐厅">餐厅</option>
+                    <option value="玄关">玄关</option>
+                    <option value="卫生间">卫生间</option>
+                    <option value="洗衣房">洗衣房</option>
+                </select>
+            </div>
+        </section>
+
+        <main class="flex-grow p-4 bg-gray-50">
+            <div id="home-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded shadow hidden" aria-live="polite">
+                </div>
+            <div id="home-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="物品列表"></div>
+        </main>
+    </div>
+
+    <div id="screen-takeout" class="screen hidden min-h-screen flex flex-col bg-gray-100">
+        <div class="bg-orange-600 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <button id="btn-back-takeout" class="bg-white text-orange-700 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">&lt; 返回首页</button>
+                    <h1 id="title-takeout" class="text-xl font-bold outline-none" tabindex="-1">取出物品</h1>
+                </div>
+                <label for="takeout-search" class="sr-only">搜索要取出的物品</label>
+                <input type="text" id="takeout-search" placeholder="搜索要取出的物品..." class="w-full p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索要取出的物品">
+            </div>
+        </div>
+
+        <section class="bg-white p-4 shadow-sm border-b z-10">
+            <div class="max-w-3xl mx-auto flex items-center gap-2">
+                <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg">房间：</label>
+                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选房间">
+                    <option value="all">全部房间</option>
+                    <option value="客厅">客厅</option>
+                    <option value="厨房">厨房</option>
+                    <option value="卧室">卧室</option>
+                    <option value="书房">书房</option>
+                    <option value="餐厅">餐厅</option>
+                    <option value="玄关">玄关</option>
+                    <option value="卫生间">卫生间</option>
+                    <option value="洗衣房">洗衣房</option>
+                </select>
+            </div>
+        </section>
+
+        <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
+            <div id="takeout-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded shadow hidden" aria-live="polite"></div>
+            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="搜索结果列表"></div>
+        </main>
+    </div>
+
+    <div id="screen-add" class="screen hidden min-h-screen flex flex-col bg-white">
+        <div class="bg-green-600 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex items-center justify-between">
+                <button id="btn-back-add" class="bg-white text-green-700 px-6 py-2 rounded-lg font-bold border-2 border-green-200">&lt; 返回首页</button>
+                <h1 id="title-add" class="text-xl font-bold outline-none" tabindex="-1">新增物品</h1>
+            </div>
+        </div>
+        
+        <div class="max-w-lg mx-auto w-full p-6 overflow-y-auto">
+            <form id="form-add" class="space-y-6">
+                <div>
+                    <label for="add-name" class="block font-bold mb-2 text-xl">物品名称 (必填)</label>
+                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：牛奶" aria-label="物品名称">
+                </div>
+
+                <div>
+                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (如：个、箱)</label>
+                    <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="输入或选择单位" value="个" aria-label="物品单位">
+                    <datalist id="unit-presets">
+                        <option value="个"></option>
+                        <option value="包"></option>
+                        <option value="箱"></option>
+                        <option value="瓶"></option>
+                        <option value="袋"></option>
+                        <option value="条"></option>
+                        <option value="只"></option>
+                        <option value="斤"></option>
+                        <option value="公斤"></option>
+                    </datalist>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label for="add-room" class="block font-bold mb-2 text-xl">房间</label>
+                        <select id="add-room" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl bg-white text-black" aria-label="选择房间">
+                            <option value="厨房">厨房</option>
+                            <option value="客厅">客厅</option>
+                            <option value="卧室">卧室</option>
+                            <option value="书房">书房</option>
+                            <option value="餐厅">餐厅</option>
+                            <option value="玄关">玄关</option>
+                            <option value="卫生间">卫生间</option>
+                            <option value="洗衣房">洗衣房</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="add-location" class="block font-bold mb-2 text-xl">具体位置</label>
+                        <input type="text" id="add-location" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：柜子第二层" aria-label="具体位置">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold mb-2 text-xl">初始数量</label>
+                    <button type="button" id="btn-add-qty-trigger" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-left text-xl rounded-lg" aria-label="设置初始数量">
+                        当前选择：1 (点击修改)
+                    </button>
+                </div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl mt-8 shadow-lg">保存并继续</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="screen-data" class="screen hidden min-h-screen flex flex-col bg-white">
+        <div class="bg-blue-700 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex items-center justify-between">
+                <button id="btn-back-data" class="bg-white text-blue-700 px-6 py-2 rounded-lg font-bold border-2 border-blue-200">&lt; 返回首页</button>
+                <h1 id="title-data" class="text-xl font-bold outline-none" tabindex="-1">数据管理</h1>
+            </div>
+        </div>
+        <div class="max-w-lg mx-auto w-full p-8 flex flex-col gap-6 mt-10">
+            <button id="btn-export" class="w-full p-6 bg-green-50 border-2 border-green-500 text-green-900 font-bold rounded-xl text-xl hover:bg-green-100 shadow-sm text-left">⬇ 导出备份数据 (CSV)</button>
+            <hr class="border-gray-200 my-2">
+            <p class="text-lg font-bold text-gray-700">批量导入：</p>
+            <button id="btn-download-template" class="w-full p-6 bg-gray-50 border-2 border-gray-400 text-gray-800 font-bold rounded-xl text-xl hover:bg-gray-100 shadow-sm text-left">下载导入模板</button>
+            <button id="btn-trigger-upload" class="w-full p-6 bg-blue-50 border-2 border-blue-500 text-blue-900 font-bold rounded-xl text-xl hover:bg-blue-100 shadow-sm text-left">上传填写好的文件</button>
+            <input type="file" id="file-upload" accept=".csv" class="hidden">
+        </div>
+    </div>
+
+    <div id="modal-forgot" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
+            <h2 id="title-forgot" class="text-2xl font-bold mb-4 outline-none" tabindex="-1">找回密码</h2>
+            <p class="mb-4 text-gray-600">请输入您的注册邮箱，系统将发送重置邮件给您。</p>
+            <label for="forgot-email" class="sr-only">邮箱地址</label>
+            <input type="email" id="forgot-email" class="w-full p-3 border-2 border-gray-300 rounded-lg mb-6 text-lg" placeholder="邮箱地址" aria-label="找回密码邮箱">
+            <div class="flex gap-3">
+                <button id="btn-cancel-forgot" class="flex-1 p-3 bg-gray-200 font-bold rounded-lg text-lg">取消</button>
+                <button id="btn-send-reset" class="flex-1 p-3 bg-blue-600 text-white font-bold rounded-lg text-lg">发送邮件</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-action" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
+            <h2 id="action-title" class="text-2xl font-bold mb-2 text-gray-900 outline-none" tabindex="-1">管理物品</h2>
+            <p id="action-desc" class="text-lg text-gray-600 mb-6">详情</p>
+            <div class="flex flex-col gap-4" id="action-buttons-container">
+                <button id="btn-act-put" class="p-4 bg-blue-100 text-blue-900 font-bold rounded-xl border-2 border-blue-300 text-xl" data-action="put">放入 (增加)</button>
+                <button id="btn-act-take" class="p-4 bg-orange-100 text-orange-900 font-bold rounded-xl border-2 border-orange-300 text-xl" data-action="take">取出 (减少)</button>
+                <button id="btn-act-del" class="p-4 bg-red-100 text-red-900 font-bold rounded-xl border-2 border-red-300 text-xl" data-action="delete">删除物品</button>
+                <button class="p-4 bg-gray-100 text-gray-800 font-bold rounded-xl border-2 border-gray-300 text-xl mt-2" onclick="closeModals()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-end sm:items-center">
+        <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-blue-500">
+            <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900 outline-none" tabindex="-1">选择数量</h2>
+            <div class="grid grid-cols-5 gap-3 mb-6" id="qty-grid"></div>
+            <div class="flex gap-2 mb-6 items-stretch">
+                <div id="qty-custom-trigger" class="custom-input-trigger" role="button" tabindex="0" aria-label="自定义数量，按回车输入">
+                    <span class="mr-2 font-bold text-gray-700 text-lg">自定义:</span>
+                    <label for="qty-custom-input" class="sr-only">输入数量</label>
+                    <input type="number" id="qty-custom-input" class="w-24 p-2 border-b-4 border-gray-400 text-center font-bold text-xl bg-gray-50 text-black" disabled placeholder="#" tabindex="-1" aria-label="输入自定义数量">
+                </div>
+                <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">确定</button>
+            </div>
+            <button class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
+        </div>
+    </div>
+
+    <div id="modal-zero" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-orange-400">
+            <h2 id="title-zero" class="text-2xl font-bold mb-4 text-orange-700 outline-none" tabindex="-1">数量已空</h2>
+            <p class="mb-6 text-gray-800 text-lg">物品数量已归零，请选择操作：</p>
+            <div class="flex flex-col gap-4">
+                <button id="btn-zero-keep" class="p-4 bg-blue-100 text-blue-900 rounded-xl font-bold border-2 border-blue-200 text-lg">保留物品 (数量设为0)</button>
+                <button id="btn-zero-del" class="p-4 bg-red-100 text-red-900 rounded-xl font-bold border-2 border-red-200 text-lg">删除物品</button>
+                <button id="btn-zero-cancel" class="p-4 bg-gray-200 text-gray-900 rounded-xl font-bold border-2 border-gray-300 text-lg">取消操作 (撤销)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-red-400">
+            <h2 id="title-confirm" class="text-2xl font-bold mb-4 text-red-700 outline-none" tabindex="-1">⚠ 操作确认</h2>
+            <p id="confirm-text" class="mb-6 text-gray-800 text-lg"></p>
+            <div class="flex gap-4">
+                <button id="btn-confirm-cancel" class="flex-1 p-4 bg-gray-200 rounded-xl font-bold text-lg" onclick="closeModals()">取消</button>
+                <button id="btn-confirm-ok" class="flex-1 p-4 bg-red-600 text-white rounded-xl font-bold text-lg shadow">确认执行</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, deleteUser, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, doc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyC3rxfvajIswJADfzJD0lphVra99vka7nE",
+            authDomain: "household-item-management.firebaseapp.com",
+            projectId: "household-item-management",
+            storageBucket: "household-item-management.firebasestorage.app",
+            messagingSenderId: "1042289941268",
+            appId: "1:1042289941268:web:2d77a3a9fb2cf666ed0001"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const itemsRef = collection(db, "items");
+
+        let allItems = [];
+        let currentActionItem = null;
+        let pendingAddQty = 1;
+        let currentScreen = 'login';
+        let homeFilterRoom = 'all';
+        let takeoutFilterRoom = 'all';
+        let unsubscribeItems = null;
+
+        const savedEmail = localStorage.getItem('savedEmail');
+        if(savedEmail) document.getElementById('login-email').value = savedEmail;
+
+        window.announce = (msg) => {
+            const el = document.getElementById('live-announcer');
+            el.textContent = msg;
+            setTimeout(() => el.textContent = '', 1000);
+        };
+
+        // --- Switch Screen (Robust) ---
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(screenId);
+            target.classList.remove('hidden');
+            
+            // Robust focus
+            setTimeout(() => {
+                const h1 = target.querySelector('h1');
+                if (h1) h1.focus();
+            }, 100);
+
+            if (screenId === 'screen-home') currentScreen = 'home';
+            if (screenId === 'screen-takeout') currentScreen = 'takeout';
+            refreshLists();
+        }
+
+        // --- Auth ---
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('btn-account-menu').setAttribute('aria-label', `当前账号：${user.email}，点击展开菜单`);
+                document.getElementById('user-email-display').textContent = user.email.split('@')[0];
+                switchScreen('screen-home');
+                setupDataListener(user.uid);
+            } else {
+                if(unsubscribeItems) unsubscribeItems();
+                allItems = [];
+                switchScreen('screen-login');
+            }
+        });
+
+        // Enter key login
+        document.getElementById('login-password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('btn-login').click();
+            }
+        });
+
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const e = document.getElementById('login-email').value;
+            const p = document.getElementById('login-password').value;
+            const autoLogin = document.getElementById('chk-auto-login').checked;
+            const rememberEmail = document.getElementById('chk-remember-email').checked;
+
+            if(rememberEmail) localStorage.setItem('savedEmail', e);
+            else localStorage.removeItem('savedEmail');
+
+            try {
+                await setPersistence(auth, autoLogin ? browserLocalPersistence : browserSessionPersistence);
+                await signInWithEmailAndPassword(auth, e, p);
+            } catch(err) {
+                announce("登录失败"); alert("登录失败：" + err.message);
+            }
+        });
+
+        // Menu & Actions
+        const btnAccount = document.getElementById('btn-account-menu');
+        const menuAccount = document.getElementById('menu-account-dropdown');
+        btnAccount.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuAccount.classList.toggle('hidden');
+            if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
+        });
+        document.addEventListener('click', (e) => {
+            if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) menuAccount.classList.add('hidden');
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+        document.getElementById('btn-clear-data').addEventListener('click', () => {
+            menuAccount.classList.add('hidden');
+            openGenericConfirm("确定清空数据？", async () => {
+                const batch = writeBatch(db);
+                const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
+                const snapshot = await getDocs(q);
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                announce("已清空");
+            });
+        });
+        document.getElementById('btn-delete-account').addEventListener('click', () => {
+            menuAccount.classList.add('hidden');
+            openGenericConfirm("确定删除账号？", async () => {
+                const batch = writeBatch(db);
+                const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
+                const snapshot = await getDocs(q);
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                await deleteUser(auth.currentUser);
+            });
+        });
+
+        document.getElementById('btn-to-register').addEventListener('click', () => switchScreen('screen-register'));
+        document.getElementById('btn-back-login').addEventListener('click', () => switchScreen('screen-login'));
+        document.getElementById('btn-submit-reg').addEventListener('click', () => {
+            const e = document.getElementById('reg-email').value;
+            const p1 = document.getElementById('reg-pass').value;
+            const p2 = document.getElementById('reg-pass-confirm').value;
+            if (p1 !== p2 || p1.length < 6) { alert("密码问题"); return; }
+            createUserWithEmailAndPassword(auth, e, p1).catch(err => alert(err.message));
+        });
+
+        // Forgot Password
+        document.getElementById('btn-forgot-pass').addEventListener('click', () => {
+            document.getElementById('modal-forgot').classList.remove('hidden');
+            setTimeout(() => document.getElementById('title-forgot').focus(), 100);
+        });
+        document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
+        document.getElementById('btn-send-reset').addEventListener('click', () => {
+            const e = document.getElementById('forgot-email').value;
+            sendPasswordResetEmail(auth, e).then(() => {
+                alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden');
+            }).catch(err => alert(err.message));
+        });
+
+        // --- Data & List ---
+        function setupDataListener(uid) {
+            if(unsubscribeItems) unsubscribeItems();
+            const q = query(itemsRef, where("uid", "==", uid));
+            unsubscribeItems = onSnapshot(q, snap => {
+                allItems = [];
+                snap.forEach(d => allItems.push({ id: d.id, ...d.data() }));
+                allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
+                refreshLists();
+            });
+        }
+
+        function refreshLists() {
+            if (currentScreen === 'home') renderList('home-list', 'home-search', 'home-filter', 'home-stats', homeFilterRoom);
+            if (currentScreen === 'takeout') renderList('takeout-list', 'takeout-search', 'takeout-filter', 'takeout-stats', takeoutFilterRoom);
+        }
+
+        function renderList(containerId, searchId, filterId, statsId, currentRoomFilter) {
+            const container = document.getElementById(containerId);
+            const statsContainer = document.getElementById(statsId);
+            const searchVal = document.getElementById(searchId).value.trim().toLowerCase();
+            const selectEl = document.getElementById(filterId);
+            if (selectEl.value !== currentRoomFilter) selectEl.value = currentRoomFilter;
+
+            const filtered = allItems.filter(item => {
+                const matchSearch = item.name.toLowerCase().includes(searchVal) || (item.location||'').toLowerCase().includes(searchVal);
+                const matchRoom = currentRoomFilter === 'all' || item.room === currentRoomFilter;
+                return matchSearch && matchRoom;
+            });
+
+            // Calculate Stats (Group by Unit)
+            if (searchVal && filtered.length > 0) {
+                const totals = {};
+                filtered.forEach(item => {
+                    const u = item.unit || '个';
+                    totals[u] = (totals[u] || 0) + item.quantity;
+                });
+                const summaryText = Object.entries(totals).map(([u, q]) => `${q}${u}`).join('、');
+                statsContainer.innerHTML = `<p class="font-bold text-lg">共找到 ${filtered.length} 处。合计：${summaryText}</p>`;
+                statsContainer.classList.remove('hidden');
+                // 仅在搜索内容变化时播报，防止刷屏
+                // announce(`找到${filtered.length}处，合计${summaryText}`); 
+            } else {
+                statsContainer.classList.add('hidden');
+            }
+
+            container.innerHTML = '';
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">未找到</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative";
+                div.setAttribute('role', 'button');
+                div.setAttribute('tabindex', '0');
+                // Update ARIA to read unit
+                div.setAttribute('aria-label', `${item.name}，位于 ${item.room} 的 ${item.location || '未知位置'}，剩余 ${item.quantity} ${item.unit||'个'}。按回车管理。`);
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-center pointer-events-none">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">${item.name}</h3>
+                            <p class="text-base text-gray-600 font-bold">${item.room} - ${item.location || '位置未填'}</p>
+                        </div>
+                        <div class="text-3xl font-bold text-blue-700">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
+                    </div>
+                `;
+                
+                const triggerMenu = () => openActionMenu(item);
+                div.addEventListener('click', triggerMenu);
+                div.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        triggerMenu();
+                    }
+                });
+                container.appendChild(div);
+            });
+        }
+
+        // Search Listeners
+        ['home', 'takeout'].forEach(screen => {
+            document.getElementById(`${screen}-search`).addEventListener('input', () => refreshLists());
+            document.getElementById(`${screen}-filter`).addEventListener('change', (e) => {
+                if(screen==='home') homeFilterRoom = e.target.value;
+                else takeoutFilterRoom = e.target.value;
+                refreshLists();
+            });
+        });
+
+        // Navigation
+        document.getElementById('btn-nav-takeout').addEventListener('click', () => {
+            switchScreen('screen-takeout');
+            document.getElementById('takeout-search').value = '';
+            refreshLists();
+        });
+        document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
+        document.getElementById('btn-nav-add').addEventListener('click', () => {
+            switchScreen('screen-add');
+            document.getElementById('add-name').focus();
+            pendingAddQty = 1;
+            updateAddQtyDisplay();
+        });
+        document.getElementById('btn-back-add').addEventListener('click', () => switchScreen('screen-home'));
+        document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
+        document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
+
+        // Action Menu
+        function openActionMenu(item) {
+            currentActionItem = item;
+            const modal = document.getElementById('modal-action');
+            document.getElementById('action-title').textContent = `管理：${item.name}`;
+            document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
+            const btnPut = document.getElementById('btn-act-put');
+            if (currentScreen === 'takeout') btnPut.classList.add('hidden');
+            else btnPut.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                const v = modal.querySelectorAll('button:not(.hidden)');
+                if(v.length > 0) v[0].focus();
+            }, 100);
+        }
+
+        document.getElementById('action-buttons-container').addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const act = btn.dataset.action;
+            if (act === 'put') openQtyPicker("放入数量", (n) => handleUpdate(n));
+            if (act === 'take') openQtyPicker("取出数量", (n) => handleUpdate(-n));
+            if (act === 'delete') openGenericConfirm(`确定删除 ${currentActionItem.name} 吗？`, execDelete);
+        });
+
+        // Quantity Picker
+        let qtyCallback = null;
+        const qtyGrid = document.getElementById('qty-grid');
+        qtyGrid.innerHTML = '';
+        for(let i=1; i<=10; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'qty-btn';
+            btn.textContent = i;
+            const handler = (e) => {
+                if(e.type === 'keydown' && e.key !== 'Enter') return;
+                e.preventDefault(); e.stopPropagation();
+                submitQty(i);
+            };
+            btn.addEventListener('click', handler);
+            btn.addEventListener('keydown', handler);
+            qtyGrid.appendChild(btn);
+        }
+
+        function openQtyPicker(title, cb) {
+            qtyCallback = cb;
+            document.getElementById('qty-title').textContent = title;
+            document.getElementById('modal-action').classList.add('hidden');
+            document.getElementById('modal-qty').classList.remove('hidden');
+            const input = document.getElementById('qty-custom-input');
+            const confirm = document.getElementById('btn-qty-confirm');
+            const trigger = document.getElementById('qty-custom-trigger');
+            input.value = ''; input.disabled = true;
+            confirm.disabled = true; confirm.classList.add('opacity-50');
+            confirm.setAttribute('tabindex', '-1'); trigger.setAttribute('tabindex', '0');
+            setTimeout(() => { qtyGrid.firstChild.focus(); announce("请选择数量"); }, 100);
+        }
+
+        const customTrigger = document.getElementById('qty-custom-trigger');
+        function activateInput() {
+            const input = document.getElementById('qty-custom-input');
+            const confirm = document.getElementById('btn-qty-confirm');
+            const trigger = document.getElementById('qty-custom-trigger');
+            trigger.setAttribute('tabindex', '-1');
+            input.disabled = false; input.focus();
+            confirm.disabled = false; confirm.classList.remove('opacity-50');
+            confirm.setAttribute('tabindex', '0');
+            announce("请输入数字");
+        }
+        customTrigger.addEventListener('click', activateInput);
+        customTrigger.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault(); e.stopPropagation();
+                activateInput();
+            }
+        });
+        document.getElementById('qty-custom-input').addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault(); e.stopPropagation();
+                submitQty(parseInt(e.target.value));
+            }
+        });
+        document.getElementById('btn-qty-confirm').addEventListener('click', () => {
+            submitQty(parseInt(document.getElementById('qty-custom-input').value));
+        });
+
+        function submitQty(val) {
+            if (!val || val <= 0) { announce("无效数量"); return; }
+            if (qtyCallback) qtyCallback(val);
+            document.getElementById('modal-qty').classList.add('hidden');
+        }
+
+        function closeQtyModal() {
+            document.getElementById('modal-qty').classList.add('hidden');
+            closeModals();
+        }
+
+        window.closeModals = () => {
+            document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
+            const container = currentScreen === 'takeout' ? 'takeout-list' : 'home-list';
+            document.getElementById(container).querySelector('.item-card')?.focus();
+        };
+
+        // Update & Zero Logic
+        async function handleUpdate(change) {
+            if (!currentActionItem) return;
+            const newQty = currentActionItem.quantity + change;
+            if (newQty === 0) { openZeroConfirm(); return; }
+            if (newQty < 0) { announce("库存不足"); return; }
+            await execUpdate(change);
+        }
+
+        async function execUpdate(change) {
+            try {
+                await updateDoc(doc(db, "items", currentActionItem.id), {
+                    quantity: increment(change),
+                    updatedAt: serverTimestamp()
+                });
+                announce("更新成功");
+                if (currentScreen === 'takeout') {
+                    const input = document.getElementById('takeout-search');
+                    input.value = ''; input.focus();
+                } else {
+                    closeModals();
+                }
+            } catch(e) { announce("失败"); }
+        }
+
+        function openZeroConfirm() {
+            const m = document.getElementById('modal-zero');
+            m.classList.remove('hidden');
+            setTimeout(() => document.getElementById('title-zero').focus(), 100);
+            
+            document.getElementById('btn-zero-keep').onclick = async () => {
+                m.classList.add('hidden');
+                await execUpdate(-currentActionItem.quantity);
+            };
+            document.getElementById('btn-zero-del').onclick = async () => {
+                m.classList.add('hidden');
+                await execDelete();
+            };
+            document.getElementById('btn-zero-cancel').onclick = () => {
+                m.classList.add('hidden');
+                announce("已取消");
+                closeModals();
+            };
+        }
+
+        let confirmCallback = null;
+        function openGenericConfirm(msg, cb) {
+            document.getElementById('modal-action').classList.add('hidden');
+            const m = document.getElementById('modal-confirm');
+            m.classList.remove('hidden');
+            document.getElementById('confirm-text').textContent = msg;
+            confirmCallback = cb;
+            setTimeout(() => document.getElementById('title-confirm').focus(), 100);
+        }
+        document.getElementById('btn-confirm-ok').addEventListener('click', () => {
+            if(confirmCallback) confirmCallback();
+            document.getElementById('modal-confirm').classList.add('hidden');
+        });
+        document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModals());
+
+        async function execDelete() {
+            try {
+                await deleteDoc(doc(db, "items", currentActionItem.id));
+                announce("已删除");
+                closeModals();
+                if (currentScreen === 'takeout') {
+                    const input = document.getElementById('takeout-search');
+                    input.value = ''; input.focus();
+                }
+            } catch(e) { announce("删除失败"); }
+        }
+
+        // --- Add Item (Smart Unit) ---
+        document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
+            openQtyPicker("设置数量", (v) => {
+                pendingAddQty = v;
+                updateAddQtyDisplay();
+                document.getElementById('modal-qty').classList.add('hidden');
+                document.getElementById('btn-add-qty-trigger').focus();
+            });
+        });
+        function updateAddQtyDisplay() {
+            document.getElementById('btn-add-qty-trigger').textContent = `数量：${pendingAddQty} (点击修改)`;
+        }
+        
+        // Smart History: Auto-fill Unit
+        document.getElementById('add-name').addEventListener('change', (e) => {
+            const name = e.target.value.trim();
+            if(name) {
+                const match = allItems.find(i => i.name === name);
+                if(match && match.unit) {
+                    document.getElementById('add-unit').value = match.unit;
+                    announce("已自动填入单位：" + match.unit);
+                }
+            }
+        });
+
+        document.getElementById('form-add').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('add-name');
+            try {
+                await addDoc(itemsRef, {
+                    name: nameInput.value,
+                    room: document.getElementById('add-room').value,
+                    location: document.getElementById('add-location').value,
+                    unit: document.getElementById('add-unit').value || '个',
+                    quantity: pendingAddQty,
+                    uid: auth.currentUser.uid,
+                    updatedAt: serverTimestamp()
+                });
+                announce(`已添加 ${nameInput.value}`);
+                nameInput.value = '';
+                document.getElementById('add-location').value = '';
+                pendingAddQty = 1;
+                updateAddQtyDisplay();
+                nameInput.focus();
+            } catch(e) { announce("失败"); }
+        });
+
+        // --- Import/Export (CSV with Unit) ---
+        document.getElementById('btn-export').addEventListener('click', () => {
+            let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n";
+            allItems.forEach(item => {
+                csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`;
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            announce("导出成功");
+        });
+
+        document.getElementById('btn-download-template').addEventListener('click', () => {
+            const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字),单位(如:包/箱)\n大米,厨房,柜子,1,袋\n牛奶,客厅,桌子,2,箱";
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `导入模板.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            announce("模板下载成功");
+        });
+
+        document.getElementById('btn-trigger-upload').addEventListener('click', () => document.getElementById('file-upload').click());
+
+        document.getElementById('file-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const text = e.target.result;
+                const rows = text.split('\n');
+                let count = 0;
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i].trim();
+                    if (!row) continue;
+                    const cols = row.split(',');
+                    if (cols.length < 1) continue;
+                    const name = cols[0]?.trim();
+                    if(!name) continue;
+                    await addDoc(itemsRef, {
+                        name: name,
+                        room: cols[1]?.trim() || '客厅',
+                        location: cols[2]?.trim() || '',
+                        quantity: parseInt(cols[3]) || 1,
+                        unit: cols[4]?.trim() || '个',
+                        uid: auth.currentUser.uid,
+                        updatedAt: serverTimestamp()
+                    });
+                    count++;
+                }
+                announce(`导入 ${count} 个物品`);
+                switchScreen('screen-home');
+            };
+            reader.readAsText(file);
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'Escape') {
+                e.preventDefault();
+                const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
+                if (modals.length > 0) {
+                    closeModals();
+                    document.getElementById('modal-qty').classList.add('hidden');
+                    document.getElementById('menu-account-dropdown').classList.add('hidden');
+                    return;
+                }
+                if (currentScreen !== 'home' && currentScreen !== 'login') {
+                    switchScreen('screen-home');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
