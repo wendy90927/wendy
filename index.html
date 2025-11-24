@@ -3,48 +3,432 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的第一个在线程序</title>
+    <title>家庭物品管家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        /* 屏幕阅读器专用样式 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
         }
-        .card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
+        /* 大按钮触摸优化 */
+        .btn-preset {
+            height: 48px;
+            font-size: 1.1rem;
+            font-weight: bold;
         }
-        h1 { color: #333; font-size: 1.5rem; }
-        p { color: #666; margin-bottom: 1.5rem; }
-        button {
-            background-color: #2ea44f;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            width: 100%;
-        }
-        button:active { background-color: #2c974b; transform: scale(0.98); }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-900">
 
-<div class="card">
-    <h1>🚀 部署成功！</h1>
-    <p>您的程序现在可以在 PC、iOS 和 Android 上通过网址直接访问了。</p>
-    <button onclick="alert('你好！我是由 GitHub 托管的程序。')">点击测试交互</button>
-</div>
+    <div id="live-announcer" class="sr-only" aria-live="polite"></div>
 
+    <div id="login-screen" class="min-h-screen flex flex-col justify-center items-center p-4">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <h1 class="text-2xl font-bold mb-6 text-center" tabindex="-1">家庭物品管家 - 请登录</h1>
+            
+            <label for="login-email" class="block mb-2 font-medium">邮箱账号</label>
+            <input type="email" id="login-email" class="w-full p-3 border rounded mb-4" placeholder="例如：888@home.com">
+            
+            <label for="login-password" class="block mb-2 font-medium">家庭密码</label>
+            <input type="password" id="login-password" class="w-full p-3 border rounded mb-6" placeholder="请输入密码">
+            
+            <button id="btn-login" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold hover:bg-blue-700">
+                登录系统
+            </button>
+            <p id="login-error" class="text-red-500 mt-4 text-center hidden" role="alert"></p>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden min-h-screen flex flex-col pb-20">
+        
+        <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-10">
+            <div class="max-w-3xl mx-auto">
+                <div class="flex justify-between items-center mb-3">
+                    <h1 class="text-xl font-bold">物品管家</h1>
+                    <select id="user-identity" class="text-black p-2 rounded" aria-label="选择当前操作人">
+                        <option value="爸爸">我是爸爸</option>
+                        <option value="妈妈">我是妈妈</option>
+                        <option value="孩子">我是孩子</option>
+                        <option value="老人">我是老人</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <input type="text" id="search-input" placeholder="输入名称搜索..." class="w-full p-3 text-black rounded shadow" aria-label="搜索物品">
+                    
+                    <div class="flex gap-2">
+                        <button id="btn-open-add" class="flex-1 bg-green-500 text-white font-bold py-3 rounded shadow hover:bg-green-600">
+                            + 新增物品
+                        </button>
+                        <button id="btn-open-takeout" class="flex-1 bg-orange-500 text-white font-bold py-3 rounded shadow hover:bg-orange-600">
+                            - 批量取出
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="bg-white p-4 shadow-sm border-b">
+            <div class="max-w-3xl mx-auto flex items-center gap-2">
+                <label for="filter-room" class="font-bold whitespace-nowrap">浏览房间：</label>
+                <select id="filter-room" class="w-full p-3 border rounded bg-gray-50 text-lg">
+                    <option value="all">全部房间</option>
+                    <option value="客厅">客厅</option>
+                    <option value="厨房">厨房</option>
+                    <option value="卧室">卧室</option>
+                    <option value="书房">书房</option>
+                    <option value="餐厅">餐厅</option>
+                    <option value="玄关">玄关</option>
+                    <option value="卫生间">卫生间</option>
+                    <option value="洗衣房">洗衣房</option>
+                </select>
+            </div>
+        </section>
+
+        <main class="flex-grow p-4 bg-gray-50">
+            <div id="items-list" class="max-w-3xl mx-auto space-y-4" aria-live="polite">
+                <p class="text-center text-gray-500 mt-10">正在加载数据...</p>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-add" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-end sm:items-center overflow-y-auto">
+        <div class="bg-white w-full max-w-lg p-6 rounded-t-xl sm:rounded-xl shadow-2xl relative">
+            <h2 class="text-2xl font-bold mb-4" tabindex="-1" id="title-add">入库：新增物品</h2>
+            
+            <form id="form-add" class="space-y-4">
+                <div>
+                    <label for="add-name" class="block font-medium mb-1">物品名称</label>
+                    <input type="text" id="add-name" required class="w-full p-3 border rounded bg-gray-50" placeholder="例如：大米">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="add-room" class="block font-medium mb-1">选择房间</label>
+                        <select id="add-room" class="w-full p-3 border rounded bg-white">
+                            <option value="厨房">厨房</option>
+                            <option value="客厅">客厅</option>
+                            <option value="卧室">卧室</option>
+                            <option value="书房">书房</option>
+                            <option value="餐厅">餐厅</option>
+                            <option value="玄关">玄关</option>
+                            <option value="卫生间">卫生间</option>
+                            <option value="洗衣房">洗衣房</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="add-location" class="block font-medium mb-1">具体位置</label>
+                        <input type="text" id="add-location" class="w-full p-3 border rounded bg-gray-50" placeholder="如：柜子第二层">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="add-quantity" class="block font-medium mb-2">初始数量</label>
+                    <div class="flex gap-2 mb-3">
+                        <button type="button" onclick="adjustAddQty(-1)" class="p-3 bg-gray-200 rounded font-bold w-12">-</button>
+                        <input type="number" id="add-quantity" value="1" min="1" class="flex-grow p-3 border rounded text-center font-bold text-lg">
+                        <button type="button" onclick="adjustAddQty(1)" class="p-3 bg-gray-200 rounded font-bold w-12">+</button>
+                    </div>
+                    <div class="grid grid-cols-6 gap-2 mb-2">
+                        <button type="button" class="btn-preset bg-blue-100 text-blue-800 rounded hover:bg-blue-200" onclick="setAddQty(1)">1</button>
+                        <button type="button" class="btn-preset bg-blue-100 text-blue-800 rounded hover:bg-blue-200" onclick="setAddQty(2)">2</button>
+                        <button type="button" class="btn-preset bg-blue-100 text-blue-800 rounded hover:bg-blue-200" onclick="setAddQty(3)">3</button>
+                        <button type="button" class="btn-preset bg-blue-100 text-blue-800 rounded hover:bg-blue-200" onclick="setAddQty(5)">5</button>
+                        <button type="button" class="btn-preset bg-blue-100 text-blue-800 rounded hover:bg-blue-200" onclick="setAddQty(8)">8</button>
+                        <button type="button" class="btn-preset bg-blue-100 text-blue-800 rounded hover:bg-blue-200" onclick="setAddQty(10)">10</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="button" class="flex-1 bg-gray-200 p-4 rounded font-bold text-gray-700" onclick="closeModal('modal-add', 'btn-open-add')">取消</button>
+                    <button type="submit" class="flex-1 bg-green-600 p-4 rounded font-bold text-white">确认保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-takeout" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-end sm:items-center overflow-y-auto">
+        <div class="bg-white w-full max-w-lg p-6 rounded-t-xl sm:rounded-xl shadow-2xl relative">
+            <h2 class="text-2xl font-bold mb-4 text-orange-600" tabindex="-1" id="title-takeout">出库：批量取出</h2>
+            
+            <form id="form-takeout" class="space-y-4">
+                <div>
+                    <label for="takeout-select-input" class="block font-medium mb-1">选择要取出的物品</label>
+                    <input list="takeout-options" id="takeout-select-input" class="w-full p-3 border rounded border-orange-300 focus:ring-orange-500" placeholder="输入名称查找..." required>
+                    <datalist id="takeout-options">
+                        </datalist>
+                    <p id="takeout-stock-hint" class="text-sm text-gray-500 mt-1 pl-1"></p>
+                </div>
+
+                <div>
+                    <label for="takeout-quantity" class="block font-medium mb-2">取出数量</label>
+                    <div class="flex gap-2 mb-3">
+                        <button type="button" onclick="adjustTakeQty(-1)" class="p-3 bg-gray-200 rounded font-bold w-12">-</button>
+                        <input type="number" id="takeout-quantity" value="1" min="1" class="flex-grow p-3 border rounded text-center font-bold text-lg">
+                        <button type="button" onclick="adjustTakeQty(1)" class="p-3 bg-gray-200 rounded font-bold w-12">+</button>
+                    </div>
+                    <div class="grid grid-cols-6 gap-2 mb-2">
+                        <button type="button" class="btn-preset bg-orange-100 text-orange-800 rounded hover:bg-orange-200" onclick="setTakeQty(1)">1</button>
+                        <button type="button" class="btn-preset bg-orange-100 text-orange-800 rounded hover:bg-orange-200" onclick="setTakeQty(2)">2</button>
+                        <button type="button" class="btn-preset bg-orange-100 text-orange-800 rounded hover:bg-orange-200" onclick="setTakeQty(3)">3</button>
+                        <button type="button" class="btn-preset bg-orange-100 text-orange-800 rounded hover:bg-orange-200" onclick="setTakeQty(5)">5</button>
+                        <button type="button" class="btn-preset bg-orange-100 text-orange-800 rounded hover:bg-orange-200" onclick="setTakeQty(8)">8</button>
+                        <button type="button" class="btn-preset bg-orange-100 text-orange-800 rounded hover:bg-orange-200" onclick="setTakeQty(10)">10</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="button" class="flex-1 bg-gray-200 p-4 rounded font-bold text-gray-700" onclick="closeModal('modal-takeout', 'btn-open-takeout')">取消</button>
+                    <button type="submit" class="flex-1 bg-orange-600 p-4 rounded font-bold text-white">确认取出</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC3rxfvajIswJADfzJD0lphVra99vka7nE",
+            authDomain: "household-item-management.firebaseapp.com",
+            projectId: "household-item-management",
+            storageBucket: "household-item-management.firebasestorage.app",
+            messagingSenderId: "1042289941268",
+            appId: "1:1042289941268:web:2d77a3a9fb2cf666ed0001"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const itemsRef = collection(db, "items");
+
+        // DOM 引用
+        const loginScreen = document.getElementById('login-screen');
+        const appScreen = document.getElementById('app-screen');
+        const liveAnnouncer = document.getElementById('live-announcer');
+        const searchInput = document.getElementById('search-input');
+        const filterRoom = document.getElementById('filter-room');
+        
+        let allItems = []; // 缓存数据
+
+        // === 辅助功能：语音播报 ===
+        window.announce = function(msg) {
+            liveAnnouncer.textContent = msg;
+            setTimeout(() => liveAnnouncer.textContent = '', 1000);
+        }
+
+        // === 登录逻辑 ===
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                loginScreen.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                loadItems();
+            } else {
+                loginScreen.classList.remove('hidden');
+                appScreen.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const email = document.getElementById('login-email').value;
+            const pw = document.getElementById('login-password').value;
+            signInWithEmailAndPassword(auth, email, pw).catch(() => announce("登录失败，请重试"));
+        });
+
+        // === 数据加载与渲染 ===
+        function loadItems() {
+            const q = query(itemsRef, orderBy("updatedAt", "desc"));
+            onSnapshot(q, snapshot => {
+                allItems = [];
+                snapshot.forEach(doc => allItems.push({ id: doc.id, ...doc.data() }));
+                renderList();
+                updateTakeoutOptions(); // 更新取出列表的选项
+            });
+        }
+
+        function renderList() {
+            const search = searchInput.value.trim().toLowerCase();
+            const room = filterRoom.value;
+            const list = document.getElementById('items-list');
+            
+            const filtered = allItems.filter(item => {
+                const matchSearch = item.name.toLowerCase().includes(search) || (item.location||'').toLowerCase().includes(search);
+                const matchRoom = room === 'all' || item.room === room;
+                return matchSearch && matchRoom;
+            });
+
+            list.innerHTML = '';
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="text-center p-6 text-gray-500">没有找到物品</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 flex justify-between items-center";
+                div.innerHTML = `
+                    <div>
+                        <h3 class="text-lg font-bold">${item.name}</h3>
+                        <p class="text-sm text-gray-600">${item.room} - ${item.location || '未指定'}</p>
+                        <p class="text-xs text-gray-400">数量: ${item.quantity}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded font-bold" 
+                                onclick="quickUpdate('${item.id}', '${item.name}', -1, ${item.quantity})">取出</button>
+                        <button class="px-3 py-2 bg-green-50 text-green-600 border border-green-200 rounded font-bold" 
+                                onclick="quickUpdate('${item.id}', '${item.name}', 1, ${item.quantity})">放入</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // === 全局函数：快速更新 ===
+        window.quickUpdate = async (id, name, delta, current) => {
+            if (delta < 0 && current <= 0) return announce("数量已经是 0 了");
+            try {
+                await updateDoc(doc(db, "items", id), {
+                    quantity: increment(delta),
+                    updatedBy: document.getElementById('user-identity').value,
+                    updatedAt: serverTimestamp()
+                });
+                announce(delta > 0 ? `已放入 ${name}` : `已取出 ${name}`);
+            } catch(e) { announce("操作失败"); }
+        }
+
+        // === 模态框通用逻辑 ===
+        window.openModal = (id) => {
+            document.getElementById(id).classList.remove('hidden');
+            const title = document.getElementById(id === 'modal-add' ? 'title-add' : 'title-takeout');
+            title.focus();
+        }
+        window.closeModal = (id, triggerBtnId) => {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(triggerBtnId).focus(); // 焦点回归
+        }
+
+        document.getElementById('btn-open-add').addEventListener('click', () => openModal('modal-add'));
+        document.getElementById('btn-open-takeout').addEventListener('click', () => {
+            openModal('modal-takeout');
+            document.getElementById('takeout-select-input').value = ''; // 清空上次选择
+            document.getElementById('takeout-quantity').value = 1;
+        });
+
+        // === 新增物品逻辑 ===
+        // 快捷键逻辑
+        window.setAddQty = (val) => document.getElementById('add-quantity').value = val;
+        window.adjustAddQty = (delta) => {
+            const input = document.getElementById('add-quantity');
+            let val = parseInt(input.value) || 0;
+            if (val + delta >= 1) input.value = val + delta;
+        }
+
+        document.getElementById('form-add').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('add-name').value;
+            const room = document.getElementById('add-room').value;
+            const loc = document.getElementById('add-location').value;
+            const qty = parseInt(document.getElementById('add-quantity').value);
+
+            try {
+                await addDoc(itemsRef, {
+                    name, room, location: loc, quantity: qty,
+                    updatedBy: document.getElementById('user-identity').value,
+                    updatedAt: serverTimestamp()
+                });
+                announce(`成功添加 ${name}`);
+                e.target.reset();
+                closeModal('modal-add', 'btn-open-add');
+            } catch(e) { announce("添加失败"); }
+        });
+
+        // === 批量取出逻辑 ===
+        // 填充下拉列表
+        function updateTakeoutOptions() {
+            const datalist = document.getElementById('takeout-options');
+            datalist.innerHTML = '';
+            allItems.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.name; // 搜索值
+                option.label = `${item.room} (余 ${item.quantity})`; // 辅助显示
+                // 存储 ID 以便后续查找
+                option.dataset.id = item.id;
+            });
+        }
+
+        // 监听输入框变化，显示当前库存提示
+        document.getElementById('takeout-select-input').addEventListener('input', (e) => {
+            const val = e.target.value;
+            const item = allItems.find(i => i.name === val);
+            const hint = document.getElementById('takeout-stock-hint');
+            if (item) {
+                hint.textContent = `当前位于：${item.room}，库存：${item.quantity}`;
+                // 自动填入 data-target-id 供提交使用
+                e.target.dataset.targetId = item.id; 
+            } else {
+                hint.textContent = '';
+                delete e.target.dataset.targetId;
+            }
+        });
+
+        // 快捷键逻辑 (取出)
+        window.setTakeQty = (val) => document.getElementById('takeout-quantity').value = val;
+        window.adjustTakeQty = (delta) => {
+            const input = document.getElementById('takeout-quantity');
+            let val = parseInt(input.value) || 0;
+            if (val + delta >= 1) input.value = val + delta;
+        }
+
+        document.getElementById('form-takeout').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('takeout-select-input');
+            const name = input.value;
+            // 通过名称反查 ID (处理同名情况：优先取第一个匹配的，或者完全匹配的)
+            // 由于 datalist 输入的是名称，我们需要找到对应的 ID。
+            // 这里简单处理：找到库中名字完全匹配的第一个物品。
+            const targetItem = allItems.find(i => i.name === name);
+            
+            if (!targetItem) {
+                announce("找不到该物品，请检查名称");
+                return;
+            }
+
+            const qty = parseInt(document.getElementById('takeout-quantity').value);
+            if (targetItem.quantity < qty) {
+                announce(`库存不足，只有 ${targetItem.quantity} 个`);
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, "items", targetItem.id), {
+                    quantity: increment(-qty),
+                    updatedBy: document.getElementById('user-identity').value,
+                    updatedAt: serverTimestamp()
+                });
+                announce(`成功取出 ${qty} 个 ${name}`);
+                e.target.reset();
+                document.getElementById('takeout-stock-hint').textContent = '';
+                closeModal('modal-takeout', 'btn-open-takeout');
+            } catch(e) { announce("取出失败"); }
+        });
+
+        // 搜索监听
+        searchInput.addEventListener('input', renderList);
+        filterRoom.addEventListener('change', () => {
+            announce("已筛选 " + filterRoom.value);
+            renderList();
+        });
+
+    </script>
 </body>
 </html>
