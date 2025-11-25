@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (稳定焦点版)</title>
+    <title>家庭物品管家 (完美音效排序版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -473,6 +473,38 @@
         let focusTargetId = null; 
         let searchResults = [];
 
+        // Audio Engine (Dual-Channel Center)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            const merger = audioCtx.createChannelMerger(2); // Force 2-channel output
+
+            osc.connect(gainNode);
+            // Connect mono signal to both Left (0) and Right (1) inputs of merger
+            gainNode.connect(merger, 0, 0);
+            gainNode.connect(merger, 0, 1);
+            merger.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            if (type === 'success') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
+                gainNode.gain.setValueAtTime(0.1, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            } else if (type === 'error') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now);
+                gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'click') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now);
+                gainNode.gain.setValueAtTime(0.05, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            }
+        }
+
         // Unit Presets
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
@@ -489,9 +521,11 @@
         const savedEmail = localStorage.getItem('savedEmail');
         if(savedEmail) document.getElementById('login-email').value = savedEmail;
 
-        window.announce = (msg) => {
+        window.announce = (msg, type = 'normal') => {
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
+            if (msg.includes("成功") || msg.includes("已添加") || msg.includes("已删除")) playSound('success');
+            else if (msg.includes("失败") || msg.includes("错误") || msg.includes("不足") || msg.includes("未找到")) playSound('error');
             setTimeout(() => el.textContent = '', 1000);
         };
 
@@ -525,6 +559,7 @@
 
         // Screen Switcher
         function switchScreen(screenId) {
+            // Capture history for Edit Cancel
             if (screenId === 'screen-edit') {
                 if (currentScreen === 'home' || currentScreen === 'takeout') {
                     previousScreen = currentScreen;
@@ -544,14 +579,12 @@
             else if (screenId === 'screen-add') currentScreen = 'add';
             else currentScreen = 'other';
             
-            // Fix: Only focus Title if we didn't just focus an item (via RenderList)
-            setTimeout(() => {
-                // If focus is lost to body, move to Title
-                if (document.activeElement === document.body || !target.contains(document.activeElement)) {
+            if (!focusTargetId) {
+                setTimeout(() => {
                     const h1 = target.querySelector('h1');
                     if (h1) h1.focus();
-                }
-            }, 100);
+                }, 100);
+            }
 
             if(screenId === 'screen-home') refreshHomeList();
             if(screenId === 'screen-takeout') refreshTakeoutList();
@@ -589,7 +622,7 @@
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
-            e.stopPropagation(); 
+            e.stopPropagation(); playSound('click');
             menuAccount.classList.toggle('hidden');
             if(!menuAccount.classList.contains('hidden')) {
                 document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'true');
@@ -659,20 +692,18 @@
                     }
                 });
                 
-                // FIX: Sort by CREATED TIME. 
-                // Null (new) = Top. Older timestamp = Bottom.
+                // FIX: Priority Sorting for New Items (Pending Writes = null timestamp)
                 allItems.sort((a, b) => {
-                    const isAPending = a.createdAt === null;
-                    const isBPending = b.createdAt === null;
+                    const isAPending = a.updatedAt === null;
+                    const isBPending = b.updatedAt === null;
                     
-                    if (isAPending && !isBPending) return -1; 
-                    if (!isAPending && isBPending) return 1;  
-                    if (isAPending && isBPending) return 0;   
+                    if (isAPending && !isBPending) return -1; // A is new -> Top
+                    if (!isAPending && isBPending) return 1;  // B is new -> Top
+                    if (isAPending && isBPending) return 0;   // Both new
 
-                    // Sort Descending by creation (Newer first? User wants position unchanged)
-                    // Actually, standard timeline is usually newest first.
-                    const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
-                    const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+                    // Standard timestamp sort (Newest first)
+                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : 0;
+                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : 0;
                     return timeB - timeA;
                 });
                 
@@ -686,8 +717,10 @@
         function refreshHomeList() { renderList('home-list', homeFilterRoom, allItems); }
         function refreshTakeoutList() { renderList('takeout-list', takeoutFilterRoom, allItems); }
         
+        // FIX: Search results refresh logic
         function refreshResultsList() {
             const term = document.getElementById('title-results').dataset.term || '';
+            // Always refilter based on master list
             searchResults = allItems.filter(item => item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term));
             renderList('results-list', 'all', searchResults);
             updateStats(searchResults);
@@ -722,7 +755,8 @@
                     if (card.getAttribute('aria-label') !== labelText) {
                         card.innerHTML = htmlContent; card.setAttribute('aria-label', labelText);
                     }
-                    container.appendChild(card); 
+                    // Re-append to enforce sort order in DOM
+                    container.appendChild(card);
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
@@ -733,15 +767,9 @@
                     container.appendChild(card);
                 }
             });
-            
-            // FIX: Robust Focus Restoration
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
-                // Ensure element is actually visible before consuming ID
-                if (target && target.offsetParent !== null) { 
-                    target.focus(); 
-                    focusTargetId = null; 
-                }
+                if (target) { target.focus(); focusTargetId = null; }
             }
         }
 
@@ -779,6 +807,7 @@
             const perform = () => {
                 const term = input.value.trim().toLowerCase();
                 if (!term) return;
+                playSound('click');
                 
                 const title = document.getElementById('title-results');
                 title.textContent = `搜索：${term}`;
@@ -786,7 +815,8 @@
                 document.getElementById('btn-back-results').dataset.return = context;
 
                 switchScreen('screen-results');
-                refreshResultsList();
+                refreshResultsList(); // Immediate refresh
+                
                 announce(`搜索完成`);
             };
             btn.addEventListener('click', perform);
@@ -798,10 +828,13 @@
 
         document.getElementById('btn-back-results').addEventListener('click', (e) => {
             const ctx = e.target.dataset.return || 'home';
+            
+            // Clear Inputs on Exit
             document.getElementById('home-search').value = '';
             document.getElementById('takeout-search').value = '';
             document.getElementById('btn-clear-home-search').classList.add('hidden');
             document.getElementById('btn-clear-takeout-search').classList.add('hidden');
+            
             switchScreen(ctx === 'takeout' ? 'screen-takeout' : 'screen-home');
         });
 
@@ -813,9 +846,10 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
         
-        // --- Edit Screen Cancel Logic ---
+        // --- Edit Screen Cancel Logic (Fixed Focus) ---
         function cancelEdit() {
-            if(currentActionItem) focusTargetId = currentActionItem.id; 
+            playSound('click');
+            if(currentActionItem) focusTargetId = currentActionItem.id; // Restore focus
             switchScreen('screen-' + previousScreen);
         }
         document.getElementById('btn-back-edit').addEventListener('click', cancelEdit);
@@ -842,6 +876,7 @@
             });
         }
         window.openUnitPicker = (inputId) => {
+            playSound('click');
             unitTargetInput = document.getElementById(inputId);
             initUnitGrid(); 
             document.getElementById('modal-unit').classList.remove('hidden');
@@ -881,7 +916,7 @@
         }
 
         function openZeroConfirmEdit(newQty) {
-            const m = document.getElementById('modal-zero'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
+            const m = document.getElementById('modal-zero'); playSound('error'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
             document.getElementById('btn-zero-keep').onclick = async () => { m.classList.add('hidden'); await executeEdit(0); };
             document.getElementById('btn-zero-del').onclick = async () => { m.classList.add('hidden'); await execDelete(); switchScreen('screen-' + previousScreen); };
             document.getElementById('btn-zero-cancel').onclick = () => { m.classList.add('hidden'); announce("已取消"); };
@@ -889,6 +924,7 @@
 
         // Menu Logic
         function openActionMenu(item) {
+            playSound('click');
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
@@ -927,7 +963,7 @@
             btn.addEventListener('click', handler); btn.addEventListener('keydown', handler); qtyGrid.appendChild(btn);
         }
         function openQtyPicker(title, cb) {
-            qtyCallback = cb;
+            playSound('click'); qtyCallback = cb;
             document.getElementById('qty-title').textContent = title;
             document.getElementById('modal-action').classList.add('hidden'); document.getElementById('modal-qty').classList.remove('hidden');
             const input = document.getElementById('qty-custom-input'); const confirm = document.getElementById('btn-qty-confirm'); const trigger = document.getElementById('qty-custom-trigger');
@@ -973,14 +1009,14 @@
             } catch(e) { announce("失败"); }
         }
         function openZeroConfirm() {
-            const m = document.getElementById('modal-zero'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
+            const m = document.getElementById('modal-zero'); playSound('error'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
             document.getElementById('btn-zero-keep').onclick = async () => { m.classList.add('hidden'); await execUpdate(-currentActionItem.quantity); };
             document.getElementById('btn-zero-del').onclick = async () => { m.classList.add('hidden'); await execDelete(); };
             document.getElementById('btn-zero-cancel').onclick = () => { m.classList.add('hidden'); announce("已取消"); closeModals(); };
         }
         let confirmCallback = null;
         function openGenericConfirm(msg, cb) {
-            document.getElementById('modal-action').classList.add('hidden'); const m = document.getElementById('modal-confirm');
+            document.getElementById('modal-action').classList.add('hidden'); const m = document.getElementById('modal-confirm'); playSound('error');
             m.classList.remove('hidden'); document.getElementById('confirm-text').textContent = msg; confirmCallback = cb; setTimeout(() => document.getElementById('title-confirm').focus(), 100);
         }
         document.getElementById('btn-confirm-ok').addEventListener('click', () => { if(confirmCallback) confirmCallback(); document.getElementById('modal-confirm').classList.add('hidden'); });
@@ -999,7 +1035,7 @@
         document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault(); const nameInput = document.getElementById('add-name'); const unitVal = document.getElementById('add-unit').value || '个'; learnNewUnit(unitVal);
             try {
-                await addDoc(itemsRef, { name: nameInput.value, room: document.getElementById('add-room').value, location: document.getElementById('add-location').value, unit: unitVal, quantity: pendingAddQty, uid: auth.currentUser.uid, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+                await addDoc(itemsRef, { name: nameInput.value, room: document.getElementById('add-room').value, location: document.getElementById('add-location').value, unit: unitVal, quantity: pendingAddQty, uid: auth.currentUser.uid, updatedAt: serverTimestamp() });
                 announce(`已添加 ${nameInput.value}`); nameInput.value = ''; document.getElementById('add-location').value = ''; pendingAddQty = 1; updateAddQtyDisplay(); nameInput.focus();
             } catch(e) { announce("失败"); }
         });
@@ -1019,7 +1055,7 @@
                 const text = e.target.result; const rows = text.split('\n'); let count = 0;
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i].trim(); if (!row) continue; const cols = row.split(','); if (cols.length < 1) continue; const name = cols[0]?.trim(); if(!name) continue;
-                    await addDoc(itemsRef, { name: name, room: cols[1]?.trim() || '客厅', location: cols[2]?.trim() || '', quantity: parseInt(cols[3]) || 1, unit: cols[4]?.trim() || '个', uid: auth.currentUser.uid, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }); count++;
+                    await addDoc(itemsRef, { name: name, room: cols[1]?.trim() || '客厅', location: cols[2]?.trim() || '', quantity: parseInt(cols[3]) || 1, unit: cols[4]?.trim() || '个', uid: auth.currentUser.uid, updatedAt: serverTimestamp() }); count++;
                 } announce(`导入 ${count} 个物品`); switchScreen('screen-home');
             }; reader.readAsText(file);
         });
