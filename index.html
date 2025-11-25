@@ -3,95 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (终极修复版)</title>
+    <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 无障碍专用隐藏 */
+        /* === 核心无障碍样式 === */
         .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
         }
         
-        /* 强焦样式 */
+        /* 强焦样式：确保焦点清晰可见，且不被遮挡 */
         *:focus {
-            outline: 4px solid #f97316; 
-            outline-offset: 2px;
-            z-index: 100;
+            outline: 4px solid #f97316; outline-offset: 2px; z-index: 100; position: relative;
         }
 
-        /* 列表卡片 */
+        /* 列表卡片交互态 */
         .item-card:focus {
-            border-color: #2563eb;
-            background-color: #eff6ff;
-            transform: scale(1.02);
+            border-color: #2563eb; background-color: #eff6ff; transform: scale(1.01);
         }
 
-        /* 数量/单位按钮 */
-        .grid-btn {
-            height: 60px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.75rem;
-            background: white;
-            color: #374151;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
+        /* 大号触控按钮 */
+        .qty-btn {
+            height: 60px; font-size: 1.5rem; font-weight: bold;
+            border: 2px solid #e5e7eb; border-radius: 0.75rem; background: white; color: #374151;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
         }
-        .grid-btn:hover, .grid-btn:focus {
-            background-color: #dbeafe;
-            border-color: #2563eb;
-            color: #1e40af;
-        }
+        .qty-btn:hover, .qty-btn:focus { background-color: #dbeafe; border-color: #2563eb; color: #1e40af; }
 
-        /* 自定义输入触发器 */
+        /* 自定义输入容器 */
         .custom-input-trigger {
-            flex-grow: 1;
-            border: 2px solid #e5e7eb;
-            padding: 0.5rem;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            cursor: pointer;
+            flex-grow: 1; border: 2px solid #e5e7eb; padding: 0.5rem; border-radius: 0.75rem;
+            display: flex; align-items: center; justify-content: center; background: white; cursor: pointer;
         }
-        
-        /* 清除按钮样式 */
-        .clear-btn {
-            position: absolute;
-            right: 80px; 
-            top: 50%;
-            transform: translateY(-50%);
-            background: #e5e7eb;
-            color: #374151;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 10;
-        }
-        .clear-btn:hover { background: #d1d5db; }
-        .clear-btn.hidden { display: none; }
+        .custom-input-trigger:focus { border-color: #2563eb; background-color: #eff6ff; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans">
 
     <div id="live-announcer" class="sr-only" aria-live="polite"></div>
+
+    <datalist id="unit-presets"></datalist>
 
     <div id="screen-login" class="screen min-h-screen flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -140,6 +90,7 @@
     <div id="screen-home" class="screen hidden min-h-screen flex flex-col pb-20">
         <header class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
+                
                 <div class="flex justify-between items-center mb-1 relative">
                     <h1 id="title-home" class="text-xl font-bold outline-none" tabindex="-1">物品管家</h1>
                     <button id="btn-account-menu" aria-haspopup="true" aria-expanded="false" class="text-sm bg-blue-900 hover:bg-blue-700 px-3 py-2 rounded border border-blue-500 font-bold flex items-center gap-2 focus:ring-2 ring-white">
@@ -155,16 +106,18 @@
 
                 <div class="flex gap-3">
                     <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">+ 新增物品</button>
-                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">取出物品</button>
+                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">- 取出物品</button>
                 </div>
 
-                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理</button>
+                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
 
                 <div class="relative flex gap-2">
-                    <label for="home-search" class="sr-only">搜索物品</label>
-                    <input type="text" id="home-search" placeholder="在首页搜索..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg pr-12" aria-label="搜索物品">
-                    <button id="btn-clear-home-search" class="clear-btn hidden" aria-label="清除搜索内容">X</button>
-                    <button id="btn-do-search" class="bg-white text-blue-800 px-4 rounded font-bold shadow">搜索</button>
+                    <div class="relative flex-grow">
+                        <label for="home-search" class="sr-only">搜索物品</label>
+                        <input type="text" id="home-search" placeholder="输入内容搜索..." class="w-full p-3 pr-12 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+                        <button id="btn-clear-home" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full font-bold flex items-center justify-center" title="清除内容" aria-label="清除">×</button>
+                    </div>
+                    <button id="btn-do-search" class="bg-white text-blue-800 px-4 rounded font-bold shadow border border-blue-200">搜索</button>
                 </div>
             </div>
         </header>
@@ -187,46 +140,8 @@
         </section>
 
         <main class="flex-grow p-4 bg-gray-50">
+            <div id="home-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded shadow hidden" aria-live="polite"></div>
             <div id="home-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="物品列表"></div>
-        </main>
-    </div>
-
-    <div id="screen-takeout" class="screen hidden min-h-screen flex flex-col pb-20 bg-orange-50">
-        <header class="bg-orange-700 text-white p-4 shadow-md sticky top-0 z-20">
-            <div class="max-w-3xl mx-auto flex flex-col gap-4">
-                <div class="flex items-center justify-between">
-                    <button id="btn-back-takeout" class="bg-white text-orange-800 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">&lt; 返回首页</button>
-                    <h1 id="title-takeout" class="text-xl font-bold outline-none" tabindex="-1">取出物品</h1>
-                </div>
-
-                <div class="relative flex gap-2">
-                    <label for="takeout-search" class="sr-only">在取出模式下搜索</label>
-                    <input type="text" id="takeout-search" placeholder="输入名称查找..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg pr-12" aria-label="搜索物品">
-                    <button id="btn-clear-takeout-search" class="clear-btn hidden" aria-label="清除搜索内容">X</button>
-                    <button id="btn-do-search-takeout" class="bg-white text-orange-800 px-4 rounded font-bold shadow">搜索</button>
-                </div>
-            </div>
-        </header>
-
-        <section class="bg-white p-4 shadow-sm border-b z-10">
-            <div class="max-w-3xl mx-auto flex items-center gap-2">
-                <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg text-orange-900">房间筛选：</label>
-                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-orange-200 rounded bg-orange-50 text-lg font-bold text-black" aria-label="筛选房间">
-                    <option value="all">全部房间</option>
-                    <option value="客厅">客厅</option>
-                    <option value="厨房">厨房</option>
-                    <option value="卧室">卧室</option>
-                    <option value="书房">书房</option>
-                    <option value="餐厅">餐厅</option>
-                    <option value="玄关">玄关</option>
-                    <option value="卫生间">卫生间</option>
-                    <option value="洗衣房">洗衣房</option>
-                </select>
-            </div>
-        </section>
-
-        <main class="flex-grow p-4">
-            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="可取出物品列表"></div>
         </main>
     </div>
 
@@ -234,11 +149,18 @@
         <div class="bg-purple-700 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <button id="btn-back-results" class="bg-white text-purple-800 px-6 py-2 rounded-lg font-bold border-2 border-purple-200">&lt; 返回</button>
+                    <button id="btn-back-results" class="bg-white text-purple-800 px-6 py-2 rounded-lg font-bold border-2 border-purple-200">&lt; 返回首页</button>
                     <h1 id="title-results" class="text-xl font-bold outline-none" tabindex="-1">搜索结果</h1>
+                </div>
+                
+                <div class="relative">
+                    <label for="results-search" class="sr-only">继续搜索</label>
+                    <input type="text" id="results-search" placeholder="继续搜索..." class="w-full p-3 pr-12 text-black rounded shadow font-bold text-lg">
+                    <button id="btn-clear-results" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full font-bold flex items-center justify-center" title="清除内容" aria-label="清除">×</button>
                 </div>
             </div>
         </div>
+
         <main class="flex-grow p-4 bg-gray-50 overflow-y-auto">
             <div id="results-stats" class="max-w-3xl mx-auto mb-4 p-4 bg-purple-50 border-l-4 border-purple-500 rounded shadow text-lg font-bold" aria-live="polite">
                 正在计算...
@@ -262,11 +184,8 @@
                     <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：牛奶" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="add-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：个" value="个" aria-label="单位">
-                        <button type="button" id="btn-pick-unit-add" class="bg-gray-200 text-gray-800 px-4 rounded-lg font-bold border-2 border-gray-300 whitespace-nowrap text-lg">选单位</button>
-                    </div>
+                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
+                    <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -313,11 +232,8 @@
                     <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="edit-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
-                        <button type="button" id="btn-pick-unit-edit" class="bg-gray-200 text-gray-800 px-4 rounded-lg font-bold border-2 border-gray-300 whitespace-nowrap text-lg">选单位</button>
-                    </div>
+                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
+                    <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -342,10 +258,7 @@
                     <label for="edit-quantity" class="block font-bold mb-2 text-xl">数量 (直接修改)</label>
                     <input type="number" id="edit-quantity" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-xl rounded-lg" aria-label="数量">
                 </div>
-                <div class="flex flex-col gap-4 mt-8">
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">保存修改</button>
-                    <button type="button" id="btn-cancel-edit-form" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-lg font-bold text-xl border-2 border-gray-300">取消修改</button>
-                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-5 rounded-lg font-bold text-2xl mt-8 shadow-lg">保存修改</button>
             </form>
         </div>
     </div>
@@ -358,7 +271,7 @@
             </div>
         </div>
         <div class="max-w-lg mx-auto w-full p-8 flex flex-col gap-6 mt-10">
-            <button id="btn-export" class="w-full p-6 bg-green-50 border-2 border-green-500 text-green-900 font-bold rounded-xl text-xl hover:bg-green-100 shadow-sm text-left">导出备份数据 (CSV)</button>
+            <button id="btn-export" class="w-full p-6 bg-green-50 border-2 border-green-500 text-green-900 font-bold rounded-xl text-xl hover:bg-green-100 shadow-sm text-left">⬇ 导出备份数据 (CSV)</button>
             <hr class="border-gray-200 my-2">
             <p class="text-lg font-bold text-gray-700">批量导入：</p>
             <button id="btn-download-template" class="w-full p-6 bg-gray-50 border-2 border-gray-400 text-gray-800 font-bold rounded-xl text-xl hover:bg-gray-100 shadow-sm text-left">下载导入模板</button>
@@ -368,7 +281,7 @@
     </div>
 
     <div id="modal-forgot" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
-        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300" role="dialog" aria-modal="true" aria-labelledby="title-forgot">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
             <h2 id="title-forgot" class="text-2xl font-bold mb-4 outline-none" tabindex="-1">找回密码</h2>
             <p class="mb-4 text-gray-600">请输入注册邮箱，系统将发送重置邮件。</p>
             <label for="forgot-email" class="sr-only">邮箱地址</label>
@@ -381,7 +294,7 @@
     </div>
 
     <div id="modal-action" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
-        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300" role="dialog" aria-modal="true" aria-labelledby="action-title">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-gray-300">
             <h2 id="action-title" class="text-2xl font-bold mb-2 text-gray-900 outline-none" tabindex="-1">管理物品</h2>
             <p id="action-desc" class="text-lg text-gray-600 mb-6">详情</p>
             <div class="flex flex-col gap-4" id="action-buttons-container">
@@ -389,13 +302,13 @@
                 <button id="btn-act-take" class="p-4 bg-orange-100 text-orange-900 font-bold rounded-xl border-2 border-orange-300 text-xl" data-action="take">取出 (减少)</button>
                 <button id="btn-act-edit" class="p-4 bg-indigo-100 text-indigo-900 font-bold rounded-xl border-2 border-indigo-300 text-xl" data-action="edit">修改详情</button>
                 <button id="btn-act-del" class="p-4 bg-red-100 text-red-900 font-bold rounded-xl border-2 border-red-300 text-xl" data-action="delete">删除物品</button>
-                <button id="btn-act-cancel" class="p-4 bg-gray-100 text-gray-800 font-bold rounded-xl border-2 border-gray-300 text-xl mt-2" onclick="closeModals()">取消</button>
+                <button class="p-4 bg-gray-100 text-gray-800 font-bold rounded-xl border-2 border-gray-300 text-xl mt-2" onclick="closeModals()">取消</button>
             </div>
         </div>
     </div>
 
     <div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-end sm:items-center">
-        <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-blue-500" role="dialog" aria-modal="true" aria-labelledby="qty-title">
+        <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-blue-500">
             <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900 outline-none" tabindex="-1">选择数量</h2>
             <div class="grid grid-cols-5 gap-3 mb-6" id="qty-grid"></div>
             <div class="flex gap-2 mb-6 items-stretch">
@@ -406,20 +319,12 @@
                 </div>
                 <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">确定</button>
             </div>
-            <button id="btn-qty-cancel" class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
-        </div>
-    </div>
-
-    <div id="modal-unit" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-end sm:items-center">
-        <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-green-500" role="dialog" aria-modal="true" aria-labelledby="unit-title">
-            <h2 id="unit-title" class="text-2xl font-bold mb-6 text-center text-gray-900 outline-none" tabindex="-1">选择单位</h2>
-            <div class="grid grid-cols-5 gap-3 mb-6" id="unit-grid"></div>
-            <button id="btn-unit-cancel" class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeUnitModal()">取消</button>
+            <button class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
         </div>
     </div>
 
     <div id="modal-zero" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
-        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-orange-400" role="dialog" aria-modal="true" aria-labelledby="title-zero">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-orange-400">
             <h2 id="title-zero" class="text-2xl font-bold mb-4 text-orange-700 outline-none" tabindex="-1">数量已空</h2>
             <p class="mb-6 text-gray-800 text-lg">物品数量已归零，请选择操作：</p>
             <div class="flex flex-col gap-4">
@@ -431,7 +336,7 @@
     </div>
 
     <div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
-        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-red-400" role="dialog" aria-modal="true" aria-labelledby="title-confirm">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center border-4 border-red-400">
             <h2 id="title-confirm" class="text-2xl font-bold mb-4 text-red-700 outline-none" tabindex="-1">操作确认</h2>
             <p id="confirm-text" class="mb-6 text-gray-800 text-lg"></p>
             <div class="flex gap-4">
@@ -446,7 +351,6 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, deleteUser, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, doc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Config
         const firebaseConfig = {
             apiKey: "AIzaSyC3rxfvajIswJADfzJD0lphVra99vka7nE",
             authDomain: "household-item-management.firebaseapp.com",
@@ -473,19 +377,15 @@
         let focusTargetId = null; 
         let searchResults = [];
 
-        // Audio Engine (Fixed Stereo)
+        // Audio
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            // Removed PannerNode completely to ensure default center stereo
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            
             const now = audioCtx.currentTime;
-            
             if (type === 'success') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
                 gainNode.gain.setValueAtTime(0.1, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
@@ -506,13 +406,42 @@
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
         UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
 
+        function populateUnitDatalist() {
+            const dl = document.getElementById('unit-presets');
+            dl.innerHTML = '';
+            UNIT_LIST.forEach(u => {
+                const op = document.createElement('option');
+                op.value = u;
+                dl.appendChild(op);
+            });
+        }
+        populateUnitDatalist();
+
         function learnNewUnit(unit) {
             if(!unit) return;
             if(!UNIT_LIST.includes(unit)) {
                 UNIT_LIST.push(unit);
                 localStorage.setItem('custom_units', JSON.stringify(UNIT_LIST));
+                populateUnitDatalist();
             }
         }
+
+        function attachUnitKeyHandler(inputId) {
+            const el = document.getElementById(inputId);
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    let idx = UNIT_LIST.indexOf(el.value);
+                    if (idx === -1) idx = e.key === 'ArrowDown' ? -1 : 0;
+                    if (e.key === 'ArrowDown') idx = (idx + 1) % UNIT_LIST.length;
+                    else idx = (idx - 1 + UNIT_LIST.length) % UNIT_LIST.length;
+                    el.value = UNIT_LIST[idx];
+                }
+            });
+        }
+        attachUnitKeyHandler('add-unit');
+        attachUnitKeyHandler('edit-unit');
 
         const savedEmail = localStorage.getItem('savedEmail');
         if(savedEmail) document.getElementById('login-email').value = savedEmail;
@@ -525,37 +454,7 @@
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // Focus Trap
-        function trapFocus(modalEl) {
-            const focusableElementsString = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-            const focusableContent = modalEl.querySelectorAll(focusableElementsString);
-            if (focusableContent.length === 0) return;
-            const firstFocusableElement = focusableContent[0];
-            const lastFocusableElement = focusableContent[focusableContent.length - 1];
-            modalEl.addEventListener('keydown', function(e) {
-                if (e.key === 'Tab') {
-                    if (e.shiftKey) { 
-                        if (document.activeElement === firstFocusableElement) {
-                            e.preventDefault(); lastFocusableElement.focus();
-                        }
-                    } else { 
-                        if (document.activeElement === lastFocusableElement) {
-                            e.preventDefault(); firstFocusableElement.focus();
-                        }
-                    }
-                }
-            });
-        }
-        trapFocus(document.getElementById('modal-action'));
-        trapFocus(document.getElementById('modal-qty'));
-        trapFocus(document.getElementById('modal-unit'));
-        trapFocus(document.getElementById('modal-zero'));
-        trapFocus(document.getElementById('modal-confirm'));
-        trapFocus(document.getElementById('modal-forgot'));
-
-        // Screen Switcher
         function switchScreen(screenId) {
-            // Capture history for Edit Cancel
             if (screenId === 'screen-edit') {
                 if (currentScreen === 'home' || currentScreen === 'takeout') {
                     previousScreen = currentScreen;
@@ -586,7 +485,6 @@
             if(screenId === 'screen-takeout') refreshTakeoutList();
         }
 
-        // Auth
         onAuthStateChanged(auth, user => {
             if (user) {
                 document.getElementById('btn-account-menu').setAttribute('aria-label', `当前账号：${user.email}，点击展开菜单`);
@@ -600,9 +498,11 @@
             }
         });
 
-        // Login Handlers
         document.getElementById('login-password').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-login').click(); }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('btn-login').click();
+            }
         });
         document.getElementById('btn-login').addEventListener('click', async () => {
             const e = document.getElementById('login-email').value;
@@ -668,7 +568,6 @@
             sendPasswordResetEmail(auth, e).then(() => { alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden'); }).catch(err => alert(err.message));
         });
 
-        // --- Data Logic ---
         function setupDataListener(uid) {
             if(unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
@@ -687,13 +586,9 @@
                         allItems = allItems.filter(i => i.id !== data.id);
                     }
                 });
-                
-                // Fixed Sort: New items (null updatedAt) treated as FUTURE time to force TOP
-                allItems.sort((a, b) => {
-                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : Date.now() + 10000;
-                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : Date.now() + 10000;
-                    return timeB - timeA;
-                });
+                if (isFirstLoad) {
+                    allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
+                }
                 
                 if (currentScreen === 'home') refreshHomeList();
                 if (currentScreen === 'takeout') refreshTakeoutList();
@@ -701,14 +596,11 @@
             });
         }
 
-        // List Renderers
         function refreshHomeList() { renderList('home-list', homeFilterRoom, allItems); }
         function refreshTakeoutList() { renderList('takeout-list', takeoutFilterRoom, allItems); }
         
-        // Fixed Search Refresh
         function refreshResultsList() {
             const term = document.getElementById('title-results').dataset.term || '';
-            // Filter regardless of previous state
             searchResults = allItems.filter(item => item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term));
             renderList('results-list', 'all', searchResults);
             updateStats(searchResults);
@@ -719,7 +611,7 @@
             const filtered = sourceArray.filter(item => filterRoom === 'all' || item.room === filterRoom);
 
             if (filtered.length === 0) {
-                container.innerHTML = ``; 
+                container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">无相关物品</div>`;
                 return;
             }
 
@@ -740,13 +632,14 @@
                     </div>
                 `;
                 if (card) {
-                    if (card.getAttribute('aria-label') !== labelText) {
-                        card.innerHTML = htmlContent; card.setAttribute('aria-label', labelText);
+                    if (card.getAttribute('aria-label') !== (labelText + "。按回车管理。")) {
+                        card.innerHTML = htmlContent; card.setAttribute('aria-label', labelText + "。按回车管理。");
                     }
+                    container.appendChild(card); 
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
-                    card.setAttribute('role', 'button'); card.setAttribute('tabindex', '0'); card.dataset.id = item.id; card.setAttribute('aria-label', labelText); card.innerHTML = htmlContent;
+                    card.setAttribute('role', 'button'); card.setAttribute('tabindex', '0'); card.dataset.id = item.id; card.setAttribute('aria-label', labelText + "。按回车管理。"); card.innerHTML = htmlContent;
                     const triggerMenu = () => openActionMenu(item);
                     card.addEventListener('click', triggerMenu);
                     card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerMenu(); } });
@@ -771,11 +664,9 @@
             }
         }
 
-        // --- Filters ---
         document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
         document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
 
-        // --- Search Logic (Fixed Rendering) ---
         const setupSearch = (inputId, btnId, clearBtnId, context) => {
             const input = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
@@ -794,38 +685,29 @@
                 const term = input.value.trim().toLowerCase();
                 if (!term) return;
                 playSound('click');
-                
                 const title = document.getElementById('title-results');
                 title.textContent = `搜索：${term}`;
                 title.dataset.term = term;
                 document.getElementById('btn-back-results').dataset.return = context;
-
                 switchScreen('screen-results');
-                // Forced call to refresh to ensure render matches term immediately
                 refreshResultsList();
-                
                 announce(`搜索完成`);
             };
             btn.addEventListener('click', perform);
             input.addEventListener('keydown', (e) => { if (e.key === 'Enter') perform(); });
         };
-
         setupSearch('home-search', 'btn-do-search', 'btn-clear-home-search', 'home');
         setupSearch('takeout-search', 'btn-do-search-takeout', 'btn-clear-takeout-search', 'takeout');
 
         document.getElementById('btn-back-results').addEventListener('click', (e) => {
             const ctx = e.target.dataset.return || 'home';
-            
-            // Fixed: Clear Inputs on Exit
             document.getElementById('home-search').value = '';
             document.getElementById('takeout-search').value = '';
             document.getElementById('btn-clear-home-search').classList.add('hidden');
             document.getElementById('btn-clear-takeout-search').classList.add('hidden');
-            
             switchScreen(ctx === 'takeout' ? 'screen-takeout' : 'screen-home');
         });
 
-        // Navigation
         document.getElementById('btn-nav-takeout').addEventListener('click', () => switchScreen('screen-takeout'));
         document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
         document.getElementById('btn-nav-add').addEventListener('click', () => { switchScreen('screen-add'); document.getElementById('add-name').focus(); pendingAddQty = 1; updateAddQtyDisplay(); });
@@ -833,16 +715,14 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
         
-        // --- Edit Screen Cancel Logic (Fixed Focus) ---
         function cancelEdit() {
             playSound('click');
-            if(currentActionItem) focusTargetId = currentActionItem.id; // Set focus target
+            if(currentActionItem) focusTargetId = currentActionItem.id; 
             switchScreen('screen-' + previousScreen);
         }
         document.getElementById('btn-back-edit').addEventListener('click', cancelEdit);
         document.getElementById('btn-cancel-edit-form').addEventListener('click', cancelEdit);
 
-        // --- Unit Picker ---
         let unitTargetInput = null;
         const unitGrid = document.getElementById('unit-grid');
         function initUnitGrid() {
@@ -876,7 +756,6 @@
         document.getElementById('btn-pick-unit-add').addEventListener('click', () => openUnitPicker('add-unit'));
         document.getElementById('btn-pick-unit-edit').addEventListener('click', () => openUnitPicker('edit-unit'));
 
-        // Edit Execution
         document.getElementById('form-edit').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newQty = parseInt(document.getElementById('edit-quantity').value);
@@ -909,7 +788,6 @@
             document.getElementById('btn-zero-cancel').onclick = () => { m.classList.add('hidden'); announce("已取消"); };
         }
 
-        // Menu Logic
         function openActionMenu(item) {
             playSound('click');
             currentActionItem = item;
@@ -941,7 +819,6 @@
             document.getElementById('edit-quantity').value = item.quantity;
         }
 
-        let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         qtyGrid.innerHTML = '';
         for(let i=1; i<=10; i++) {
@@ -1027,27 +904,6 @@
             } catch(e) { announce("失败"); }
         });
 
-        // Export/Import ...
-        document.getElementById('btn-export').addEventListener('click', () => {
-            let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n"; allItems.forEach(item => { csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`; });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("导出成功");
-        });
-        document.getElementById('btn-download-template').addEventListener('click', () => {
-            const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字),单位\n大米,厨房,柜子,1,袋\n牛奶,客厅,桌子,2,箱"; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `导入模板.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("模板下载成功");
-        });
-        document.getElementById('btn-trigger-upload').addEventListener('click', () => document.getElementById('file-upload').click());
-        document.getElementById('file-upload').addEventListener('change', (e) => {
-            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-            reader.onload = async (e) => {
-                const text = e.target.result; const rows = text.split('\n'); let count = 0;
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i].trim(); if (!row) continue; const cols = row.split(','); if (cols.length < 1) continue; const name = cols[0]?.trim(); if(!name) continue;
-                    await addDoc(itemsRef, { name: name, room: cols[1]?.trim() || '客厅', location: cols[2]?.trim() || '', quantity: parseInt(cols[3]) || 1, unit: cols[4]?.trim() || '个', uid: auth.currentUser.uid, updatedAt: serverTimestamp() }); count++;
-                } announce(`导入 ${count} 个物品`); switchScreen('screen-home');
-            }; reader.readAsText(file);
-        });
-
-        // Global Keydown
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
                 if (currentScreen === 'edit') return; 
