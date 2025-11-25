@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家</title>
+    <title>家庭物品管家 (纯净版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -473,52 +473,6 @@
         let focusTargetId = null; 
         let searchResults = [];
 
-        // --- NEW AUDIO ENGINE: MONO BUFFER (Forces Center Channel) ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const audioBuffers = {};
-
-        // Generator: Create mono PCM data directly
-        function generateSoundBuffers() {
-            const sampleRate = audioCtx.sampleRate;
-            const duration = 0.5;
-            const frames = sampleRate * duration;
-            
-            // Helper to make a mono buffer
-            const makeBuffer = (type) => {
-                const buffer = audioCtx.createBuffer(1, frames, sampleRate); // 1 Channel = Mono = Center
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < frames; i++) {
-                    const t = i / sampleRate;
-                    if (type === 'success') {
-                        // Sine wave 880Hz fading
-                        data[i] = Math.sin(2 * Math.PI * 880 * t) * Math.exp(-5 * t) * 0.1;
-                    } else if (type === 'error') {
-                        // Triangle-ish wave 150Hz fading
-                        data[i] = (Math.sin(2 * Math.PI * 150 * t) > 0 ? 0.2 : -0.2) * Math.exp(-10 * t);
-                    } else if (type === 'click') {
-                        // Short click
-                        if (t < 0.05) data[i] = (Math.random() * 2 - 1) * 0.1; else data[i] = 0;
-                    }
-                }
-                return buffer;
-            };
-
-            audioBuffers.success = makeBuffer('success');
-            audioBuffers.error = makeBuffer('error');
-            audioBuffers.click = makeBuffer('click');
-        }
-
-        // Initialize buffers on load
-        generateSoundBuffers();
-
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const source = audioCtx.createBufferSource();
-            source.buffer = audioBuffers[type] || audioBuffers.click;
-            source.connect(audioCtx.destination);
-            source.start();
-        }
-
         // Unit Presets
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
@@ -538,8 +492,6 @@
         window.announce = (msg, type = 'normal') => {
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
-            if (msg.includes("成功") || msg.includes("已添加") || msg.includes("已删除")) playSound('success');
-            else if (msg.includes("失败") || msg.includes("错误") || msg.includes("不足") || msg.includes("未找到")) playSound('error');
             setTimeout(() => el.textContent = '', 1000);
         };
 
@@ -573,6 +525,7 @@
 
         // Screen Switcher
         function switchScreen(screenId) {
+            // Capture history for Edit Cancel
             if (screenId === 'screen-edit') {
                 if (currentScreen === 'home' || currentScreen === 'takeout') {
                     previousScreen = currentScreen;
@@ -635,7 +588,7 @@
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
-            e.stopPropagation(); playSound('click');
+            e.stopPropagation(); 
             menuAccount.classList.toggle('hidden');
             if(!menuAccount.classList.contains('hidden')) {
                 document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'true');
@@ -705,20 +658,18 @@
                     }
                 });
                 
-                // NEW SORTING LOGIC: Handle 'null' timestamp as pending (newest)
+                // SORTING: Pending items (null timestamp) are treated as newest (top)
                 allItems.sort((a, b) => {
-                    // If updatedAt is null, it means "just created, server hasn't replied yet". 
-                    // It should be at the very top.
                     const isAPending = a.updatedAt === null;
                     const isBPending = b.updatedAt === null;
                     
-                    if (isAPending && !isBPending) return -1; // A is top
-                    if (!isAPending && isBPending) return 1;  // B is top
-                    if (isAPending && isBPending) return 0;   // Both pending
+                    if (isAPending && !isBPending) return -1; 
+                    if (!isAPending && isBPending) return 1;  
+                    if (isAPending && isBPending) return 0;   
 
                     const timeA = a.updatedAt ? a.updatedAt.toMillis() : 0;
                     const timeB = b.updatedAt ? b.updatedAt.toMillis() : 0;
-                    return timeB - timeA; // Descending
+                    return timeB - timeA;
                 });
                 
                 if (currentScreen === 'home') refreshHomeList();
@@ -767,8 +718,7 @@
                     if (card.getAttribute('aria-label') !== labelText) {
                         card.innerHTML = htmlContent; card.setAttribute('aria-label', labelText);
                     }
-                    // Re-append to ensure DOM order matches Array order (Crucial for sorting)
-                    container.appendChild(card);
+                    container.appendChild(card); // Ensure DOM order
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
@@ -819,7 +769,6 @@
             const perform = () => {
                 const term = input.value.trim().toLowerCase();
                 if (!term) return;
-                playSound('click');
                 
                 const title = document.getElementById('title-results');
                 title.textContent = `搜索：${term}`;
@@ -856,7 +805,6 @@
         
         // --- Edit Screen Cancel Logic ---
         function cancelEdit() {
-            playSound('click');
             if(currentActionItem) focusTargetId = currentActionItem.id; 
             switchScreen('screen-' + previousScreen);
         }
@@ -884,7 +832,6 @@
             });
         }
         window.openUnitPicker = (inputId) => {
-            playSound('click');
             unitTargetInput = document.getElementById(inputId);
             initUnitGrid(); 
             document.getElementById('modal-unit').classList.remove('hidden');
@@ -924,7 +871,7 @@
         }
 
         function openZeroConfirmEdit(newQty) {
-            const m = document.getElementById('modal-zero'); playSound('error'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
+            const m = document.getElementById('modal-zero'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
             document.getElementById('btn-zero-keep').onclick = async () => { m.classList.add('hidden'); await executeEdit(0); };
             document.getElementById('btn-zero-del').onclick = async () => { m.classList.add('hidden'); await execDelete(); switchScreen('screen-' + previousScreen); };
             document.getElementById('btn-zero-cancel').onclick = () => { m.classList.add('hidden'); announce("已取消"); };
@@ -932,7 +879,6 @@
 
         // Menu Logic
         function openActionMenu(item) {
-            playSound('click');
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
@@ -971,7 +917,7 @@
             btn.addEventListener('click', handler); btn.addEventListener('keydown', handler); qtyGrid.appendChild(btn);
         }
         function openQtyPicker(title, cb) {
-            playSound('click'); qtyCallback = cb;
+            qtyCallback = cb;
             document.getElementById('qty-title').textContent = title;
             document.getElementById('modal-action').classList.add('hidden'); document.getElementById('modal-qty').classList.remove('hidden');
             const input = document.getElementById('qty-custom-input'); const confirm = document.getElementById('btn-qty-confirm'); const trigger = document.getElementById('qty-custom-trigger');
@@ -1017,14 +963,14 @@
             } catch(e) { announce("失败"); }
         }
         function openZeroConfirm() {
-            const m = document.getElementById('modal-zero'); playSound('error'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
+            const m = document.getElementById('modal-zero'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
             document.getElementById('btn-zero-keep').onclick = async () => { m.classList.add('hidden'); await execUpdate(-currentActionItem.quantity); };
             document.getElementById('btn-zero-del').onclick = async () => { m.classList.add('hidden'); await execDelete(); };
             document.getElementById('btn-zero-cancel').onclick = () => { m.classList.add('hidden'); announce("已取消"); closeModals(); };
         }
         let confirmCallback = null;
         function openGenericConfirm(msg, cb) {
-            document.getElementById('modal-action').classList.add('hidden'); const m = document.getElementById('modal-confirm'); playSound('error');
+            document.getElementById('modal-action').classList.add('hidden'); const m = document.getElementById('modal-confirm');
             m.classList.remove('hidden'); document.getElementById('confirm-text').textContent = msg; confirmCallback = cb; setTimeout(() => document.getElementById('title-confirm').focus(), 100);
         }
         document.getElementById('btn-confirm-ok').addEventListener('click', () => { if(confirmCallback) confirmCallback(); document.getElementById('modal-confirm').classList.add('hidden'); });
@@ -1048,7 +994,7 @@
             } catch(e) { announce("失败"); }
         });
 
-        // Export/Import ...
+        // Export/Import
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n"; allItems.forEach(item => { csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`; });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("导出成功");
