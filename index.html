@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (稳定排序版)</title>
+    <title>家庭物品管家 (稳定焦点版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -489,7 +489,7 @@
         const savedEmail = localStorage.getItem('savedEmail');
         if(savedEmail) document.getElementById('login-email').value = savedEmail;
 
-        window.announce = (msg, type = 'normal') => {
+        window.announce = (msg) => {
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
             setTimeout(() => el.textContent = '', 1000);
@@ -544,12 +544,14 @@
             else if (screenId === 'screen-add') currentScreen = 'add';
             else currentScreen = 'other';
             
-            if (!focusTargetId) {
-                setTimeout(() => {
+            // Fix: Only focus Title if we didn't just focus an item (via RenderList)
+            setTimeout(() => {
+                // If focus is lost to body, move to Title
+                if (document.activeElement === document.body || !target.contains(document.activeElement)) {
                     const h1 = target.querySelector('h1');
                     if (h1) h1.focus();
-                }, 100);
-            }
+                }
+            }, 100);
 
             if(screenId === 'screen-home') refreshHomeList();
             if(screenId === 'screen-takeout') refreshTakeoutList();
@@ -657,18 +659,20 @@
                     }
                 });
                 
-                // FIX: Sort by Created Time (Stable). Add = Top. Edit = Stay.
+                // FIX: Sort by CREATED TIME. 
+                // Null (new) = Top. Older timestamp = Bottom.
                 allItems.sort((a, b) => {
-                    // Pending Local Writes (createdAt is null) -> Always First
-                    if (a.createdAt === null && b.createdAt !== null) return -1;
-                    if (a.createdAt !== null && b.createdAt === null) return 1;
-                    if (a.createdAt === null && b.createdAt === null) return 0;
+                    const isAPending = a.createdAt === null;
+                    const isBPending = b.createdAt === null;
+                    
+                    if (isAPending && !isBPending) return -1; 
+                    if (!isAPending && isBPending) return 1;  
+                    if (isAPending && isBPending) return 0;   
 
-                    // Legacy Support: If createdAt missing, treat as 0 (bottom of list)
-                    // This prevents old items from jumping above new ones
+                    // Sort Descending by creation (Newer first? User wants position unchanged)
+                    // Actually, standard timeline is usually newest first.
                     const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
                     const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
-                    
                     return timeB - timeA;
                 });
                 
@@ -718,7 +722,7 @@
                     if (card.getAttribute('aria-label') !== labelText) {
                         card.innerHTML = htmlContent; card.setAttribute('aria-label', labelText);
                     }
-                    container.appendChild(card); // Ensure DOM order
+                    container.appendChild(card); 
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
@@ -729,9 +733,15 @@
                     container.appendChild(card);
                 }
             });
+            
+            // FIX: Robust Focus Restoration
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
-                if (target) { target.focus(); focusTargetId = null; }
+                // Ensure element is actually visible before consuming ID
+                if (target && target.offsetParent !== null) { 
+                    target.focus(); 
+                    focusTargetId = null; 
+                }
             }
         }
 
