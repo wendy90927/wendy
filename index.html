@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (修复优化版)</title>
+    <title>家庭物品管家 (取出筛选升级版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -246,12 +246,27 @@
         </header>
 
         <section class="bg-white p-4 shadow-sm border-b z-10">
-            <div class="max-w-3xl mx-auto flex items-center gap-2">
-                <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg text-orange-900">房间筛选：</label>
-                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-orange-200 rounded bg-orange-50 text-lg font-bold text-black" aria-label="筛选房间">
-                    <option value="all">全部房间</option>
-                    <option value="客厅">客厅</option><option value="厨房">厨房</option><option value="卧室">卧室</option><option value="书房">书房</option><option value="餐厅">餐厅</option><option value="玄关">玄关</option><option value="卫生间">卫生间</option><option value="洗衣房">洗衣房</option>
-                </select>
+            <div class="max-w-3xl mx-auto flex flex-col gap-3">
+                <div class="flex items-center gap-2">
+                    <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg text-orange-900 w-20">房间：</label>
+                    <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-orange-200 rounded bg-orange-50 text-lg font-bold text-black" aria-label="筛选房间">
+                        <option value="all">全部房间</option>
+                        <option value="客厅">客厅</option><option value="厨房">厨房</option><option value="卧室">卧室</option><option value="书房">书房</option><option value="餐厅">餐厅</option><option value="玄关">玄关</option><option value="卫生间">卫生间</option><option value="洗衣房">洗衣房</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="takeout-filter-cat" class="font-bold whitespace-nowrap text-lg text-orange-900 w-20">分类：</label>
+                    <select id="takeout-filter-cat" autocomplete="off" class="w-full p-3 border-2 border-orange-200 rounded bg-orange-50 text-lg font-bold text-black" aria-label="筛选分类">
+                        <option value="all">全部分类</option>
+                        <option value="食品饮料">食品饮料</option>
+                        <option value="居家日用">居家日用</option>
+                        <option value="个人护理">个人护理</option>
+                        <option value="烹饪调料">烹饪调料</option>
+                        <option value="文具工具">文具工具</option>
+                        <option value="电子数码">电子数码</option>
+                        <option value="其他杂项">其他杂项</option>
+                    </select>
+                </div>
             </div>
         </section>
 
@@ -546,6 +561,7 @@
         let homeFilterRoom = 'all';
         let homeFilterCategory = 'all'; 
         let takeoutFilterRoom = 'all';
+        let takeoutFilterCategory = 'all'; // 新增：取出分类筛选
         let unsubscribeItems = null;
         let previousScreen = 'home';
         let focusTargetId = null; 
@@ -656,7 +672,7 @@
 
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById(screenId);
-            if (!target) { console.error("Screen not found:", screenId); return; } // 防错检查
+            if (!target) { console.error("Screen not found:", screenId); return; } 
             target.classList.remove('hidden');
             
             if (screenId === 'screen-home') currentScreen = 'home';
@@ -795,17 +811,16 @@
 
         // --- List Renderers ---
         function refreshHomeList() { 
-            // 修复点1：重新设置Select的值，防止状态不一致导致“跳变”或“默认选中”
             const catSelect = document.getElementById('home-filter-cat');
-            if (catSelect.value !== homeFilterCategory) {
-                catSelect.value = homeFilterCategory;
-            }
+            if (catSelect.value !== homeFilterCategory) { catSelect.value = homeFilterCategory; }
             renderList('home-list', homeFilterRoom, homeFilterCategory, allItems); 
         }
 
-        // 修复点5：确保 renderList 参数正确，修复取出模式
+        // 修复点：添加取出模式的分类刷新逻辑
         function refreshTakeoutList() { 
-            renderList('takeout-list', takeoutFilterRoom, 'all', allItems); 
+            const catSelect = document.getElementById('takeout-filter-cat');
+            if (catSelect.value !== takeoutFilterCategory) { catSelect.value = takeoutFilterCategory; }
+            renderList('takeout-list', takeoutFilterRoom, takeoutFilterCategory, allItems); 
         }
         
         function refreshResultsList() {
@@ -898,11 +913,10 @@
 
         // --- Filters ---
         document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
-        document.getElementById('home-filter-cat').addEventListener('change', (e) => { 
-            homeFilterCategory = e.target.value; 
-            refreshHomeList(); 
-        });
+        document.getElementById('home-filter-cat').addEventListener('change', (e) => { homeFilterCategory = e.target.value; refreshHomeList(); });
         document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
+        // 新增：取出分类事件监听
+        document.getElementById('takeout-filter-cat').addEventListener('change', (e) => { takeoutFilterCategory = e.target.value; refreshTakeoutList(); });
 
         // --- Search Logic ---
         const setupSearch = (inputId, btnId, clearBtnId, context) => {
@@ -1085,7 +1099,7 @@
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     name: document.getElementById('edit-name').value,
                     category: document.getElementById('edit-category').value, 
-                    tags: pendingTags, // 修复点3：保存时使用 pendingTags，而不是清空
+                    tags: pendingTags, 
                     room: document.getElementById('edit-room').value,
                     location: document.getElementById('edit-location').value,
                     unit: document.getElementById('edit-unit').value,
@@ -1129,18 +1143,14 @@
             document.getElementById('modal-action').classList.add('hidden');
             switchScreen('screen-edit');
             document.getElementById('edit-name').value = item.name;
-            // 修复点4：正确设置默认值，如果不存在则使用“其他杂项”
             const catSelect = document.getElementById('edit-category');
             catSelect.value = item.category || '其他杂项';
-            // 如果数据中的分类不在下拉列表中（例如旧数据），强制归为其他
             if(catSelect.value === '') catSelect.value = '其他杂项';
 
             document.getElementById('edit-room').value = item.room;
             document.getElementById('edit-location').value = item.location;
             document.getElementById('edit-unit').value = item.unit || '个';
             document.getElementById('edit-quantity').value = item.quantity;
-            
-            // 修复点3：加载现有标签到暂存区，确保修改分类时不丢失
             pendingTags = [...(item.tags || [])];
             renderTags('edit-tags-container', 'edit-tags-input');
         }
