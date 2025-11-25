@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (完美音效排序版)</title>
+    <title>家庭物品管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -473,36 +473,50 @@
         let focusTargetId = null; 
         let searchResults = [];
 
-        // Audio Engine (Dual-Channel Center)
+        // --- NEW AUDIO ENGINE: MONO BUFFER (Forces Center Channel) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffers = {};
+
+        // Generator: Create mono PCM data directly
+        function generateSoundBuffers() {
+            const sampleRate = audioCtx.sampleRate;
+            const duration = 0.5;
+            const frames = sampleRate * duration;
+            
+            // Helper to make a mono buffer
+            const makeBuffer = (type) => {
+                const buffer = audioCtx.createBuffer(1, frames, sampleRate); // 1 Channel = Mono = Center
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < frames; i++) {
+                    const t = i / sampleRate;
+                    if (type === 'success') {
+                        // Sine wave 880Hz fading
+                        data[i] = Math.sin(2 * Math.PI * 880 * t) * Math.exp(-5 * t) * 0.1;
+                    } else if (type === 'error') {
+                        // Triangle-ish wave 150Hz fading
+                        data[i] = (Math.sin(2 * Math.PI * 150 * t) > 0 ? 0.2 : -0.2) * Math.exp(-10 * t);
+                    } else if (type === 'click') {
+                        // Short click
+                        if (t < 0.05) data[i] = (Math.random() * 2 - 1) * 0.1; else data[i] = 0;
+                    }
+                }
+                return buffer;
+            };
+
+            audioBuffers.success = makeBuffer('success');
+            audioBuffers.error = makeBuffer('error');
+            audioBuffers.click = makeBuffer('click');
+        }
+
+        // Initialize buffers on load
+        generateSoundBuffers();
+
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            const merger = audioCtx.createChannelMerger(2); // Force 2-channel output
-
-            osc.connect(gainNode);
-            // Connect mono signal to both Left (0) and Right (1) inputs of merger
-            gainNode.connect(merger, 0, 0);
-            gainNode.connect(merger, 0, 1);
-            merger.connect(audioCtx.destination);
-            
-            const now = audioCtx.currentTime;
-            
-            if (type === 'success') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
-                gainNode.gain.setValueAtTime(0.1, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-                osc.start(now); osc.stop(now + 0.5);
-            } else if (type === 'error') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now);
-                gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'click') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(400, now);
-                gainNode.gain.setValueAtTime(0.05, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                osc.start(now); osc.stop(now + 0.05);
-            }
+            const source = audioCtx.createBufferSource();
+            source.buffer = audioBuffers[type] || audioBuffers.click;
+            source.connect(audioCtx.destination);
+            source.start();
         }
 
         // Unit Presets
@@ -559,7 +573,6 @@
 
         // Screen Switcher
         function switchScreen(screenId) {
-            // Capture history for Edit Cancel
             if (screenId === 'screen-edit') {
                 if (currentScreen === 'home' || currentScreen === 'takeout') {
                     previousScreen = currentScreen;
@@ -692,19 +705,20 @@
                     }
                 });
                 
-                // FIX: Priority Sorting for New Items (Pending Writes = null timestamp)
+                // NEW SORTING LOGIC: Handle 'null' timestamp as pending (newest)
                 allItems.sort((a, b) => {
+                    // If updatedAt is null, it means "just created, server hasn't replied yet". 
+                    // It should be at the very top.
                     const isAPending = a.updatedAt === null;
                     const isBPending = b.updatedAt === null;
                     
-                    if (isAPending && !isBPending) return -1; // A is new -> Top
-                    if (!isAPending && isBPending) return 1;  // B is new -> Top
-                    if (isAPending && isBPending) return 0;   // Both new
+                    if (isAPending && !isBPending) return -1; // A is top
+                    if (!isAPending && isBPending) return 1;  // B is top
+                    if (isAPending && isBPending) return 0;   // Both pending
 
-                    // Standard timestamp sort (Newest first)
                     const timeA = a.updatedAt ? a.updatedAt.toMillis() : 0;
                     const timeB = b.updatedAt ? b.updatedAt.toMillis() : 0;
-                    return timeB - timeA;
+                    return timeB - timeA; // Descending
                 });
                 
                 if (currentScreen === 'home') refreshHomeList();
@@ -717,10 +731,8 @@
         function refreshHomeList() { renderList('home-list', homeFilterRoom, allItems); }
         function refreshTakeoutList() { renderList('takeout-list', takeoutFilterRoom, allItems); }
         
-        // FIX: Search results refresh logic
         function refreshResultsList() {
             const term = document.getElementById('title-results').dataset.term || '';
-            // Always refilter based on master list
             searchResults = allItems.filter(item => item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term));
             renderList('results-list', 'all', searchResults);
             updateStats(searchResults);
@@ -755,7 +767,7 @@
                     if (card.getAttribute('aria-label') !== labelText) {
                         card.innerHTML = htmlContent; card.setAttribute('aria-label', labelText);
                     }
-                    // Re-append to enforce sort order in DOM
+                    // Re-append to ensure DOM order matches Array order (Crucial for sorting)
                     container.appendChild(card);
                 } else {
                     card = document.createElement('div');
@@ -815,8 +827,7 @@
                 document.getElementById('btn-back-results').dataset.return = context;
 
                 switchScreen('screen-results');
-                refreshResultsList(); // Immediate refresh
-                
+                refreshResultsList();
                 announce(`搜索完成`);
             };
             btn.addEventListener('click', perform);
@@ -828,13 +839,10 @@
 
         document.getElementById('btn-back-results').addEventListener('click', (e) => {
             const ctx = e.target.dataset.return || 'home';
-            
-            // Clear Inputs on Exit
             document.getElementById('home-search').value = '';
             document.getElementById('takeout-search').value = '';
             document.getElementById('btn-clear-home-search').classList.add('hidden');
             document.getElementById('btn-clear-takeout-search').classList.add('hidden');
-            
             switchScreen(ctx === 'takeout' ? 'screen-takeout' : 'screen-home');
         });
 
@@ -846,10 +854,10 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
         
-        // --- Edit Screen Cancel Logic (Fixed Focus) ---
+        // --- Edit Screen Cancel Logic ---
         function cancelEdit() {
             playSound('click');
-            if(currentActionItem) focusTargetId = currentActionItem.id; // Restore focus
+            if(currentActionItem) focusTargetId = currentActionItem.id; 
             switchScreen('screen-' + previousScreen);
         }
         document.getElementById('btn-back-edit').addEventListener('click', cancelEdit);
