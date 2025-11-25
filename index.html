@@ -19,15 +19,14 @@
             border-width: 0;
         }
         
-        /* 强焦样式 */
-        *:focus {
+        /* 强焦样式（改为 focus-visible，避免鼠标点击时的视觉噪音） */
+        *:focus-visible {
             outline: 4px solid #f97316; 
             outline-offset: 2px;
-            z-index: 100;
         }
 
         /* 列表卡片 */
-        .item-card:focus {
+        .item-card:focus-visible {
             border-color: #2563eb;
             background-color: #eff6ff;
             transform: scale(1.02);
@@ -48,7 +47,7 @@
             justify-content: center;
             transition: background 0.2s;
         }
-        .qty-btn:hover, .qty-btn:focus {
+        .qty-btn:hover, .qty-btn:focus-visible {
             background-color: #dbeafe;
             border-color: #2563eb;
             color: #1e40af;
@@ -66,7 +65,7 @@
             background: white;
             cursor: pointer;
         }
-        .custom-input-trigger:focus {
+        .custom-input-trigger:focus-visible {
             border-color: #2563eb;
             background-color: #eff6ff;
         }
@@ -74,8 +73,11 @@
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans">
 
-    <div id="live-announcer" class="sr-only" aria-live="polite"></div>
+    <!-- 双 live region，避免同样文本不被重复朗读 -->
+    <div id="live-announcer-1" class="sr-only" aria-live="polite"></div>
+    <div id="live-announcer-2" class="sr-only" aria-live="polite"></div>
 
+    <!-- 目前不再使用 datalist，但保留不会影响功能（可按需删除） -->
     <datalist id="unit-presets"></datalist>
 
     <div id="screen-login" class="screen min-h-screen flex flex-col justify-center items-center p-4">
@@ -149,6 +151,10 @@
                 <div class="relative flex gap-2">
                     <label for="home-search" class="sr-only">搜索物品</label>
                     <input type="text" id="home-search" placeholder="输入内容搜索..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+                    <!-- 新增：清除搜索按钮 -->
+                    <button id="btn-clear-search" class="bg-white text-gray-500 px-3 rounded font-bold shadow disabled:opacity-40 disabled:cursor-default" aria-label="清除搜索内容" disabled>
+                        清除
+                    </button>
                     <button id="btn-do-search" class="bg-white text-blue-800 px-4 rounded font-bold shadow">搜索</button>
                 </div>
             </div>
@@ -210,7 +216,8 @@
                 </div>
                 <div>
                     <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (支持上下光标选择)</label>
-                    <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
+                    <!-- 保持为文本框，去掉 datalist，配合 JS 自定义 ↑↓ 循环，解决 Safari + 输入法问题 -->
+                    <input type="text" id="add-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -258,7 +265,7 @@
                 </div>
                 <div>
                     <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
-                    <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
+                    <input type="text" id="edit-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -401,39 +408,37 @@
         let previousScreen = 'home';
         let focusTargetId = null; 
         let searchResults = []; // For separate search page
+        let currentSearchTerm = ''; // 当前搜索关键字（结果页刷新时使用）
 
-        // Unit Presets
+        // Unit Presets（保持可扩展，去掉 datalist 依赖）
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
-        UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
-
-        function populateUnitDatalist() {
-            const dl = document.getElementById('unit-presets');
-            dl.innerHTML = '';
-            UNIT_LIST.forEach(u => {
-                const op = document.createElement('option');
-                op.value = u;
-                dl.appendChild(op);
-            });
+        if (Array.isArray(savedUnits) && savedUnits.length) {
+            UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
         }
-        populateUnitDatalist();
 
         function learnNewUnit(unit) {
-            if(!unit) return;
-            if(!UNIT_LIST.includes(unit)) {
-                UNIT_LIST.push(unit);
+            const trimmed = (unit || '').trim();
+            if (!trimmed) return;
+            if (!UNIT_LIST.includes(trimmed)) {
+                UNIT_LIST.push(trimmed);
                 localStorage.setItem('custom_units', JSON.stringify(UNIT_LIST));
-                populateUnitDatalist();
             }
         }
 
-        // FIXED: Force arrow keys for units
+        // 修复：单位文本框使用自定义 ↑↓ 循环 + composition 保护，解决输入法 / Safari 冲突
         function attachUnitKeyHandler(inputId) {
             const el = document.getElementById(inputId);
+            if (!el) return;
+            let isComposing = false;
+            el.addEventListener('compositionstart', () => { isComposing = true; });
+            el.addEventListener('compositionend', () => { isComposing = false; });
+
             el.addEventListener('keydown', (e) => {
+                if (isComposing) return; // 输入法候选状态下不抢方向键
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
+                    e.preventDefault();
+                    e.stopPropagation();
                     let idx = UNIT_LIST.indexOf(el.value);
                     if (idx === -1) idx = e.key === 'ArrowDown' ? -1 : 0;
                     if (e.key === 'ArrowDown') idx = (idx + 1) % UNIT_LIST.length;
@@ -445,13 +450,21 @@
         attachUnitKeyHandler('add-unit');
         attachUnitKeyHandler('edit-unit');
 
+        // 保存邮箱
         const savedEmail = localStorage.getItem('savedEmail');
-        if(savedEmail) document.getElementById('login-email').value = savedEmail;
+        if (savedEmail) document.getElementById('login-email').value = savedEmail;
 
+        // 双 live region 轮流写入，避免重复文本不播报
+        let liveToggle = false;
         window.announce = (msg) => {
-            const el = document.getElementById('live-announcer');
-            el.textContent = msg;
-            setTimeout(() => el.textContent = '', 1000);
+            liveToggle = !liveToggle;
+            const id = liveToggle ? 'live-announcer-1' : 'live-announcer-2';
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = '';
+            setTimeout(() => {
+                el.textContent = msg;
+            }, 10);
         };
 
         // --- Screen Switcher ---
@@ -466,16 +479,19 @@
             
             if (screenId === 'screen-home') currentScreen = 'home';
             if (screenId === 'screen-results') currentScreen = 'results';
-            
-            // Priority Focus
-            if (!focusTargetId) {
-                setTimeout(() => {
-                    const h1 = target.querySelector('h1');
-                    if (h1) h1.focus();
-                }, 100);
-            }
+            if (screenId === 'screen-add') currentScreen = 'add';
+            if (screenId === 'screen-edit') currentScreen = 'edit';
+            if (screenId === 'screen-data') currentScreen = 'data';
+            if (screenId === 'screen-login') currentScreen = 'login';
+            if (screenId === 'screen-register') currentScreen = 'register';
 
-            if(screenId === 'screen-home') refreshHomeList();
+            // Priority Focus
+            setTimeout(() => {
+                const h1 = target.querySelector('h1[tabindex="-1"]');
+                if (h1) h1.focus();
+            }, 100);
+
+            if (screenId === 'screen-home') refreshHomeList();
         }
 
         // --- Auth ---
@@ -486,7 +502,7 @@
                 switchScreen('screen-home');
                 setupDataListener(user.uid);
             } else {
-                if(unsubscribeItems) unsubscribeItems();
+                if (unsubscribeItems) unsubscribeItems();
                 allItems = [];
                 switchScreen('screen-login');
             }
@@ -505,13 +521,13 @@
             const autoLogin = document.getElementById('chk-auto-login').checked;
             const rememberEmail = document.getElementById('chk-remember-email').checked;
 
-            if(rememberEmail) localStorage.setItem('savedEmail', e);
+            if (rememberEmail) localStorage.setItem('savedEmail', e);
             else localStorage.removeItem('savedEmail');
 
             try {
                 await setPersistence(auth, autoLogin ? browserLocalPersistence : browserSessionPersistence);
                 await signInWithEmailAndPassword(auth, e, p);
-            } catch(err) {
+            } catch (err) {
                 announce("登录失败"); alert("登录失败：" + err.message);
             }
         });
@@ -521,34 +537,48 @@
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
             e.stopPropagation();
-            menuAccount.classList.toggle('hidden');
-            if(!menuAccount.classList.contains('hidden')) menuAccount.querySelector('button').focus();
+            const isHidden = menuAccount.classList.contains('hidden');
+            if (isHidden) {
+                menuAccount.classList.remove('hidden');
+                btnAccount.setAttribute('aria-expanded', 'true');
+                const firstBtn = menuAccount.querySelector('button');
+                if (firstBtn) firstBtn.focus();
+            } else {
+                menuAccount.classList.add('hidden');
+                btnAccount.setAttribute('aria-expanded', 'false');
+                btnAccount.focus();
+            }
         });
         document.addEventListener('click', (e) => {
             if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
-                menuAccount.classList.add('hidden');
+                if (!menuAccount.classList.contains('hidden')) {
+                    menuAccount.classList.add('hidden');
+                    btnAccount.setAttribute('aria-expanded', 'false');
+                }
             }
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => signOut(auth).then(() => announce("已退出")));
         document.getElementById('btn-clear-data').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
+            btnAccount.setAttribute('aria-expanded', 'false');
             openGenericConfirm("确定清空数据？", async () => {
                 const batch = writeBatch(db);
                 const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
                 const snapshot = await getDocs(q);
-                snapshot.forEach(doc => batch.delete(doc.ref));
+                snapshot.forEach(d => batch.delete(d.ref));
                 await batch.commit();
                 announce("已清空");
             });
         });
         document.getElementById('btn-delete-account').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
+            btnAccount.setAttribute('aria-expanded', 'false');
             openGenericConfirm("确定删除账号？", async () => {
                 const batch = writeBatch(db);
                 const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
                 const snapshot = await getDocs(q);
-                snapshot.forEach(doc => batch.delete(doc.ref));
+                snapshot.forEach(d => batch.delete(d.ref));
                 await batch.commit();
                 await deleteUser(auth.currentUser);
             });
@@ -560,7 +590,7 @@
             const e = document.getElementById('reg-email').value;
             const p1 = document.getElementById('reg-pass').value;
             const p2 = document.getElementById('reg-pass-confirm').value;
-            if (p1 !== p2 || p1.length < 6) { alert("密码问题"); return; }
+            if (p1 !== p2 || p1.length < 6) { alert("密码有误，请确认"); return; }
             createUserWithEmailAndPassword(auth, e, p1).catch(err => alert(err.message));
         });
 
@@ -571,15 +601,15 @@
         document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
         document.getElementById('btn-send-reset').addEventListener('click', () => {
             const e = document.getElementById('forgot-email').value;
-            if(!e) return;
+            if (!e) return;
             sendPasswordResetEmail(auth, e).then(() => {
-                alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden');
+                alert("已发送重置邮件"); document.getElementById('modal-forgot').classList.add('hidden');
             }).catch(err => alert(err.message));
         });
 
         // --- Data Logic (Micro-update) ---
         function setupDataListener(uid) {
-            if(unsubscribeItems) unsubscribeItems();
+            if (unsubscribeItems) unsubscribeItems();
             const q = query(itemsRef, where("uid", "==", uid));
             unsubscribeItems = onSnapshot(q, snap => {
                 let isFirstLoad = allItems.length === 0;
@@ -587,7 +617,7 @@
                     const data = { id: change.doc.id, ...change.doc.data() };
                     if (change.type === "added") {
                         if (isFirstLoad) allItems.push(data);
-                        else allItems.unshift(data); 
+                        else allItems.unshift(data);
                     }
                     if (change.type === "modified") {
                         const idx = allItems.findIndex(i => i.id === data.id);
@@ -611,24 +641,12 @@
         }
 
         function refreshResultsList() {
-            // Recalculate filtered results based on current search term
-            // Note: In real search page, we might just want to update existing items in the result set
-            // But simple re-filter is safer for consistency
-            const term = document.getElementById('home-search').value.trim().toLowerCase(); 
-            // Note: Search term is from home search input usually, but we are on results page
-            // Let's store search term globally or just re-use
-            // Actually, we should filter allItems again.
-            if (!searchResults) return; // Safety
-            
-            // We need to update searchResults based on allItems changes
+            if (!currentSearchTerm) return;
             searchResults = allItems.filter(item => {
-                // Simple check if this item is still in our "search interest"
-                // Or better: Just re-render based on IDs present in searchResults to maintain context?
-                // Simplest: Re-run search filter
-                const st = document.getElementById('title-results').dataset.term || '';
-                return item.name.toLowerCase().includes(st) || (item.location||'').toLowerCase().includes(st);
+                const name = (item.name || '').toLowerCase();
+                const loc = (item.location || '').toLowerCase();
+                return name.includes(currentSearchTerm) || loc.includes(currentSearchTerm);
             });
-            
             renderList('results-list', 'all', searchResults);
             updateStats(searchResults);
         }
@@ -646,37 +664,40 @@
                 return;
             }
 
+            const activeElement = document.activeElement;
+            const activeCardId = (activeElement && activeElement.classList && activeElement.classList.contains('item-card'))
+                ? activeElement.dataset.id
+                : null;
+
             // Map existing DOM elements
             const existingMap = new Map();
             container.querySelectorAll('.item-card').forEach(el => existingMap.set(el.dataset.id, el));
 
-            // 1. Remove deleted items
+            // 1. Remove deleted items（使用 Set 避免 O(n²)）
+            const filteredIds = new Set(filtered.map(i => i.id));
             existingMap.forEach((el, id) => {
-                if (!filtered.find(i => i.id === id)) el.remove();
+                if (!filteredIds.has(id)) el.remove();
             });
 
             // 2. Update or Create items
             filtered.forEach(item => {
                 let card = existingMap.get(item.id);
-                const labelText = `${item.name}，${item.room} ${item.location||''}，${item.quantity}${item.unit||'个'}`;
+                const labelText = `${item.name}，${item.room} ${item.location || ''}，${item.quantity}${item.unit || '个'}`;
                 const htmlContent = `
                     <div class="flex justify-between items-center pointer-events-none">
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 item-name">${item.name}</h3>
                             <p class="text-base text-gray-600 font-bold item-loc">${item.room} - ${item.location || '位置未填'}</p>
                         </div>
-                        <div class="text-3xl font-bold text-blue-700 item-qty">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
+                        <div class="text-3xl font-bold text-blue-700 item-qty">${item.quantity} <span class="text-lg text-gray-500">${item.unit || '个'}</span></div>
                     </div>
                 `;
 
                 if (card) {
-                    // Micro-update: Check if content changed
                     if (card.getAttribute('aria-label') !== (labelText + "。按回车管理。")) {
                         card.innerHTML = htmlContent;
                         card.setAttribute('aria-label', labelText + "。按回车管理。");
                     }
-                    // Re-append to ensure order? No, keep DOM stable for focus.
-                    // Only append if new
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
@@ -697,12 +718,20 @@
                 }
             });
 
-            // Focus Restoration
+            // Focus Restoration （优先用 focusTargetId，其次保持原来卡片）
+            let restored = false;
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
                 if (target) {
                     target.focus();
-                    focusTargetId = null;
+                    restored = true;
+                }
+                focusTargetId = null;
+            } else if (activeCardId) {
+                const target = container.querySelector(`[data-id="${activeCardId}"]`);
+                if (target) {
+                    target.focus();
+                    restored = true;
                 }
             }
         }
@@ -717,6 +746,8 @@
                 });
                 const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
                 statsContainer.textContent = `共找到 ${items.length} 处。合计：${summaryText}`;
+            } else {
+                statsContainer.textContent = "未找到匹配物品";
             }
         }
 
@@ -729,18 +760,38 @@
         // Search Trigger
         const homeSearchInput = document.getElementById('home-search');
         const btnDoSearch = document.getElementById('btn-do-search');
-        
+        const btnClearSearch = document.getElementById('btn-clear-search');
+
+        function updateClearSearchButton() {
+            const hasValue = homeSearchInput.value.trim().length > 0;
+            btnClearSearch.disabled = !hasValue;
+        }
+        updateClearSearchButton();
+
+        homeSearchInput.addEventListener('input', updateClearSearchButton);
+
+        btnClearSearch.addEventListener('click', () => {
+            homeSearchInput.value = '';
+            currentSearchTerm = '';
+            updateClearSearchButton();
+            refreshHomeList();
+            announce("已清除搜索条件，显示全部物品");
+            homeSearchInput.focus();
+        });
+
         function performSearch() {
             const term = homeSearchInput.value.trim().toLowerCase();
             if (!term) return;
             
-            // Switch to Results Page
+            currentSearchTerm = term;
             switchScreen('screen-results');
-            document.getElementById('title-results').textContent = `搜索：${term}`;
-            document.getElementById('title-results').dataset.term = term; // Store term
-            
+            const titleResults = document.getElementById('title-results');
+            titleResults.textContent = `搜索：${term}`;
+
             searchResults = allItems.filter(item => {
-                return item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term);
+                const name = (item.name || '').toLowerCase();
+                const loc = (item.location || '').toLowerCase();
+                return name.includes(term) || loc.includes(term);
             });
             
             renderList('results-list', 'all', searchResults);
@@ -757,13 +808,14 @@
         // Results Page Logic
         document.getElementById('btn-back-results').addEventListener('click', () => {
             switchScreen('screen-home');
-            homeSearchInput.value = ''; // Clear search on return? Optional.
+            homeSearchInput.value = '';
+            currentSearchTerm = '';
+            updateClearSearchButton();
+            refreshHomeList();
         });
-
 
         // --- Navigation ---
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
-            // Reuse search logic for "Takeout" (it's basically search now)
             document.getElementById('home-search').focus();
             announce("请输入名称搜索要取出的物品");
         });
@@ -782,7 +834,7 @@
 
         document.getElementById('form-edit').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const newQty = parseInt(document.getElementById('edit-quantity').value);
+            const newQty = parseInt(document.getElementById('edit-quantity').value, 10);
             const unitVal = document.getElementById('edit-unit').value;
             learnNewUnit(unitVal);
             if (newQty === 0) { openZeroConfirmEdit(newQty); return; }
@@ -802,7 +854,7 @@
                 });
                 announce("修改成功");
                 switchScreen('screen-' + previousScreen);
-            } catch(e) { announce("失败"); }
+            } catch (e) { announce("修改失败"); }
         }
 
         function openZeroConfirmEdit(newQty) {
@@ -829,19 +881,15 @@
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
-            document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
+            document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit || '个'}`;
             
-            // Show/Hide Put button based on where we are? 
-            // User wanted simplified menu for takeout, but now search is the main interface.
-            // Let's keep all options available in search results for flexibility, or hide PUT if user strictly wants takeout flow.
-            // For now, show all.
             const btnPut = document.getElementById('btn-act-put');
             btnPut.classList.remove('hidden');
 
             modal.classList.remove('hidden');
             setTimeout(() => {
                 const v = modal.querySelectorAll('button:not(.hidden)');
-                if(v.length > 0) v[0].focus();
+                if (v.length > 0) v[0].focus();
             }, 100);
         }
 
@@ -868,12 +916,12 @@
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         qtyGrid.innerHTML = '';
-        for(let i=1; i<=10; i++) {
+        for (let i = 1; i <= 10; i++) {
             const btn = document.createElement('button');
             btn.className = 'qty-btn';
             btn.textContent = i;
             const handler = (e) => {
-                if(e.type === 'keydown' && e.key !== 'Enter') return;
+                if (e.type === 'keydown' && e.key !== 'Enter') return;
                 e.preventDefault(); e.stopPropagation();
                 submitQty(i);
             };
@@ -909,19 +957,19 @@
         }
         customTrigger.addEventListener('click', activateInput);
         customTrigger.addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' || e.keyCode === 13) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
                 e.preventDefault(); e.stopPropagation();
                 activateInput();
             }
         });
         document.getElementById('qty-custom-input').addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' || e.keyCode === 13) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
                 e.preventDefault(); e.stopPropagation();
-                submitQty(parseInt(e.target.value));
+                submitQty(parseInt(e.target.value, 10));
             }
         });
         document.getElementById('btn-qty-confirm').addEventListener('click', () => {
-            submitQty(parseInt(document.getElementById('qty-custom-input').value));
+            submitQty(parseInt(document.getElementById('qty-custom-input').value, 10));
         });
 
         function submitQty(val) {
@@ -937,7 +985,6 @@
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            // Focus restoration logic based on current screen
             const containerId = currentScreen === 'results' ? 'results-list' : 'home-list';
             const container = document.getElementById(containerId);
             
@@ -969,7 +1016,7 @@
                 });
                 announce("更新成功");
                 closeModals();
-            } catch(e) { announce("失败"); }
+            } catch (e) { announce("更新失败"); }
         }
 
         function openZeroConfirm() {
@@ -1002,7 +1049,7 @@
             setTimeout(() => document.getElementById('title-confirm').focus(), 100);
         }
         document.getElementById('btn-confirm-ok').addEventListener('click', () => {
-            if(confirmCallback) confirmCallback();
+            if (confirmCallback) confirmCallback();
             document.getElementById('modal-confirm').classList.add('hidden');
         });
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModals());
@@ -1012,7 +1059,7 @@
                 await deleteDoc(doc(db, "items", currentActionItem.id));
                 announce("已删除");
                 closeModals();
-            } catch(e) { announce("删除失败"); }
+            } catch (e) { announce("删除失败"); }
         }
 
         // Add Item
@@ -1029,9 +1076,9 @@
         }
         document.getElementById('add-name').addEventListener('change', (e) => {
             const name = e.target.value.trim();
-            if(name) {
+            if (name) {
                 const match = allItems.find(i => i.name === name);
-                if(match && match.unit) {
+                if (match && match.unit) {
                     document.getElementById('add-unit').value = match.unit;
                     announce("自动填入单位：" + match.unit);
                 }
@@ -1058,20 +1105,20 @@
                 pendingAddQty = 1;
                 updateAddQtyDisplay();
                 nameInput.focus();
-            } catch(e) { announce("失败"); }
+            } catch (e) { announce("添加失败"); }
         });
 
         // Export/Import
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n";
             allItems.forEach(item => {
-                csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`;
+                csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit || '个'}\n`;
             });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0, 10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1094,8 +1141,8 @@
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = async (e) => {
-                const text = e.target.result;
+            reader.onload = async (ev) => {
+                const text = ev.target.result;
                 const rows = text.split('\n');
                 let count = 0;
                 for (let i = 1; i < rows.length; i++) {
@@ -1104,12 +1151,12 @@
                     const cols = row.split(',');
                     if (cols.length < 1) continue;
                     const name = cols[0]?.trim();
-                    if(!name) continue;
+                    if (!name) continue;
                     await addDoc(itemsRef, {
                         name: name,
                         room: cols[1]?.trim() || '客厅',
                         location: cols[2]?.trim() || '',
-                        quantity: parseInt(cols[3]) || 1,
+                        quantity: parseInt(cols[3], 10) || 1,
                         unit: cols[4]?.trim() || '个',
                         uid: auth.currentUser.uid,
                         updatedAt: serverTimestamp()
@@ -1123,13 +1170,14 @@
         });
 
         window.addEventListener('keydown', (e) => {
-            if(e.key === 'Escape') {
+            if (e.key === 'Escape') {
                 const menu = document.getElementById('menu-account-dropdown');
                 if (!menu.classList.contains('hidden')) {
                     e.preventDefault();
                     menu.classList.add('hidden');
-                    document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
-                    document.getElementById('btn-account-menu').focus();
+                    const btn = document.getElementById('btn-account-menu');
+                    btn.setAttribute('aria-expanded', 'false');
+                    btn.focus();
                     return;
                 }
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
