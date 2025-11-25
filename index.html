@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (完美修复版)</title>
+    <title>家庭物品管家 (终极修复版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -473,22 +473,16 @@
         let focusTargetId = null; 
         let searchResults = [];
 
-        // Audio Engine (Stereo Fixed)
+        // Audio Engine (Fixed Stereo)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            const panner = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : audioCtx.createPanner();
-            
-            // Force Center Pan
-            if(panner.pan) panner.pan.value = 0;
-            else panner.setPosition(0, 0, 0);
-
+            // Removed PannerNode completely to ensure default center stereo
             osc.connect(gainNode);
-            gainNode.connect(panner);
-            panner.connect(audioCtx.destination);
+            gainNode.connect(audioCtx.destination);
             
             const now = audioCtx.currentTime;
             
@@ -694,10 +688,10 @@
                     }
                 });
                 
-                // Sorting Logic: Treat null timestamp (pending) as NOW (top of list)
+                // Fixed Sort: New items (null updatedAt) treated as FUTURE time to force TOP
                 allItems.sort((a, b) => {
-                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : Date.now();
-                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : Date.now();
+                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : Date.now() + 10000;
+                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : Date.now() + 10000;
                     return timeB - timeA;
                 });
                 
@@ -710,9 +704,11 @@
         // List Renderers
         function refreshHomeList() { renderList('home-list', homeFilterRoom, allItems); }
         function refreshTakeoutList() { renderList('takeout-list', takeoutFilterRoom, allItems); }
+        
+        // Fixed Search Refresh
         function refreshResultsList() {
             const term = document.getElementById('title-results').dataset.term || '';
-            if (!term) return;
+            // Filter regardless of previous state
             searchResults = allItems.filter(item => item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term));
             renderList('results-list', 'all', searchResults);
             updateStats(searchResults);
@@ -779,7 +775,7 @@
         document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
         document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
 
-        // --- Search Logic ---
+        // --- Search Logic (Fixed Rendering) ---
         const setupSearch = (inputId, btnId, clearBtnId, context) => {
             const input = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
@@ -804,8 +800,10 @@
                 title.dataset.term = term;
                 document.getElementById('btn-back-results').dataset.return = context;
 
-                searchResults = [];
                 switchScreen('screen-results');
+                // Forced call to refresh to ensure render matches term immediately
+                refreshResultsList();
+                
                 announce(`搜索完成`);
             };
             btn.addEventListener('click', perform);
@@ -817,7 +815,8 @@
 
         document.getElementById('btn-back-results').addEventListener('click', (e) => {
             const ctx = e.target.dataset.return || 'home';
-            // Clear inputs on exit
+            
+            // Fixed: Clear Inputs on Exit
             document.getElementById('home-search').value = '';
             document.getElementById('takeout-search').value = '';
             document.getElementById('btn-clear-home-search').classList.add('hidden');
@@ -837,7 +836,7 @@
         // --- Edit Screen Cancel Logic (Fixed Focus) ---
         function cancelEdit() {
             playSound('click');
-            focusTargetId = currentActionItem.id; // Restore focus
+            if(currentActionItem) focusTargetId = currentActionItem.id; // Set focus target
             switchScreen('screen-' + previousScreen);
         }
         document.getElementById('btn-back-edit').addEventListener('click', cancelEdit);
@@ -1055,7 +1054,16 @@
                 const menu = document.getElementById('menu-account-dropdown');
                 if (!menu.classList.contains('hidden')) { e.preventDefault(); menu.classList.add('hidden'); document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false'); document.getElementById('btn-account-menu').focus(); return; }
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)'); if (modals.length > 0) { e.preventDefault(); closeModals(); document.getElementById('modal-qty').classList.add('hidden'); document.getElementById('modal-unit').classList.add('hidden'); return; }
-                if (currentScreen !== 'home' && currentScreen !== 'login') { e.preventDefault(); switchScreen('screen-home'); }
+                if (currentScreen !== 'home' && currentScreen !== 'login') { 
+                    // Clear Search on ESC
+                    document.getElementById('home-search').value = '';
+                    document.getElementById('takeout-search').value = '';
+                    document.getElementById('btn-clear-home-search').classList.add('hidden');
+                    document.getElementById('btn-clear-takeout-search').classList.add('hidden');
+                    
+                    e.preventDefault(); 
+                    switchScreen('screen-home'); 
+                }
             }
         });
     </script>
