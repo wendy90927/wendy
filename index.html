@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (修复版)</title>
+    <title>家庭物品管家 (完美修复版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -473,14 +473,23 @@
         let focusTargetId = null; 
         let searchResults = [];
 
-        // Audio Engine
+        // Audio Engine (Stereo Fixed)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
+            const panner = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : audioCtx.createPanner();
+            
+            // Force Center Pan
+            if(panner.pan) panner.pan.value = 0;
+            else panner.setPosition(0, 0, 0);
+
             osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            gainNode.connect(panner);
+            panner.connect(audioCtx.destination);
+            
             const now = audioCtx.currentTime;
             
             if (type === 'success') {
@@ -518,7 +527,7 @@
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
             if (msg.includes("成功") || msg.includes("已添加") || msg.includes("已删除")) playSound('success');
-            else if (msg.includes("失败") || msg.includes("错误") || msg.includes("不足")) playSound('error');
+            else if (msg.includes("失败") || msg.includes("错误") || msg.includes("不足") || msg.includes("未找到")) playSound('error');
             setTimeout(() => el.textContent = '', 1000);
         };
 
@@ -552,13 +561,11 @@
 
         // Screen Switcher
         function switchScreen(screenId) {
-            // BUG FIX 1: Explicitly capture previous screen BEFORE changing state
-            // Only capture history if entering EDIT mode
+            // Capture history for Edit Cancel
             if (screenId === 'screen-edit') {
                 if (currentScreen === 'home' || currentScreen === 'takeout') {
                     previousScreen = currentScreen;
                 } else if (currentScreen === 'results') {
-                     // If we are in results, check where we came from
                      previousScreen = document.getElementById('btn-back-results').dataset.return || 'home';
                 }
             }
@@ -567,7 +574,6 @@
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
-            // Set current screen
             if (screenId === 'screen-home') currentScreen = 'home';
             else if (screenId === 'screen-takeout') currentScreen = 'takeout';
             else if (screenId === 'screen-results') currentScreen = 'results';
@@ -687,9 +693,14 @@
                         allItems = allItems.filter(i => i.id !== data.id);
                     }
                 });
-                if (isFirstLoad) {
-                    allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
-                }
+                
+                // Sorting Logic: Treat null timestamp (pending) as NOW (top of list)
+                allItems.sort((a, b) => {
+                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : Date.now();
+                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : Date.now();
+                    return timeB - timeA;
+                });
+                
                 if (currentScreen === 'home') refreshHomeList();
                 if (currentScreen === 'takeout') refreshTakeoutList();
                 if (currentScreen === 'results') refreshResultsList();
@@ -759,6 +770,8 @@
                 items.forEach(item => { const u = item.unit || '个'; totals[u] = (totals[u] || 0) + item.quantity; });
                 const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
                 statsContainer.textContent = `共找到 ${items.length} 处。合计：${summaryText}`;
+            } else {
+                statsContainer.textContent = "未找到相关物品";
             }
         }
 
@@ -766,7 +779,7 @@
         document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
         document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
 
-        // --- Search Logic (BUG FIX 2: Clear before render) ---
+        // --- Search Logic ---
         const setupSearch = (inputId, btnId, clearBtnId, context) => {
             const input = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
@@ -786,19 +799,13 @@
                 if (!term) return;
                 playSound('click');
                 
-                // FIX: Update term METADATA BEFORE switching screen to prevent "Flash of old content"
                 const title = document.getElementById('title-results');
                 title.textContent = `搜索：${term}`;
                 title.dataset.term = term;
                 document.getElementById('btn-back-results').dataset.return = context;
 
-                // Explicitly clear searchResults global to be safe
                 searchResults = [];
-                
-                // Now Switch
                 switchScreen('screen-results');
-                // refreshResultsList() is called by switchScreen automatically
-                
                 announce(`搜索完成`);
             };
             btn.addEventListener('click', perform);
@@ -810,6 +817,12 @@
 
         document.getElementById('btn-back-results').addEventListener('click', (e) => {
             const ctx = e.target.dataset.return || 'home';
+            // Clear inputs on exit
+            document.getElementById('home-search').value = '';
+            document.getElementById('takeout-search').value = '';
+            document.getElementById('btn-clear-home-search').classList.add('hidden');
+            document.getElementById('btn-clear-takeout-search').classList.add('hidden');
+            
             switchScreen(ctx === 'takeout' ? 'screen-takeout' : 'screen-home');
         });
 
@@ -821,12 +834,14 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
         
-        // --- Edit Screen Cancel Logic (BUG FIX 1: Correct Return) ---
-        document.getElementById('btn-back-edit').addEventListener('click', () => switchScreen('screen-' + previousScreen));
-        document.getElementById('btn-cancel-edit-form').addEventListener('click', () => {
+        // --- Edit Screen Cancel Logic (Fixed Focus) ---
+        function cancelEdit() {
             playSound('click');
+            focusTargetId = currentActionItem.id; // Restore focus
             switchScreen('screen-' + previousScreen);
-        });
+        }
+        document.getElementById('btn-back-edit').addEventListener('click', cancelEdit);
+        document.getElementById('btn-cancel-edit-form').addEventListener('click', cancelEdit);
 
         // --- Unit Picker ---
         let unitTargetInput = null;
@@ -1013,7 +1028,7 @@
             } catch(e) { announce("失败"); }
         });
 
-        // Export/Import
+        // Export/Import ...
         document.getElementById('btn-export').addEventListener('click', () => {
             let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n"; allItems.forEach(item => { csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`; });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("导出成功");
