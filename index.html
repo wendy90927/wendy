@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (终极修复版)</title>
+    <title>家庭物品管家 (完美音效排序版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -473,16 +473,20 @@
         let focusTargetId = null; 
         let searchResults = [];
 
-        // Audio Engine (Fixed Stereo)
+        // Audio Engine (Dual-Channel Center)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            // Removed PannerNode completely to ensure default center stereo
+            const merger = audioCtx.createChannelMerger(2); // Force 2-channel output
+
             osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            // Connect mono signal to both Left (0) and Right (1) inputs of merger
+            gainNode.connect(merger, 0, 0);
+            gainNode.connect(merger, 0, 1);
+            merger.connect(audioCtx.destination);
             
             const now = audioCtx.currentTime;
             
@@ -688,10 +692,18 @@
                     }
                 });
                 
-                // Fixed Sort: New items (null updatedAt) treated as FUTURE time to force TOP
+                // FIX: Priority Sorting for New Items (Pending Writes = null timestamp)
                 allItems.sort((a, b) => {
-                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : Date.now() + 10000;
-                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : Date.now() + 10000;
+                    const isAPending = a.updatedAt === null;
+                    const isBPending = b.updatedAt === null;
+                    
+                    if (isAPending && !isBPending) return -1; // A is new -> Top
+                    if (!isAPending && isBPending) return 1;  // B is new -> Top
+                    if (isAPending && isBPending) return 0;   // Both new
+
+                    // Standard timestamp sort (Newest first)
+                    const timeA = a.updatedAt ? a.updatedAt.toMillis() : 0;
+                    const timeB = b.updatedAt ? b.updatedAt.toMillis() : 0;
                     return timeB - timeA;
                 });
                 
@@ -705,10 +717,10 @@
         function refreshHomeList() { renderList('home-list', homeFilterRoom, allItems); }
         function refreshTakeoutList() { renderList('takeout-list', takeoutFilterRoom, allItems); }
         
-        // Fixed Search Refresh
+        // FIX: Search results refresh logic
         function refreshResultsList() {
             const term = document.getElementById('title-results').dataset.term || '';
-            // Filter regardless of previous state
+            // Always refilter based on master list
             searchResults = allItems.filter(item => item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term));
             renderList('results-list', 'all', searchResults);
             updateStats(searchResults);
@@ -743,6 +755,8 @@
                     if (card.getAttribute('aria-label') !== labelText) {
                         card.innerHTML = htmlContent; card.setAttribute('aria-label', labelText);
                     }
+                    // Re-append to enforce sort order in DOM
+                    container.appendChild(card);
                 } else {
                     card = document.createElement('div');
                     card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
@@ -775,7 +789,7 @@
         document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
         document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
 
-        // --- Search Logic (Fixed Rendering) ---
+        // --- Search Logic ---
         const setupSearch = (inputId, btnId, clearBtnId, context) => {
             const input = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
@@ -801,8 +815,7 @@
                 document.getElementById('btn-back-results').dataset.return = context;
 
                 switchScreen('screen-results');
-                // Forced call to refresh to ensure render matches term immediately
-                refreshResultsList();
+                refreshResultsList(); // Immediate refresh
                 
                 announce(`搜索完成`);
             };
@@ -816,7 +829,7 @@
         document.getElementById('btn-back-results').addEventListener('click', (e) => {
             const ctx = e.target.dataset.return || 'home';
             
-            // Fixed: Clear Inputs on Exit
+            // Clear Inputs on Exit
             document.getElementById('home-search').value = '';
             document.getElementById('takeout-search').value = '';
             document.getElementById('btn-clear-home-search').classList.add('hidden');
@@ -836,7 +849,7 @@
         // --- Edit Screen Cancel Logic (Fixed Focus) ---
         function cancelEdit() {
             playSound('click');
-            if(currentActionItem) focusTargetId = currentActionItem.id; // Set focus target
+            if(currentActionItem) focusTargetId = currentActionItem.id; // Restore focus
             switchScreen('screen-' + previousScreen);
         }
         document.getElementById('btn-back-edit').addEventListener('click', cancelEdit);
