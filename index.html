@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (优化版)</title>
+    <title>家庭物品管家 (深度优化版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -141,14 +141,14 @@
 
                 <div class="flex gap-3">
                     <button id="btn-nav-add" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-green-400">+ 新增物品</button>
-                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">- 取出物品</button>
+                    <button id="btn-nav-takeout" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow text-xl border-2 border-orange-400">取出物品</button>
                 </div>
 
-                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理 (导入/导出)</button>
+                <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理</button>
 
                 <div class="relative flex gap-2">
                     <label for="home-search" class="sr-only">搜索物品</label>
-                    <input type="text" id="home-search" placeholder="输入内容搜索..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+                    <input type="text" id="home-search" placeholder="在首页搜索..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
                     <button id="btn-do-search" class="bg-white text-blue-800 px-4 rounded font-bold shadow">搜索</button>
                 </div>
             </div>
@@ -176,11 +176,49 @@
         </main>
     </div>
 
+    <div id="screen-takeout" class="screen hidden min-h-screen flex flex-col pb-20 bg-orange-50">
+        <header class="bg-orange-700 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <button id="btn-back-takeout" class="bg-white text-orange-800 px-6 py-2 rounded-lg font-bold border-2 border-orange-200">&lt; 返回首页</button>
+                    <h1 id="title-takeout" class="text-xl font-bold outline-none" tabindex="-1">取出物品</h1>
+                </div>
+
+                <div class="relative flex gap-2">
+                    <label for="takeout-search" class="sr-only">在取出模式下搜索</label>
+                    <input type="text" id="takeout-search" placeholder="输入名称查找要取出的物品..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg" aria-label="搜索物品">
+                    <button id="btn-do-search-takeout" class="bg-white text-orange-800 px-4 rounded font-bold shadow">搜索</button>
+                </div>
+            </div>
+        </header>
+
+        <section class="bg-white p-4 shadow-sm border-b z-10">
+            <div class="max-w-3xl mx-auto flex items-center gap-2">
+                <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg text-orange-900">房间筛选：</label>
+                <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-orange-200 rounded bg-orange-50 text-lg font-bold text-black" aria-label="筛选房间">
+                    <option value="all">全部房间</option>
+                    <option value="客厅">客厅</option>
+                    <option value="厨房">厨房</option>
+                    <option value="卧室">卧室</option>
+                    <option value="书房">书房</option>
+                    <option value="餐厅">餐厅</option>
+                    <option value="玄关">玄关</option>
+                    <option value="卫生间">卫生间</option>
+                    <option value="洗衣房">洗衣房</option>
+                </select>
+            </div>
+        </section>
+
+        <main class="flex-grow p-4">
+            <div id="takeout-list" class="max-w-3xl mx-auto space-y-4" role="list" aria-label="可取出物品列表"></div>
+        </main>
+    </div>
+
     <div id="screen-results" class="screen hidden min-h-screen flex flex-col bg-gray-100">
         <div class="bg-purple-700 text-white p-4 shadow-md sticky top-0 z-20">
             <div class="max-w-3xl mx-auto flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <button id="btn-back-results" class="bg-white text-purple-800 px-6 py-2 rounded-lg font-bold border-2 border-purple-200">&lt; 返回首页</button>
+                    <button id="btn-back-results" class="bg-white text-purple-800 px-6 py-2 rounded-lg font-bold border-2 border-purple-200">&lt; 返回</button>
                     <h1 id="title-results" class="text-xl font-bold outline-none" tabindex="-1">搜索结果</h1>
                 </div>
             </div>
@@ -208,7 +246,7 @@
                     <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：牛奶" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (输入或选择)</label>
+                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位 (支持上下键切换)</label>
                     <input type="text" id="add-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="选择或输入" value="个" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
@@ -256,7 +294,7 @@
                     <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="物品名称">
                 </div>
                 <div>
-                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
+                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位 (支持上下键切换)</label>
                     <input type="text" id="edit-unit" list="unit-presets" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                 </div>
                 <div class="grid grid-cols-1 gap-6">
@@ -396,13 +434,13 @@
         let pendingAddQty = 1;
         let currentScreen = 'login';
         let homeFilterRoom = 'all';
+        let takeoutFilterRoom = 'all'; // New for Takeout Screen
         let unsubscribeItems = null;
         let previousScreen = 'home';
         let focusTargetId = null; 
         let searchResults = [];
 
-        // --- Sound Engine (AudioContext) ---
-        // 无需额外文件，使用合成音效
+        // Audio Engine
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -410,37 +448,24 @@
             const gainNode = audioCtx.createGain();
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-
             const now = audioCtx.currentTime;
             
             if (type === 'success') {
-                // 清脆的叮声 (Sine wave, high pitch)
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, now); // A5
-                gainNode.gain.setValueAtTime(0.1, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-                osc.start(now);
-                osc.stop(now + 0.5);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
+                gainNode.gain.setValueAtTime(0.1, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
             } else if (type === 'error') {
-                // 低沉的咚声 (Triangle wave, low pitch)
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(150, now);
-                gainNode.gain.setValueAtTime(0.2, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now);
+                gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
             } else if (type === 'click') {
-                // 短促的点击声
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(400, now);
-                gainNode.gain.setValueAtTime(0.05, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                osc.start(now);
-                osc.stop(now + 0.05);
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now);
+                gainNode.gain.setValueAtTime(0.05, now); gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
             }
         }
 
-        // Unit Presets
+        // Unit Presets & Key Handler
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
         UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
@@ -465,8 +490,32 @@
             }
         }
 
-        // --- REMOVED: attachUnitKeyHandler ---
-        // 删除了拦截方向键的逻辑，解决 Safari 无法选择和光标移动问题。
+        // KEY FIX: Restore Arrow Key support for Units
+        function attachUnitKeyHandler(inputId) {
+            const el = document.getElementById(inputId);
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    // Only cycle if user intends to specific behavior, 
+                    // prevent default to stop cursor jumping start/end
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    
+                    let idx = UNIT_LIST.indexOf(el.value);
+                    if (idx === -1) idx = e.key === 'ArrowDown' ? -1 : 0;
+                    
+                    if (e.key === 'ArrowDown') {
+                        idx = (idx + 1) % UNIT_LIST.length;
+                    } else {
+                        idx = (idx - 1 + UNIT_LIST.length) % UNIT_LIST.length;
+                    }
+                    el.value = UNIT_LIST[idx];
+                    // Optional: announce for screen reader if value changed programmatically
+                    // announce(el.value, 'quiet'); 
+                }
+            });
+        }
+        attachUnitKeyHandler('add-unit');
+        attachUnitKeyHandler('edit-unit');
 
         const savedEmail = localStorage.getItem('savedEmail');
         if(savedEmail) document.getElementById('login-email').value = savedEmail;
@@ -474,71 +523,74 @@
         window.announce = (msg, type = 'normal') => {
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
-            
-            // Play sound based on context
             if (msg.includes("成功") || msg.includes("已添加") || msg.includes("已删除")) playSound('success');
             else if (msg.includes("失败") || msg.includes("错误") || msg.includes("不足")) playSound('error');
-            
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // --- Focus Trap Helper (焦点陷阱) ---
+        // Focus Trap
         function trapFocus(modalEl) {
             const focusableElementsString = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
             const focusableContent = modalEl.querySelectorAll(focusableElementsString);
             if (focusableContent.length === 0) return;
-
             const firstFocusableElement = focusableContent[0];
             const lastFocusableElement = focusableContent[focusableContent.length - 1];
-
             modalEl.addEventListener('keydown', function(e) {
                 if (e.key === 'Tab') {
-                    if (e.shiftKey) { // Shift + Tab
+                    if (e.shiftKey) { 
                         if (document.activeElement === firstFocusableElement) {
-                            e.preventDefault();
-                            lastFocusableElement.focus();
+                            e.preventDefault(); lastFocusableElement.focus();
                         }
-                    } else { // Tab
+                    } else { 
                         if (document.activeElement === lastFocusableElement) {
-                            e.preventDefault();
-                            firstFocusableElement.focus();
+                            e.preventDefault(); firstFocusableElement.focus();
                         }
                     }
                 }
             });
         }
-
-        // Apply Focus Traps to Modals
         trapFocus(document.getElementById('modal-action'));
         trapFocus(document.getElementById('modal-qty'));
         trapFocus(document.getElementById('modal-zero'));
         trapFocus(document.getElementById('modal-confirm'));
         trapFocus(document.getElementById('modal-forgot'));
 
-        // --- Screen Switcher ---
+        // Screen Switcher
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById(screenId);
             target.classList.remove('hidden');
             
+            // Track previous screen for Edit Back button
             if (currentScreen !== 'login' && currentScreen !== 'register' && screenId !== 'screen-edit') {
                 previousScreen = currentScreen;
             }
             
+            // Set Current Screen ID
             if (screenId === 'screen-home') currentScreen = 'home';
-            if (screenId === 'screen-results') currentScreen = 'results';
+            else if (screenId === 'screen-takeout') currentScreen = 'takeout';
+            else if (screenId === 'screen-results') currentScreen = 'results';
+            else if (screenId === 'screen-edit') currentScreen = 'edit';
+            else if (screenId === 'screen-add') currentScreen = 'add';
+            else currentScreen = 'other'; // fallback
             
+            // Initial Focus (Only if no specific target ID is set)
             if (!focusTargetId) {
                 setTimeout(() => {
                     const h1 = target.querySelector('h1');
                     if (h1) h1.focus();
                 }, 100);
+            } else {
+                // If we have a target (e.g. coming back from edit), try to focus immediately if possible
+                // (Note: Lists might need a refresh call first, handled below)
             }
 
+            // Refresh Lists based on screen
             if(screenId === 'screen-home') refreshHomeList();
+            if(screenId === 'screen-takeout') refreshTakeoutList();
         }
 
-        // --- Auth ---
+        // Auth
         onAuthStateChanged(auth, user => {
             if (user) {
                 document.getElementById('btn-account-menu').setAttribute('aria-label', `当前账号：${user.email}，点击展开菜单`);
@@ -552,43 +604,31 @@
             }
         });
 
+        // ... (Login/Register/Menu handlers same as before) ...
         document.getElementById('login-password').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('btn-login').click();
-            }
+            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-login').click(); }
         });
-
         document.getElementById('btn-login').addEventListener('click', async () => {
             const e = document.getElementById('login-email').value;
             const p = document.getElementById('login-password').value;
             const autoLogin = document.getElementById('chk-auto-login').checked;
             const rememberEmail = document.getElementById('chk-remember-email').checked;
-
-            if(rememberEmail) localStorage.setItem('savedEmail', e);
-            else localStorage.removeItem('savedEmail');
-
+            if(rememberEmail) localStorage.setItem('savedEmail', e); else localStorage.removeItem('savedEmail');
             try {
                 await setPersistence(auth, autoLogin ? browserLocalPersistence : browserSessionPersistence);
                 await signInWithEmailAndPassword(auth, e, p);
-            } catch(err) {
-                announce("登录失败"); alert("登录失败：" + err.message);
-            }
+            } catch(err) { announce("登录失败"); alert("登录失败：" + err.message); }
         });
 
-        // Account Menu
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
-            e.stopPropagation();
-            playSound('click');
+            e.stopPropagation(); playSound('click');
             menuAccount.classList.toggle('hidden');
             if(!menuAccount.classList.contains('hidden')) {
                 document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'true');
                 menuAccount.querySelector('button').focus();
-            } else {
-                document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
-            }
+            } else { document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false'); }
         });
         document.addEventListener('click', (e) => {
             if (!btnAccount.contains(e.target) && !menuAccount.contains(e.target)) {
@@ -596,7 +636,6 @@
                 document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
             }
         });
-
         document.getElementById('btn-logout').addEventListener('click', () => signOut(auth).then(() => announce("已退出")));
         document.getElementById('btn-clear-data').addEventListener('click', () => {
             menuAccount.classList.add('hidden');
@@ -605,8 +644,7 @@
                 const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
                 const snapshot = await getDocs(q);
                 snapshot.forEach(doc => batch.delete(doc.ref));
-                await batch.commit();
-                announce("已清空");
+                await batch.commit(); announce("已清空");
             });
         });
         document.getElementById('btn-delete-account').addEventListener('click', () => {
@@ -616,32 +654,23 @@
                 const q = query(itemsRef, where("uid", "==", auth.currentUser.uid));
                 const snapshot = await getDocs(q);
                 snapshot.forEach(doc => batch.delete(doc.ref));
-                await batch.commit();
-                await deleteUser(auth.currentUser);
+                await batch.commit(); await deleteUser(auth.currentUser);
             });
         });
-
         document.getElementById('btn-to-register').addEventListener('click', () => switchScreen('screen-register'));
         document.getElementById('btn-back-login').addEventListener('click', () => switchScreen('screen-login'));
         document.getElementById('btn-submit-reg').addEventListener('click', () => {
-            const e = document.getElementById('reg-email').value;
-            const p1 = document.getElementById('reg-pass').value;
-            const p2 = document.getElementById('reg-pass-confirm').value;
+            const e = document.getElementById('reg-email').value; const p1 = document.getElementById('reg-pass').value; const p2 = document.getElementById('reg-pass-confirm').value;
             if (p1 !== p2 || p1.length < 6) { alert("密码问题"); return; }
             createUserWithEmailAndPassword(auth, e, p1).catch(err => alert(err.message));
         });
-
         document.getElementById('btn-forgot-pass').addEventListener('click', () => {
-            document.getElementById('modal-forgot').classList.remove('hidden');
-            setTimeout(() => document.getElementById('title-forgot').focus(), 100);
+            document.getElementById('modal-forgot').classList.remove('hidden'); setTimeout(() => document.getElementById('title-forgot').focus(), 100);
         });
         document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
         document.getElementById('btn-send-reset').addEventListener('click', () => {
-            const e = document.getElementById('forgot-email').value;
-            if(!e) return;
-            sendPasswordResetEmail(auth, e).then(() => {
-                alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden');
-            }).catch(err => alert(err.message));
+            const e = document.getElementById('forgot-email').value; if(!e) return;
+            sendPasswordResetEmail(auth, e).then(() => { alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden'); }).catch(err => alert(err.message));
         });
 
         // --- Data Logic ---
@@ -653,8 +682,7 @@
                 snap.docChanges().forEach(change => {
                     const data = { id: change.doc.id, ...change.doc.data() };
                     if (change.type === "added") {
-                        if (isFirstLoad) allItems.push(data);
-                        else allItems.unshift(data); 
+                        if (isFirstLoad) allItems.push(data); else allItems.unshift(data); 
                     }
                     if (change.type === "modified") {
                         const idx = allItems.findIndex(i => i.id === data.id);
@@ -668,33 +696,28 @@
                     allItems.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
                 }
                 
+                // Refresh logic based on active screen
                 if (currentScreen === 'home') refreshHomeList();
+                if (currentScreen === 'takeout') refreshTakeoutList();
                 if (currentScreen === 'results') refreshResultsList();
             });
         }
 
-        function refreshHomeList() {
-            renderList('home-list', homeFilterRoom, allItems);
-        }
+        // List Renderers
+        function refreshHomeList() { renderList('home-list', homeFilterRoom, allItems); }
+        function refreshTakeoutList() { renderList('takeout-list', takeoutFilterRoom, allItems); }
 
         function refreshResultsList() {
             const term = document.getElementById('title-results').dataset.term || '';
             if (!term) return;
-            
-            searchResults = allItems.filter(item => {
-                return item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term);
-            });
-            
+            searchResults = allItems.filter(item => item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term));
             renderList('results-list', 'all', searchResults);
             updateStats(searchResults);
         }
 
         function renderList(containerId, filterRoom, sourceArray) {
             const container = document.getElementById(containerId);
-            
-            const filtered = sourceArray.filter(item => {
-                return filterRoom === 'all' || item.room === filterRoom;
-            });
+            const filtered = sourceArray.filter(item => filterRoom === 'all' || item.room === filterRoom);
 
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="text-center p-6 text-gray-500 text-lg">无相关物品</div>`;
@@ -703,14 +726,14 @@
 
             const existingMap = new Map();
             container.querySelectorAll('.item-card').forEach(el => existingMap.set(el.dataset.id, el));
-
-            existingMap.forEach((el, id) => {
-                if (!filtered.find(i => i.id === id)) el.remove();
-            });
+            existingMap.forEach((el, id) => { if (!filtered.find(i => i.id === id)) el.remove(); });
 
             filtered.forEach(item => {
                 let card = existingMap.get(item.id);
                 const labelText = `${item.name}，${item.room} ${item.location||''}，${item.quantity}${item.unit||'个'}`;
+                // KEY FIX: Removed "按回车管理" from aria-label
+                const ariaLabel = labelText; 
+                
                 const htmlContent = `
                     <div class="flex justify-between items-center pointer-events-none">
                         <div>
@@ -722,9 +745,9 @@
                 `;
 
                 if (card) {
-                    if (card.getAttribute('aria-label') !== (labelText + "。按回车管理。")) {
+                    if (card.getAttribute('aria-label') !== ariaLabel) {
                         card.innerHTML = htmlContent;
-                        card.setAttribute('aria-label', labelText + "。按回车管理。");
+                        card.setAttribute('aria-label', ariaLabel);
                     }
                 } else {
                     card = document.createElement('div');
@@ -732,7 +755,7 @@
                     card.setAttribute('role', 'button');
                     card.setAttribute('tabindex', '0');
                     card.dataset.id = item.id;
-                    card.setAttribute('aria-label', labelText + "。按回车管理。");
+                    card.setAttribute('aria-label', ariaLabel);
                     card.innerHTML = htmlContent;
                     
                     const triggerMenu = () => openActionMenu(item);
@@ -746,11 +769,12 @@
                 }
             });
 
+            // Focus Restoration (Fixing focus jumping)
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
                 if (target) {
                     target.focus();
-                    focusTargetId = null;
+                    focusTargetId = null; // Clear after focusing
                 }
             }
         }
@@ -759,69 +783,63 @@
             const statsContainer = document.getElementById('results-stats');
             if (items.length > 0) {
                 const totals = {};
-                items.forEach(item => {
-                    const u = item.unit || '个';
-                    totals[u] = (totals[u] || 0) + item.quantity;
-                });
+                items.forEach(item => { const u = item.unit || '个'; totals[u] = (totals[u] || 0) + item.quantity; });
                 const summaryText = Object.entries(totals).map(([u, q]) => `${q} ${u}`).join('、');
                 statsContainer.textContent = `共找到 ${items.length} 处。合计：${summaryText}`;
             }
         }
 
         // --- Home Logic ---
-        document.getElementById('home-filter').addEventListener('change', (e) => {
-            homeFilterRoom = e.target.value;
-            refreshHomeList();
+        document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
+        // --- Takeout Logic ---
+        document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
+
+        // Search Handlers
+        const setupSearch = (inputId, btnId, context) => {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+            const perform = () => {
+                const term = input.value.trim().toLowerCase();
+                if (!term) return;
+                playSound('click');
+                switchScreen('screen-results');
+                document.getElementById('title-results').textContent = `搜索：${term}`;
+                document.getElementById('title-results').dataset.term = term;
+                document.getElementById('btn-back-results').dataset.return = context; // Store return context
+                refreshResultsList();
+                announce(`搜索完成，找到 ${searchResults.length} 个结果`);
+            };
+            btn.addEventListener('click', perform);
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') perform(); });
+        };
+
+        setupSearch('home-search', 'btn-do-search', 'home');
+        setupSearch('takeout-search', 'btn-do-search-takeout', 'takeout');
+
+        document.getElementById('btn-back-results').addEventListener('click', (e) => {
+            // Return to previous context
+            const ctx = e.target.dataset.return || 'home';
+            switchScreen(ctx === 'takeout' ? 'screen-takeout' : 'screen-home');
         });
 
-        const homeSearchInput = document.getElementById('home-search');
-        const btnDoSearch = document.getElementById('btn-do-search');
-        
-        function performSearch() {
-            const term = homeSearchInput.value.trim().toLowerCase();
-            if (!term) return;
-            
-            playSound('click');
-            switchScreen('screen-results');
-            document.getElementById('title-results').textContent = `搜索：${term}`;
-            document.getElementById('title-results').dataset.term = term;
-            
-            searchResults = allItems.filter(item => {
-                return item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term);
-            });
-            
-            renderList('results-list', 'all', searchResults);
-            updateStats(searchResults);
-            
-            announce(`搜索完成，找到 ${searchResults.length} 个结果`);
-        }
-
-        btnDoSearch.addEventListener('click', performSearch);
-        homeSearchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') performSearch();
-        });
-
-        document.getElementById('btn-back-results').addEventListener('click', () => {
-            switchScreen('screen-home');
-        });
-
+        // Navigation
         document.getElementById('btn-nav-takeout').addEventListener('click', () => {
-            document.getElementById('home-search').focus();
-            announce("请输入名称搜索要取出的物品");
+            // Switch to independent Takeout Page
+            switchScreen('screen-takeout');
         });
+        document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
 
         document.getElementById('btn-nav-add').addEventListener('click', () => {
             switchScreen('screen-add');
             document.getElementById('add-name').focus();
-            pendingAddQty = 1;
-            updateAddQtyDisplay();
+            pendingAddQty = 1; updateAddQtyDisplay();
         });
         document.getElementById('btn-back-add').addEventListener('click', () => switchScreen('screen-home'));
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
-
         document.getElementById('btn-back-edit').addEventListener('click', () => switchScreen('screen-' + previousScreen));
 
+        // Edit Execution
         document.getElementById('form-edit').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newQty = parseInt(document.getElementById('edit-quantity').value);
@@ -832,7 +850,8 @@
         });
 
         async function executeEdit(newQty) {
-            focusTargetId = currentActionItem.id;
+            // SET FOCUS TARGET BEFORE SWITCHING
+            focusTargetId = currentActionItem.id; 
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     name: document.getElementById('edit-name').value,
@@ -843,31 +862,21 @@
                     updatedAt: serverTimestamp()
                 });
                 announce("修改成功");
+                // The snapshot listener will fire, updating data, and switchScreen will render list with focusTargetId active
                 switchScreen('screen-' + previousScreen);
             } catch(e) { announce("失败"); }
         }
 
         function openZeroConfirmEdit(newQty) {
             const m = document.getElementById('modal-zero');
-            playSound('error'); // Alert sound
-            m.classList.remove('hidden');
-            setTimeout(() => document.getElementById('title-zero').focus(), 100);
-            document.getElementById('btn-zero-keep').onclick = async () => {
-                m.classList.add('hidden');
-                await executeEdit(0);
-            };
-            document.getElementById('btn-zero-del').onclick = async () => {
-                m.classList.add('hidden');
-                await execDelete();
-                switchScreen('screen-' + previousScreen);
-            };
-            document.getElementById('btn-zero-cancel').onclick = () => {
-                m.classList.add('hidden');
-                announce("已取消");
-            };
+            playSound('error'); 
+            m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
+            document.getElementById('btn-zero-keep').onclick = async () => { m.classList.add('hidden'); await executeEdit(0); };
+            document.getElementById('btn-zero-del').onclick = async () => { m.classList.add('hidden'); await execDelete(); switchScreen('screen-' + previousScreen); };
+            document.getElementById('btn-zero-cancel').onclick = () => { m.classList.add('hidden'); announce("已取消"); };
         }
 
-        // Menu
+        // Menu Logic
         function openActionMenu(item) {
             playSound('click');
             currentActionItem = item;
@@ -875,8 +884,13 @@
             document.getElementById('action-title').textContent = `管理：${item.name}`;
             document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
             
+            // KEY FIX: Context-aware Buttons
             const btnPut = document.getElementById('btn-act-put');
-            btnPut.classList.remove('hidden');
+            if (currentScreen === 'takeout') {
+                btnPut.classList.add('hidden'); // Hide Put in Takeout Mode
+            } else {
+                btnPut.classList.remove('hidden'); // Show Put in Home Mode
+            }
 
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -885,9 +899,9 @@
             }, 100);
         }
 
+        // ... (Action buttons, Qty Picker, Modals same as before) ...
         document.getElementById('action-buttons-container').addEventListener('click', (e) => {
-            const btn = e.target.closest('button');
-            if (!btn) return;
+            const btn = e.target.closest('button'); if (!btn) return;
             const act = btn.dataset.action;
             if (act === 'put') openQtyPicker("放入数量", (n) => handleUpdate(n));
             if (act === 'take') openQtyPicker("取出数量", (n) => handleUpdate(-n));
@@ -905,89 +919,42 @@
             document.getElementById('edit-quantity').value = item.quantity;
         }
 
+        // Qty Grid Generator
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         qtyGrid.innerHTML = '';
         for(let i=1; i<=10; i++) {
-            const btn = document.createElement('button');
-            btn.className = 'qty-btn';
-            btn.textContent = i;
-            const handler = (e) => {
-                if(e.type === 'keydown' && e.key !== 'Enter') return;
-                e.preventDefault(); e.stopPropagation();
-                submitQty(i);
-            };
-            btn.addEventListener('click', handler);
-            btn.addEventListener('keydown', handler);
-            qtyGrid.appendChild(btn);
+            const btn = document.createElement('button'); btn.className = 'qty-btn'; btn.textContent = i;
+            const handler = (e) => { if(e.type === 'keydown' && e.key !== 'Enter') return; e.preventDefault(); e.stopPropagation(); submitQty(i); };
+            btn.addEventListener('click', handler); btn.addEventListener('keydown', handler); qtyGrid.appendChild(btn);
         }
-
         function openQtyPicker(title, cb) {
-            playSound('click');
-            qtyCallback = cb;
+            playSound('click'); qtyCallback = cb;
             document.getElementById('qty-title').textContent = title;
-            document.getElementById('modal-action').classList.add('hidden');
-            document.getElementById('modal-qty').classList.remove('hidden');
-            const input = document.getElementById('qty-custom-input');
-            const confirm = document.getElementById('btn-qty-confirm');
-            const trigger = document.getElementById('qty-custom-trigger');
-            input.value = ''; input.disabled = true;
-            confirm.disabled = true; confirm.classList.add('opacity-50');
-            confirm.setAttribute('tabindex', '-1'); trigger.setAttribute('tabindex', '0');
+            document.getElementById('modal-action').classList.add('hidden'); document.getElementById('modal-qty').classList.remove('hidden');
+            const input = document.getElementById('qty-custom-input'); const confirm = document.getElementById('btn-qty-confirm'); const trigger = document.getElementById('qty-custom-trigger');
+            input.value = ''; input.disabled = true; confirm.disabled = true; confirm.classList.add('opacity-50'); confirm.setAttribute('tabindex', '-1'); trigger.setAttribute('tabindex', '0');
             setTimeout(() => { qtyGrid.firstChild.focus(); announce("请选择数量"); }, 100);
         }
-
         const customTrigger = document.getElementById('qty-custom-trigger');
         function activateInput() {
-            const input = document.getElementById('qty-custom-input');
-            const confirm = document.getElementById('btn-qty-confirm');
-            const trigger = document.getElementById('qty-custom-trigger');
-            trigger.setAttribute('tabindex', '-1');
-            input.disabled = false; input.focus();
-            confirm.disabled = false; confirm.classList.remove('opacity-50');
-            confirm.setAttribute('tabindex', '0');
-            announce("请输入数字");
+            const input = document.getElementById('qty-custom-input'); const confirm = document.getElementById('btn-qty-confirm'); const trigger = document.getElementById('qty-custom-trigger');
+            trigger.setAttribute('tabindex', '-1'); input.disabled = false; input.focus(); confirm.disabled = false; confirm.classList.remove('opacity-50'); confirm.setAttribute('tabindex', '0'); announce("请输入数字");
         }
         customTrigger.addEventListener('click', activateInput);
-        customTrigger.addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' || e.keyCode === 13) {
-                e.preventDefault(); e.stopPropagation();
-                activateInput();
-            }
-        });
-        document.getElementById('qty-custom-input').addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' || e.keyCode === 13) {
-                e.preventDefault(); e.stopPropagation();
-                submitQty(parseInt(e.target.value));
-            }
-        });
-        document.getElementById('btn-qty-confirm').addEventListener('click', () => {
-            submitQty(parseInt(document.getElementById('qty-custom-input').value));
-        });
-
-        function submitQty(val) {
-            if (!val || val <= 0) { announce("无效数量"); return; }
-            if (qtyCallback) qtyCallback(val);
-            document.getElementById('modal-qty').classList.add('hidden');
-        }
-
-        function closeQtyModal() {
-            document.getElementById('modal-qty').classList.add('hidden');
-            closeModals();
-        }
+        customTrigger.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); e.stopPropagation(); activateInput(); } });
+        document.getElementById('qty-custom-input').addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); e.stopPropagation(); submitQty(parseInt(e.target.value)); } });
+        document.getElementById('btn-qty-confirm').addEventListener('click', () => { submitQty(parseInt(document.getElementById('qty-custom-input').value)); });
+        function submitQty(val) { if (!val || val <= 0) { announce("无效数量"); return; } if (qtyCallback) qtyCallback(val); document.getElementById('modal-qty').classList.add('hidden'); }
+        function closeQtyModal() { document.getElementById('modal-qty').classList.add('hidden'); closeModals(); }
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-            
-            const containerId = currentScreen === 'results' ? 'results-list' : 'home-list';
+            const containerId = (currentScreen === 'results') ? 'results-list' : (currentScreen === 'takeout' ? 'takeout-list' : 'home-list');
             const container = document.getElementById(containerId);
-            
             if (currentActionItem && currentActionItem.id) {
                 const target = container.querySelector(`.item-card[data-id="${currentActionItem.id}"]`);
-                if (target) {
-                    target.focus();
-                    return;
-                }
+                if (target) { target.focus(); return; }
             }
             const first = container.querySelector('.item-card');
             if (first) first.focus();
@@ -1000,192 +967,71 @@
             if (newQty < 0) { announce("库存不足"); return; }
             await execUpdate(change);
         }
-
         async function execUpdate(change) {
             focusTargetId = currentActionItem.id;
             try {
-                await updateDoc(doc(db, "items", currentActionItem.id), {
-                    quantity: increment(change),
-                    updatedAt: serverTimestamp()
-                });
-                announce("更新成功");
-                closeModals();
+                await updateDoc(doc(db, "items", currentActionItem.id), { quantity: increment(change), updatedAt: serverTimestamp() });
+                announce("更新成功"); closeModals();
             } catch(e) { announce("失败"); }
         }
-
         function openZeroConfirm() {
-            const m = document.getElementById('modal-zero');
-            playSound('error');
-            m.classList.remove('hidden');
-            setTimeout(() => document.getElementById('title-zero').focus(), 100);
-            
-            document.getElementById('btn-zero-keep').onclick = async () => {
-                m.classList.add('hidden');
-                await execUpdate(-currentActionItem.quantity);
-            };
-            document.getElementById('btn-zero-del').onclick = async () => {
-                m.classList.add('hidden');
-                await execDelete();
-            };
-            document.getElementById('btn-zero-cancel').onclick = () => {
-                m.classList.add('hidden');
-                announce("已取消");
-                closeModals();
-            };
+            const m = document.getElementById('modal-zero'); playSound('error'); m.classList.remove('hidden'); setTimeout(() => document.getElementById('title-zero').focus(), 100);
+            document.getElementById('btn-zero-keep').onclick = async () => { m.classList.add('hidden'); await execUpdate(-currentActionItem.quantity); };
+            document.getElementById('btn-zero-del').onclick = async () => { m.classList.add('hidden'); await execDelete(); };
+            document.getElementById('btn-zero-cancel').onclick = () => { m.classList.add('hidden'); announce("已取消"); closeModals(); };
         }
-
         let confirmCallback = null;
         function openGenericConfirm(msg, cb) {
-            document.getElementById('modal-action').classList.add('hidden');
-            const m = document.getElementById('modal-confirm');
-            playSound('error'); // Warning sound
-            m.classList.remove('hidden');
-            document.getElementById('confirm-text').textContent = msg;
-            confirmCallback = cb;
-            setTimeout(() => document.getElementById('title-confirm').focus(), 100);
+            document.getElementById('modal-action').classList.add('hidden'); const m = document.getElementById('modal-confirm'); playSound('error');
+            m.classList.remove('hidden'); document.getElementById('confirm-text').textContent = msg; confirmCallback = cb; setTimeout(() => document.getElementById('title-confirm').focus(), 100);
         }
-        document.getElementById('btn-confirm-ok').addEventListener('click', () => {
-            if(confirmCallback) confirmCallback();
-            document.getElementById('modal-confirm').classList.add('hidden');
-        });
+        document.getElementById('btn-confirm-ok').addEventListener('click', () => { if(confirmCallback) confirmCallback(); document.getElementById('modal-confirm').classList.add('hidden'); });
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModals());
+        async function execDelete() { try { await deleteDoc(doc(db, "items", currentActionItem.id)); announce("已删除"); closeModals(); } catch(e) { announce("删除失败"); } }
 
-        async function execDelete() {
-            try {
-                await deleteDoc(doc(db, "items", currentActionItem.id));
-                announce("已删除");
-                closeModals();
-            } catch(e) { announce("删除失败"); }
-        }
-
-        // Add Item
+        // Add Logic
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
-            openQtyPicker("设置数量", (v) => {
-                pendingAddQty = v;
-                updateAddQtyDisplay();
-                document.getElementById('modal-qty').classList.add('hidden');
-                document.getElementById('btn-add-qty-trigger').focus();
-            });
+            openQtyPicker("设置数量", (v) => { pendingAddQty = v; updateAddQtyDisplay(); document.getElementById('modal-qty').classList.add('hidden'); document.getElementById('btn-add-qty-trigger').focus(); });
         });
-        function updateAddQtyDisplay() {
-            document.getElementById('btn-add-qty-trigger').textContent = `数量：${pendingAddQty} (点击修改)`;
-        }
+        function updateAddQtyDisplay() { document.getElementById('btn-add-qty-trigger').textContent = `数量：${pendingAddQty} (点击修改)`; }
         document.getElementById('add-name').addEventListener('change', (e) => {
             const name = e.target.value.trim();
-            if(name) {
-                const match = allItems.find(i => i.name === name);
-                if(match && match.unit) {
-                    document.getElementById('add-unit').value = match.unit;
-                    announce("自动填入单位：" + match.unit);
-                }
-            }
+            if(name) { const match = allItems.find(i => i.name === name); if(match && match.unit) { document.getElementById('add-unit').value = match.unit; announce("自动填入单位：" + match.unit); } }
         });
         document.getElementById('form-add').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nameInput = document.getElementById('add-name');
-            const unitVal = document.getElementById('add-unit').value || '个';
-            learnNewUnit(unitVal);
+            e.preventDefault(); const nameInput = document.getElementById('add-name'); const unitVal = document.getElementById('add-unit').value || '个'; learnNewUnit(unitVal);
             try {
-                await addDoc(itemsRef, {
-                    name: nameInput.value,
-                    room: document.getElementById('add-room').value,
-                    location: document.getElementById('add-location').value,
-                    unit: unitVal,
-                    quantity: pendingAddQty,
-                    uid: auth.currentUser.uid,
-                    updatedAt: serverTimestamp()
-                });
-                announce(`已添加 ${nameInput.value}`);
-                nameInput.value = '';
-                document.getElementById('add-location').value = '';
-                pendingAddQty = 1;
-                updateAddQtyDisplay();
-                nameInput.focus();
+                await addDoc(itemsRef, { name: nameInput.value, room: document.getElementById('add-room').value, location: document.getElementById('add-location').value, unit: unitVal, quantity: pendingAddQty, uid: auth.currentUser.uid, updatedAt: serverTimestamp() });
+                announce(`已添加 ${nameInput.value}`); nameInput.value = ''; document.getElementById('add-location').value = ''; pendingAddQty = 1; updateAddQtyDisplay(); nameInput.focus();
             } catch(e) { announce("失败"); }
         });
 
-        // Export/Import
+        // Export/Import handlers same as before...
         document.getElementById('btn-export').addEventListener('click', () => {
-            let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n";
-            allItems.forEach(item => {
-                csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`;
-            });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            announce("导出成功");
+            let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n"; allItems.forEach(item => { csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`; });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("导出成功");
         });
         document.getElementById('btn-download-template').addEventListener('click', () => {
-            const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字),单位\n大米,厨房,柜子,1,袋\n牛奶,客厅,桌子,2,箱";
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `导入模板.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            announce("模板下载成功");
+            const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字),单位\n大米,厨房,柜子,1,袋\n牛奶,客厅,桌子,2,箱"; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `导入模板.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("模板下载成功");
         });
         document.getElementById('btn-trigger-upload').addEventListener('click', () => document.getElementById('file-upload').click());
         document.getElementById('file-upload').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
             reader.onload = async (e) => {
-                const text = e.target.result;
-                const rows = text.split('\n');
-                let count = 0;
+                const text = e.target.result; const rows = text.split('\n'); let count = 0;
                 for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i].trim();
-                    if (!row) continue;
-                    const cols = row.split(',');
-                    if (cols.length < 1) continue;
-                    const name = cols[0]?.trim();
-                    if(!name) continue;
-                    await addDoc(itemsRef, {
-                        name: name,
-                        room: cols[1]?.trim() || '客厅',
-                        location: cols[2]?.trim() || '',
-                        quantity: parseInt(cols[3]) || 1,
-                        unit: cols[4]?.trim() || '个',
-                        uid: auth.currentUser.uid,
-                        updatedAt: serverTimestamp()
-                    });
-                    count++;
-                }
-                announce(`导入 ${count} 个物品`);
-                switchScreen('screen-home');
-            };
-            reader.readAsText(file);
+                    const row = rows[i].trim(); if (!row) continue; const cols = row.split(','); if (cols.length < 1) continue; const name = cols[0]?.trim(); if(!name) continue;
+                    await addDoc(itemsRef, { name: name, room: cols[1]?.trim() || '客厅', location: cols[2]?.trim() || '', quantity: parseInt(cols[3]) || 1, unit: cols[4]?.trim() || '个', uid: auth.currentUser.uid, updatedAt: serverTimestamp() }); count++;
+                } announce(`导入 ${count} 个物品`); switchScreen('screen-home');
+            }; reader.readAsText(file);
         });
 
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
                 const menu = document.getElementById('menu-account-dropdown');
-                if (!menu.classList.contains('hidden')) {
-                    e.preventDefault();
-                    menu.classList.add('hidden');
-                    document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
-                    document.getElementById('btn-account-menu').focus();
-                    return;
-                }
-                const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)');
-                if (modals.length > 0) {
-                    e.preventDefault();
-                    closeModals();
-                    document.getElementById('modal-qty').classList.add('hidden');
-                    return;
-                }
-                if (currentScreen !== 'home' && currentScreen !== 'login') {
-                    e.preventDefault();
-                    switchScreen('screen-home');
-                }
+                if (!menu.classList.contains('hidden')) { e.preventDefault(); menu.classList.add('hidden'); document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false'); document.getElementById('btn-account-menu').focus(); return; }
+                const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)'); if (modals.length > 0) { e.preventDefault(); closeModals(); document.getElementById('modal-qty').classList.add('hidden'); return; }
+                if (currentScreen !== 'home' && currentScreen !== 'login') { e.preventDefault(); switchScreen('screen-home'); }
             }
         });
     </script>
