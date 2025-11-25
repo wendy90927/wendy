@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家V1.5</title>
+    <title>家庭物品管家V1.5 (修复版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -561,7 +561,7 @@
         let homeFilterRoom = 'all';
         let homeFilterCategory = 'all'; 
         let takeoutFilterRoom = 'all';
-        let takeoutFilterCategory = 'all'; // 新增：取出分类筛选
+        let takeoutFilterCategory = 'all'; 
         let unsubscribeItems = null;
         let previousScreen = 'home';
         let focusTargetId = null; 
@@ -768,7 +768,7 @@
         document.getElementById('btn-forgot-pass').addEventListener('click', () => {
             document.getElementById('modal-forgot').classList.remove('hidden'); setTimeout(() => document.getElementById('title-forgot').focus(), 100);
         });
-        document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'));
+        document.getElementById('btn-cancel-forgot').addEventListener('click', () => document.getElementById('modal-forgot').classList.add('hidden'););
         document.getElementById('btn-send-reset').addEventListener('click', () => {
             const e = document.getElementById('forgot-email').value; if(!e) return;
             sendPasswordResetEmail(auth, e).then(() => { alert("已发送"); document.getElementById('modal-forgot').classList.add('hidden'); }).catch(err => alert(err.message));
@@ -816,7 +816,6 @@
             renderList('home-list', homeFilterRoom, homeFilterCategory, allItems); 
         }
 
-        // 修复点：添加取出模式的分类刷新逻辑
         function refreshTakeoutList() { 
             const catSelect = document.getElementById('takeout-filter-cat');
             if (catSelect.value !== takeoutFilterCategory) { catSelect.value = takeoutFilterCategory; }
@@ -844,6 +843,11 @@
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="p-4 text-center text-gray-500 font-bold">没有找到物品</div>`; 
                 return;
+            }
+
+            // [修复BUG 2]: 如果找到了物品，但容器里目前是“没有找到物品”的提示（非卡片元素），则清空容器
+            if (container.firstElementChild && !container.firstElementChild.classList.contains('item-card')) {
+                container.innerHTML = '';
             }
 
             const existingMap = new Map();
@@ -915,7 +919,6 @@
         document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
         document.getElementById('home-filter-cat').addEventListener('change', (e) => { homeFilterCategory = e.target.value; refreshHomeList(); });
         document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
-        // 新增：取出分类事件监听
         document.getElementById('takeout-filter-cat').addEventListener('change', (e) => { takeoutFilterCategory = e.target.value; refreshTakeoutList(); });
 
         // --- Search Logic ---
@@ -1121,10 +1124,13 @@
         // Action Menu
         function openActionMenu(item) {
             playSound('click');
-            currentActionItem = item;
+            // [修复BUG 1]: 确保获取的是最新的 item 对象，而不是闭包中的旧对象
+            const freshItem = allItems.find(i => i.id === item.id);
+            currentActionItem = freshItem || item; 
+
             const modal = document.getElementById('modal-action');
-            document.getElementById('action-title').textContent = `管理：${item.name}`;
-            document.getElementById('action-desc').textContent = `分类：${item.category} | 剩余：${item.quantity} ${item.unit||'个'}`;
+            document.getElementById('action-title').textContent = `管理：${currentActionItem.name}`;
+            document.getElementById('action-desc').textContent = `分类：${currentActionItem.category} | 剩余：${currentActionItem.quantity} ${currentActionItem.unit||'个'}`;
             const btnPut = document.getElementById('btn-act-put');
             if (currentScreen === 'takeout') btnPut.classList.add('hidden'); else btnPut.classList.remove('hidden'); 
             modal.classList.remove('hidden');
