@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 V1.0</title>
+    <title>家庭物品管家 (智能分类版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -87,6 +87,28 @@
         }
         .clear-btn:hover { background: #d1d5db; }
         .clear-btn.hidden { display: none; }
+
+        /* 标签样式 */
+        .tag-bubble {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #bae6fd;
+        }
+        .tag-remove {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            color: #0284c7;
+            padding: 0 0.25rem;
+        }
+        .tag-remove:hover { color: #dc2626; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans">
@@ -161,8 +183,8 @@
                 <button id="btn-nav-data" class="w-full bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-lg border border-blue-400 font-bold">数据管理</button>
 
                 <div class="relative flex gap-2">
-                    <label for="home-search" class="sr-only">搜索物品</label>
-                    <input type="text" id="home-search" placeholder="在首页搜索..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg pr-12" aria-label="搜索物品">
+                    <label for="home-search" class="sr-only">搜索物品、分类或标签</label>
+                    <input type="text" id="home-search" placeholder="搜索名称、分类或标签..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg pr-12" aria-label="搜索物品">
                     <button id="btn-clear-home-search" class="clear-btn hidden" aria-label="清除搜索内容">X</button>
                     <button id="btn-do-search" class="bg-white text-blue-800 px-4 rounded font-bold shadow">搜索</button>
                 </div>
@@ -170,19 +192,34 @@
         </header>
 
         <section class="bg-white p-4 shadow-sm border-b z-10">
-            <div class="max-w-3xl mx-auto flex items-center gap-2">
-                <label for="home-filter" class="font-bold whitespace-nowrap text-lg">房间筛选：</label>
-                <select id="home-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选房间">
-                    <option value="all">全部房间</option>
-                    <option value="客厅">客厅</option>
-                    <option value="厨房">厨房</option>
-                    <option value="卧室">卧室</option>
-                    <option value="书房">书房</option>
-                    <option value="餐厅">餐厅</option>
-                    <option value="玄关">玄关</option>
-                    <option value="卫生间">卫生间</option>
-                    <option value="洗衣房">洗衣房</option>
-                </select>
+            <div class="max-w-3xl mx-auto flex flex-col gap-3">
+                <div class="flex items-center gap-2">
+                    <label for="home-filter" class="font-bold whitespace-nowrap text-lg w-20">房间：</label>
+                    <select id="home-filter" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选房间">
+                        <option value="all">全部房间</option>
+                        <option value="客厅">客厅</option>
+                        <option value="厨房">厨房</option>
+                        <option value="卧室">卧室</option>
+                        <option value="书房">书房</option>
+                        <option value="餐厅">餐厅</option>
+                        <option value="玄关">玄关</option>
+                        <option value="卫生间">卫生间</option>
+                        <option value="洗衣房">洗衣房</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="home-filter-cat" class="font-bold whitespace-nowrap text-lg w-20">分类：</label>
+                    <select id="home-filter-cat" autocomplete="off" class="w-full p-3 border-2 border-gray-300 rounded bg-gray-50 text-lg font-bold text-black" aria-label="筛选分类">
+                        <option value="all">全部分类</option>
+                        <option value="食品饮料">食品饮料</option>
+                        <option value="烹饪调料">烹饪调料</option>
+                        <option value="居家日用">居家日用</option>
+                        <option value="个人护理">个人护理</option>
+                        <option value="文具工具">文具工具</option>
+                        <option value="电子数码">电子数码</option>
+                        <option value="其他杂项">其他杂项</option>
+                    </select>
+                </div>
             </div>
         </section>
 
@@ -201,7 +238,7 @@
 
                 <div class="relative flex gap-2">
                     <label for="takeout-search" class="sr-only">在取出模式下搜索</label>
-                    <input type="text" id="takeout-search" placeholder="输入名称查找..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg pr-12" aria-label="搜索物品">
+                    <input type="text" id="takeout-search" placeholder="输入名称、标签查找..." class="flex-grow p-3 text-black rounded shadow font-bold text-lg pr-12" aria-label="搜索物品">
                     <button id="btn-clear-takeout-search" class="clear-btn hidden" aria-label="清除搜索内容">X</button>
                     <button id="btn-do-search-takeout" class="bg-white text-orange-800 px-4 rounded font-bold shadow">搜索</button>
                 </div>
@@ -213,14 +250,7 @@
                 <label for="takeout-filter" class="font-bold whitespace-nowrap text-lg text-orange-900">房间筛选：</label>
                 <select id="takeout-filter" autocomplete="off" class="w-full p-3 border-2 border-orange-200 rounded bg-orange-50 text-lg font-bold text-black" aria-label="筛选房间">
                     <option value="all">全部房间</option>
-                    <option value="客厅">客厅</option>
-                    <option value="厨房">厨房</option>
-                    <option value="卧室">卧室</option>
-                    <option value="书房">书房</option>
-                    <option value="餐厅">餐厅</option>
-                    <option value="玄关">玄关</option>
-                    <option value="卫生间">卫生间</option>
-                    <option value="洗衣房">洗衣房</option>
+                    <option value="客厅">客厅</option><option value="厨房">厨房</option><option value="卧室">卧室</option><option value="书房">书房</option><option value="餐厅">餐厅</option><option value="玄关">玄关</option><option value="卫生间">卫生间</option><option value="洗衣房">洗衣房</option>
                 </select>
             </div>
         </section>
@@ -259,8 +289,32 @@
             <form id="form-add" class="space-y-6">
                 <div>
                     <label for="add-name" class="block font-bold mb-2 text-xl">物品名称 (必填)</label>
-                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：牛奶" aria-label="物品名称">
+                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：洗发水" aria-label="物品名称，输入后按TAB键尝试自动分类">
+                    <p class="text-sm text-gray-500 mt-1">输入名称后，系统将自动尝试推断分类和标签。</p>
                 </div>
+                
+                <div>
+                    <label for="add-category" class="block font-bold mb-2 text-xl">大类</label>
+                    <select id="add-category" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl bg-white text-black" aria-label="选择物品大类">
+                        <option value="其他杂项">其他杂项</option>
+                        <option value="食品饮料">食品饮料</option>
+                        <option value="烹饪调料">烹饪调料</option>
+                        <option value="居家日用">居家日用</option>
+                        <option value="个人护理">个人护理</option>
+                        <option value="文具工具">文具工具</option>
+                        <option value="电子数码">电子数码</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="add-tags-input" class="block font-bold mb-2 text-xl">标签 (小类)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="add-tags-input" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="输入标签按回车添加" aria-label="输入标签，按回车添加">
+                        <button type="button" id="btn-add-tag-trigger" class="bg-blue-100 text-blue-800 px-4 rounded-lg font-bold border-2 border-blue-200 whitespace-nowrap text-lg">添加</button>
+                    </div>
+                    <div id="add-tags-container" class="flex flex-wrap gap-2 mt-3 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200" role="list" aria-label="已添加的标签"></div>
+                </div>
+
                 <div>
                     <label for="add-unit" class="block font-bold mb-2 text-xl">单位</label>
                     <div class="flex gap-2">
@@ -312,6 +366,29 @@
                     <label for="edit-name" class="block font-bold mb-2 text-xl">物品名称</label>
                     <input type="text" id="edit-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="物品名称">
                 </div>
+
+                <div>
+                    <label for="edit-category" class="block font-bold mb-2 text-xl">大类</label>
+                    <select id="edit-category" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl bg-white text-black" aria-label="选择物品大类">
+                        <option value="其他杂项">其他杂项</option>
+                        <option value="食品饮料">食品饮料</option>
+                        <option value="烹饪调料">烹饪调料</option>
+                        <option value="居家日用">居家日用</option>
+                        <option value="个人护理">个人护理</option>
+                        <option value="文具工具">文具工具</option>
+                        <option value="电子数码">电子数码</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="edit-tags-input" class="block font-bold mb-2 text-xl">标签 (小类)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="edit-tags-input" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="输入标签按回车添加" aria-label="输入标签，按回车添加">
+                        <button type="button" id="btn-edit-tag-trigger" class="bg-blue-100 text-blue-800 px-4 rounded-lg font-bold border-2 border-blue-200 whitespace-nowrap text-lg">添加</button>
+                    </div>
+                    <div id="edit-tags-container" class="flex flex-wrap gap-2 mt-3 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200" role="list" aria-label="已添加的标签"></div>
+                </div>
+
                 <div>
                     <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
                     <div class="flex gap-2">
@@ -461,29 +538,46 @@
         const db = getFirestore(app);
         const itemsRef = collection(db, "items");
 
-        // State
+        // --- State ---
         let allItems = [];
         let currentActionItem = null;
         let pendingAddQty = 1;
         let currentScreen = 'login';
         let homeFilterRoom = 'all';
+        let homeFilterCategory = 'all'; // 新增分类筛选
         let takeoutFilterRoom = 'all';
         let unsubscribeItems = null;
         let previousScreen = 'home';
         let focusTargetId = null; 
         let searchResults = [];
 
-        // Audio Engine (Fixed Stereo)
+        // 新增：标签暂存状态
+        let pendingTags = []; 
+
+        // --- Auto Inference Rules (阶段2：预置规则库) ---
+        const INFERENCE_RULES = {
+            '食品饮料': ['奶', '水', '茶', '酒', '饮料', '饼', '糖', '巧克力', '可乐', '雪碧', '汁', '咖啡', '燕麦'],
+            '烹饪调料': ['油', '盐', '酱', '醋', '米', '面粉', '调料', '鸡精', '味精', '糖', '花椒', '八角'],
+            '居家日用': ['纸', '洗衣', '清洁', '剂', '刷', '垃圾袋', '毛巾', '皂', '洗洁精', '柔顺剂'],
+            '个人护理': ['洗发', '沐浴', '牙膏', '牙刷', '面霜', '乳液', '口红', '粉底', '卫生巾', '棉', '防晒', '卸妆', '药', '维C', '钙片'],
+            '文具工具': ['笔', '本', '胶', '剪刀', '电池', '螺丝', '刀', '尺', '胶带'],
+            '电子数码': ['线', '充电', '耳机', '鼠标', '键盘', 'U盘', '手机', '平板']
+        };
+
+        const TAG_SUGGESTIONS = {
+            '奶': ['饮品', '早餐'], '水': ['饮品', '囤货'], '纸': ['日用', '消耗品'],
+            '洗发': ['洗护'], '沐浴': ['洗护'], '牙膏': ['洗护'], '面霜': ['护肤'],
+            '口红': ['彩妆'], '感冒': ['药品'], '维': ['保健品']
+        };
+
+        // --- Audio Engine ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            // Removed PannerNode completely to ensure default center stereo
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            
             const now = audioCtx.currentTime;
             
             if (type === 'success') {
@@ -501,7 +595,7 @@
             }
         }
 
-        // Unit Presets
+        // --- Unit Presets ---
         let UNIT_LIST = ["个", "包", "箱", "瓶", "袋", "条", "块", "只", "支", "把", "张", "双", "套", "组", "对", "本", "册", "罐", "桶", "壶", "杯", "斤", "公斤", "升", "毫升"];
         const savedUnits = JSON.parse(localStorage.getItem('custom_units') || '[]');
         UNIT_LIST = [...new Set([...UNIT_LIST, ...savedUnits])];
@@ -520,12 +614,12 @@
         window.announce = (msg, type = 'normal') => {
             const el = document.getElementById('live-announcer');
             el.textContent = msg;
-            if (msg.includes("成功") || msg.includes("已添加") || msg.includes("已删除")) playSound('success');
+            if (msg.includes("成功") || msg.includes("已添加") || msg.includes("已删除") || msg.includes("自动填入")) playSound('success');
             else if (msg.includes("失败") || msg.includes("错误") || msg.includes("不足") || msg.includes("未找到")) playSound('error');
             setTimeout(() => el.textContent = '', 1000);
         };
 
-        // Focus Trap
+        // --- Focus Trap ---
         function trapFocus(modalEl) {
             const focusableElementsString = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
             const focusableContent = modalEl.querySelectorAll(focusableElementsString);
@@ -553,15 +647,11 @@
         trapFocus(document.getElementById('modal-confirm'));
         trapFocus(document.getElementById('modal-forgot'));
 
-        // Screen Switcher
+        // --- Screen Switcher ---
         function switchScreen(screenId) {
-            // Capture history for Edit Cancel
             if (screenId === 'screen-edit') {
-                if (currentScreen === 'home' || currentScreen === 'takeout') {
-                    previousScreen = currentScreen;
-                } else if (currentScreen === 'results') {
-                     previousScreen = document.getElementById('btn-back-results').dataset.return || 'home';
-                }
+                if (currentScreen === 'home' || currentScreen === 'takeout') previousScreen = currentScreen;
+                else if (currentScreen === 'results') previousScreen = document.getElementById('btn-back-results').dataset.return || 'home';
             }
 
             document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
@@ -586,7 +676,7 @@
             if(screenId === 'screen-takeout') refreshTakeoutList();
         }
 
-        // Auth
+        // --- Auth & Init ---
         onAuthStateChanged(auth, user => {
             if (user) {
                 document.getElementById('btn-account-menu').setAttribute('aria-label', `当前账号：${user.email}，点击展开菜单`);
@@ -600,13 +690,10 @@
             }
         });
 
-        // Login Handlers
-        document.getElementById('login-password').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-login').click(); }
-        });
+        // Login Handlers (Same as before)
+        document.getElementById('login-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-login').click(); } });
         document.getElementById('btn-login').addEventListener('click', async () => {
-            const e = document.getElementById('login-email').value;
-            const p = document.getElementById('login-password').value;
+            const e = document.getElementById('login-email').value; const p = document.getElementById('login-password').value;
             const autoLogin = document.getElementById('chk-auto-login').checked;
             const rememberEmail = document.getElementById('chk-remember-email').checked;
             if(rememberEmail) localStorage.setItem('savedEmail', e); else localStorage.removeItem('savedEmail');
@@ -615,6 +702,8 @@
                 await signInWithEmailAndPassword(auth, e, p);
             } catch(err) { announce("登录失败"); alert("登录失败：" + err.message); }
         });
+        
+        // Menu logic (Same as before)
         const btnAccount = document.getElementById('btn-account-menu');
         const menuAccount = document.getElementById('menu-account-dropdown');
         btnAccount.addEventListener('click', (e) => {
@@ -652,6 +741,8 @@
                 await batch.commit(); await deleteUser(auth.currentUser);
             });
         });
+        
+        // Register & Forgot handlers (Same as before)
         document.getElementById('btn-to-register').addEventListener('click', () => switchScreen('screen-register'));
         document.getElementById('btn-back-login').addEventListener('click', () => switchScreen('screen-login'));
         document.getElementById('btn-submit-reg').addEventListener('click', () => {
@@ -676,6 +767,10 @@
                 let isFirstLoad = allItems.length === 0;
                 snap.docChanges().forEach(change => {
                     const data = { id: change.doc.id, ...change.doc.data() };
+                    // 兼容旧数据：如果没有category/tags，给默认值
+                    if (!data.category) data.category = '其他杂项';
+                    if (!data.tags) data.tags = [];
+
                     if (change.type === "added") {
                         if (isFirstLoad) allItems.push(data); else allItems.unshift(data); 
                     }
@@ -688,7 +783,6 @@
                     }
                 });
                 
-                // Fixed Sort: New items (null updatedAt) treated as FUTURE time to force TOP
                 allItems.sort((a, b) => {
                     const timeA = a.updatedAt ? a.updatedAt.toMillis() : Date.now() + 10000;
                     const timeB = b.updatedAt ? b.updatedAt.toMillis() : Date.now() + 10000;
@@ -701,25 +795,31 @@
             });
         }
 
-        // List Renderers
-        function refreshHomeList() { renderList('home-list', homeFilterRoom, allItems); }
-        function refreshTakeoutList() { renderList('takeout-list', takeoutFilterRoom, allItems); }
+        // --- List Renderers ---
+        function refreshHomeList() { renderList('home-list', homeFilterRoom, homeFilterCategory, allItems); }
+        function refreshTakeoutList() { renderList('takeout-list', takeoutFilterRoom, 'all', allItems); } // 取出模式暂时不按分类筛，或复用逻辑
         
-        // Fixed Search Refresh
         function refreshResultsList() {
             const term = document.getElementById('title-results').dataset.term || '';
-            // Filter regardless of previous state
-            searchResults = allItems.filter(item => item.name.toLowerCase().includes(term) || (item.location||'').toLowerCase().includes(term));
-            renderList('results-list', 'all', searchResults);
+            // 搜索逻辑升级：包含名称、位置、分类、标签
+            searchResults = allItems.filter(item => {
+                const searchStr = `${item.name} ${item.location||''} ${item.category} ${item.tags.join(' ')}`.toLowerCase();
+                return searchStr.includes(term);
+            });
+            renderList('results-list', 'all', 'all', searchResults);
             updateStats(searchResults);
         }
 
-        function renderList(containerId, filterRoom, sourceArray) {
+        function renderList(containerId, filterRoom, filterCat, sourceArray) {
             const container = document.getElementById(containerId);
-            const filtered = sourceArray.filter(item => filterRoom === 'all' || item.room === filterRoom);
+            const filtered = sourceArray.filter(item => {
+                const roomMatch = filterRoom === 'all' || item.room === filterRoom;
+                const catMatch = filterCat === 'all' || item.category === filterCat;
+                return roomMatch && catMatch;
+            });
 
             if (filtered.length === 0) {
-                container.innerHTML = ``; 
+                container.innerHTML = `<div class="p-4 text-center text-gray-500 font-bold">没有找到物品</div>`; 
                 return;
             }
 
@@ -729,23 +829,40 @@
 
             filtered.forEach(item => {
                 let card = existingMap.get(item.id);
-                const labelText = `${item.name}，${item.room} ${item.location||''}，${item.quantity}${item.unit||'个'}`;
+                // 构建标签HTML
+                let tagsHtml = '';
+                if (item.tags && item.tags.length > 0) {
+                    tagsHtml = `<div class="mt-2 flex flex-wrap gap-1">` + 
+                        item.tags.map(t => `<span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-sm font-bold rounded-full border border-blue-200">${t}</span>`).join('') +
+                        `</div>`;
+                }
+                const tagsText = item.tags && item.tags.length > 0 ? `，标签：${item.tags.join('、')}` : '';
+
+                const labelText = `${item.name}，分类：${item.category}，位于${item.room} ${item.location||''}，数量${item.quantity}${item.unit||'个'}${tagsText}`;
+                
                 const htmlContent = `
-                    <div class="flex justify-between items-center pointer-events-none">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900 item-name">${item.name}</h3>
-                            <p class="text-base text-gray-600 font-bold item-loc">${item.room} - ${item.location || '位置未填'}</p>
+                    <div class="flex flex-col gap-1 pointer-events-none">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 item-name flex items-center gap-2">
+                                    ${item.name}
+                                    <span class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-300">${item.category}</span>
+                                </h3>
+                                <p class="text-base text-gray-600 font-bold item-loc mt-1">${item.room} - ${item.location || '位置未填'}</p>
+                            </div>
+                            <div class="text-3xl font-bold text-blue-700 item-qty whitespace-nowrap">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
                         </div>
-                        <div class="text-3xl font-bold text-blue-700 item-qty">${item.quantity} <span class="text-lg text-gray-500">${item.unit||'个'}</span></div>
+                        ${tagsHtml}
                     </div>
                 `;
+                
                 if (card) {
                     if (card.getAttribute('aria-label') !== labelText) {
                         card.innerHTML = htmlContent; card.setAttribute('aria-label', labelText);
                     }
                 } else {
                     card = document.createElement('div');
-                    card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3";
+                    card.className = "item-card bg-white p-4 rounded-lg shadow border-l-8 border-blue-500 cursor-pointer relative mb-3 transition-transform";
                     card.setAttribute('role', 'button'); card.setAttribute('tabindex', '0'); card.dataset.id = item.id; card.setAttribute('aria-label', labelText); card.innerHTML = htmlContent;
                     const triggerMenu = () => openActionMenu(item);
                     card.addEventListener('click', triggerMenu);
@@ -753,6 +870,7 @@
                     container.appendChild(card);
                 }
             });
+            
             if (focusTargetId) {
                 const target = container.querySelector(`[data-id="${focusTargetId}"]`);
                 if (target) { target.focus(); focusTargetId = null; }
@@ -773,106 +891,182 @@
 
         // --- Filters ---
         document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
+        document.getElementById('home-filter-cat').addEventListener('change', (e) => { homeFilterCategory = e.target.value; refreshHomeList(); }); // 新增
         document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
 
-        // --- Search Logic (Fixed Rendering) ---
+        // --- Search Logic ---
         const setupSearch = (inputId, btnId, clearBtnId, context) => {
             const input = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
             const clearBtn = document.getElementById(clearBtnId);
-
-            const toggleClear = () => {
-                if (input.value.length > 0) clearBtn.classList.remove('hidden');
-                else clearBtn.classList.add('hidden');
-            };
+            const toggleClear = () => { if (input.value.length > 0) clearBtn.classList.remove('hidden'); else clearBtn.classList.add('hidden'); };
             input.addEventListener('input', toggleClear);
-            clearBtn.addEventListener('click', () => {
-                input.value = ''; toggleClear(); input.focus();
-            });
-
+            clearBtn.addEventListener('click', () => { input.value = ''; toggleClear(); input.focus(); });
             const perform = () => {
                 const term = input.value.trim().toLowerCase();
                 if (!term) return;
                 playSound('click');
-                
                 const title = document.getElementById('title-results');
                 title.textContent = `搜索：${term}`;
                 title.dataset.term = term;
                 document.getElementById('btn-back-results').dataset.return = context;
-
                 switchScreen('screen-results');
-                // Forced call to refresh to ensure render matches term immediately
                 refreshResultsList();
-                
                 announce(`搜索完成`);
             };
             btn.addEventListener('click', perform);
             input.addEventListener('keydown', (e) => { if (e.key === 'Enter') perform(); });
         };
-
         setupSearch('home-search', 'btn-do-search', 'btn-clear-home-search', 'home');
         setupSearch('takeout-search', 'btn-do-search-takeout', 'btn-clear-takeout-search', 'takeout');
-
         document.getElementById('btn-back-results').addEventListener('click', (e) => {
             const ctx = e.target.dataset.return || 'home';
-            
-            // Fixed: Clear Inputs on Exit
-            document.getElementById('home-search').value = '';
-            document.getElementById('takeout-search').value = '';
-            document.getElementById('btn-clear-home-search').classList.add('hidden');
-            document.getElementById('btn-clear-takeout-search').classList.add('hidden');
-            
+            document.getElementById('home-search').value = ''; document.getElementById('takeout-search').value = '';
+            document.getElementById('btn-clear-home-search').classList.add('hidden'); document.getElementById('btn-clear-takeout-search').classList.add('hidden');
             switchScreen(ctx === 'takeout' ? 'screen-takeout' : 'screen-home');
         });
 
-        // Navigation
-        document.getElementById('btn-nav-takeout').addEventListener('click', () => switchScreen('screen-takeout'));
-        document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
-        document.getElementById('btn-nav-add').addEventListener('click', () => { switchScreen('screen-add'); document.getElementById('add-name').focus(); pendingAddQty = 1; updateAddQtyDisplay(); });
+        // --- Tag Management Logic ---
+        function addTag(tagText, containerId, inputId) {
+            const cleanTag = tagText.trim();
+            if(!cleanTag) return;
+            if(pendingTags.includes(cleanTag)) {
+                announce(`标签 ${cleanTag} 已存在`);
+                return;
+            }
+            pendingTags.push(cleanTag);
+            renderTags(containerId, inputId);
+            document.getElementById(inputId).value = '';
+            announce(`已添加标签 ${cleanTag}`);
+        }
+
+        function removeTag(tagText, containerId, inputId) {
+            pendingTags = pendingTags.filter(t => t !== tagText);
+            renderTags(containerId, inputId);
+            announce(`已删除标签 ${tagText}`);
+            document.getElementById(inputId).focus(); // 删除后焦点回到输入框
+        }
+
+        function renderTags(containerId, inputId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            pendingTags.forEach(tag => {
+                const bubble = document.createElement('span');
+                bubble.className = 'tag-bubble';
+                bubble.innerHTML = `${tag} <span class="tag-remove" role="button" tabindex="0" aria-label="删除标签 ${tag}">×</span>`;
+                // 删除事件
+                const delBtn = bubble.querySelector('.tag-remove');
+                const delHandler = (e) => { 
+                    e.stopPropagation(); 
+                    if(e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+                    removeTag(tag, containerId, inputId); 
+                };
+                delBtn.addEventListener('click', delHandler);
+                delBtn.addEventListener('keydown', delHandler);
+                container.appendChild(bubble);
+            });
+        }
+
+        function setupTagInput(inputId, btnId, containerId) {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+            const handler = () => addTag(input.value, containerId, inputId);
+            btn.addEventListener('click', handler);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); handler(); }
+            });
+        }
+        setupTagInput('add-tags-input', 'btn-add-tag-trigger', 'add-tags-container');
+        setupTagInput('edit-tags-input', 'btn-edit-tag-trigger', 'edit-tags-container');
+
+        // --- Auto Inference Logic ---
+        function attemptInference(name) {
+            if(!name) return;
+            let predictedCat = null;
+            let predictedTags = [];
+            let predictedUnit = null;
+
+            // 1. Check History (Exact or Partial match)
+            const historyMatch = allItems.find(i => i.name === name);
+            if (historyMatch) {
+                predictedCat = historyMatch.category;
+                predictedTags = [...(historyMatch.tags || [])];
+                predictedUnit = historyMatch.unit;
+            } else {
+                // 2. Check Rules
+                for (const [cat, keywords] of Object.entries(INFERENCE_RULES)) {
+                    if (keywords.some(k => name.includes(k))) {
+                        predictedCat = cat;
+                        break;
+                    }
+                }
+                // 3. Tag rules
+                for (const [key, tags] of Object.entries(TAG_SUGGESTIONS)) {
+                    if (name.includes(key)) {
+                        tags.forEach(t => { if(!predictedTags.includes(t)) predictedTags.push(t); });
+                    }
+                }
+            }
+
+            // Apply Prediction
+            if (predictedCat) {
+                const catSelect = document.getElementById('add-category');
+                catSelect.value = predictedCat;
+                announce(`已自动选择分类：${predictedCat}`);
+            }
+            if (predictedTags.length > 0) {
+                pendingTags = [...new Set([...pendingTags, ...predictedTags])]; // Merge
+                renderTags('add-tags-container', 'add-tags-input');
+                announce(`已自动填入 ${predictedTags.length} 个标签`);
+            }
+            if (predictedUnit && !document.getElementById('add-unit').value) {
+                document.getElementById('add-unit').value = predictedUnit;
+            }
+        }
+        // Trigger inference on Add Name change
+        document.getElementById('add-name').addEventListener('blur', (e) => attemptInference(e.target.value.trim()));
+
+        // --- Add/Edit Core Logic ---
+        document.getElementById('btn-nav-add').addEventListener('click', () => { 
+            switchScreen('screen-add'); 
+            document.getElementById('add-name').focus(); 
+            pendingAddQty = 1; 
+            pendingTags = []; // Reset tags
+            renderTags('add-tags-container', 'add-tags-input');
+            updateAddQtyDisplay(); 
+        });
         document.getElementById('btn-back-add').addEventListener('click', () => switchScreen('screen-home'));
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
         
-        // --- Edit Screen Cancel Logic (Fixed Focus) ---
         function cancelEdit() {
             playSound('click');
-            if(currentActionItem) focusTargetId = currentActionItem.id; // Set focus target
+            if(currentActionItem) focusTargetId = currentActionItem.id;
             switchScreen('screen-' + previousScreen);
         }
         document.getElementById('btn-back-edit').addEventListener('click', cancelEdit);
         document.getElementById('btn-cancel-edit-form').addEventListener('click', cancelEdit);
 
-        // --- Unit Picker ---
+        // Unit Picker
         let unitTargetInput = null;
         const unitGrid = document.getElementById('unit-grid');
         function initUnitGrid() {
             unitGrid.innerHTML = '';
             UNIT_LIST.forEach(u => {
                 const btn = document.createElement('button');
-                btn.className = 'grid-btn';
-                btn.textContent = u;
+                btn.className = 'grid-btn'; btn.textContent = u;
                 btn.addEventListener('click', () => {
-                    if(unitTargetInput) {
-                        unitTargetInput.value = u;
-                        announce(`已选择 ${u}`);
-                        unitTargetInput.focus(); 
-                    }
+                    if(unitTargetInput) { unitTargetInput.value = u; announce(`已选择 ${u}`); unitTargetInput.focus(); }
                     closeUnitModal();
                 });
                 unitGrid.appendChild(btn);
             });
         }
         window.openUnitPicker = (inputId) => {
-            playSound('click');
-            unitTargetInput = document.getElementById(inputId);
-            initUnitGrid(); 
-            document.getElementById('modal-unit').classList.remove('hidden');
-            document.getElementById('unit-title').focus();
+            playSound('click'); unitTargetInput = document.getElementById(inputId); initUnitGrid(); 
+            document.getElementById('modal-unit').classList.remove('hidden'); document.getElementById('unit-title').focus();
         };
-        window.closeUnitModal = () => {
-            document.getElementById('modal-unit').classList.add('hidden');
-            if(unitTargetInput) unitTargetInput.focus();
-        };
+        window.closeUnitModal = () => { document.getElementById('modal-unit').classList.add('hidden'); if(unitTargetInput) unitTargetInput.focus(); };
         document.getElementById('btn-pick-unit-add').addEventListener('click', () => openUnitPicker('add-unit'));
         document.getElementById('btn-pick-unit-edit').addEventListener('click', () => openUnitPicker('edit-unit'));
 
@@ -891,6 +1085,8 @@
             try {
                 await updateDoc(doc(db, "items", currentActionItem.id), {
                     name: document.getElementById('edit-name').value,
+                    category: document.getElementById('edit-category').value, // 新增
+                    tags: pendingTags, // 新增
                     room: document.getElementById('edit-room').value,
                     location: document.getElementById('edit-location').value,
                     unit: document.getElementById('edit-unit').value,
@@ -909,19 +1105,18 @@
             document.getElementById('btn-zero-cancel').onclick = () => { m.classList.add('hidden'); announce("已取消"); };
         }
 
-        // Menu Logic
+        // Action Menu
         function openActionMenu(item) {
             playSound('click');
             currentActionItem = item;
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${item.name}`;
-            document.getElementById('action-desc').textContent = `剩余：${item.quantity} ${item.unit||'个'}`;
+            document.getElementById('action-desc').textContent = `分类：${item.category} | 剩余：${item.quantity} ${item.unit||'个'}`;
             const btnPut = document.getElementById('btn-act-put');
             if (currentScreen === 'takeout') btnPut.classList.add('hidden'); else btnPut.classList.remove('hidden'); 
             modal.classList.remove('hidden');
             setTimeout(() => { const v = modal.querySelectorAll('button:not(.hidden)'); if(v.length > 0) v[0].focus(); }, 100);
         }
-
         document.getElementById('action-buttons-container').addEventListener('click', (e) => {
             const btn = e.target.closest('button'); if (!btn) return;
             const act = btn.dataset.action;
@@ -935,12 +1130,17 @@
             document.getElementById('modal-action').classList.add('hidden');
             switchScreen('screen-edit');
             document.getElementById('edit-name').value = item.name;
+            document.getElementById('edit-category').value = item.category || '其他杂项'; // 默认值
             document.getElementById('edit-room').value = item.room;
             document.getElementById('edit-location').value = item.location;
             document.getElementById('edit-unit').value = item.unit || '个';
             document.getElementById('edit-quantity').value = item.quantity;
+            // Load Tags
+            pendingTags = [...(item.tags || [])];
+            renderTags('edit-tags-container', 'edit-tags-input');
         }
 
+        // Qty Picker (Same logic)
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         qtyGrid.innerHTML = '';
@@ -1017,23 +1217,41 @@
         function updateAddQtyDisplay() { document.getElementById('btn-add-qty-trigger').textContent = `数量：${pendingAddQty} (点击修改)`; }
         document.getElementById('add-name').addEventListener('change', (e) => {
             const name = e.target.value.trim();
-            if(name) { const match = allItems.find(i => i.name === name); if(match && match.unit) { document.getElementById('add-unit').value = match.unit; announce("自动填入单位：" + match.unit); } }
+            if(name) { const match = allItems.find(i => i.name === name); if(match && match.unit) { document.getElementById('add-unit').value = match.unit; } }
         });
         document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault(); const nameInput = document.getElementById('add-name'); const unitVal = document.getElementById('add-unit').value || '个'; learnNewUnit(unitVal);
             try {
-                await addDoc(itemsRef, { name: nameInput.value, room: document.getElementById('add-room').value, location: document.getElementById('add-location').value, unit: unitVal, quantity: pendingAddQty, uid: auth.currentUser.uid, updatedAt: serverTimestamp() });
-                announce(`已添加 ${nameInput.value}`); nameInput.value = ''; document.getElementById('add-location').value = ''; pendingAddQty = 1; updateAddQtyDisplay(); nameInput.focus();
+                await addDoc(itemsRef, { 
+                    name: nameInput.value, 
+                    category: document.getElementById('add-category').value, // 新增
+                    tags: pendingTags, // 新增
+                    room: document.getElementById('add-room').value, 
+                    location: document.getElementById('add-location').value, 
+                    unit: unitVal, 
+                    quantity: pendingAddQty, 
+                    uid: auth.currentUser.uid, 
+                    updatedAt: serverTimestamp() 
+                });
+                announce(`已添加 ${nameInput.value}`); 
+                nameInput.value = ''; document.getElementById('add-location').value = ''; 
+                pendingTags = []; renderTags('add-tags-container', 'add-tags-input'); // Reset tags
+                pendingAddQty = 1; updateAddQtyDisplay(); nameInput.focus();
             } catch(e) { announce("失败"); }
         });
 
-        // Export/Import ...
+        // Export/Import (Updated for Categories/Tags)
         document.getElementById('btn-export').addEventListener('click', () => {
-            let csvContent = "\uFEFF物品名称,房间,具体位置,数量,单位\n"; allItems.forEach(item => { csvContent += `${item.name},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`; });
+            let csvContent = "\uFEFF物品名称,分类,标签,房间,具体位置,数量,单位\n"; 
+            allItems.forEach(item => { 
+                const tagsStr = (item.tags || []).join(';'); // Use semicolon for tags inside CSV
+                csvContent += `${item.name},${item.category},${tagsStr},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`; 
+            });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("导出成功");
         });
         document.getElementById('btn-download-template').addEventListener('click', () => {
-            const csvContent = "\uFEFF物品名称(必填),房间(必填),具体位置,数量(数字),单位\n大米,厨房,柜子,1,袋\n牛奶,客厅,桌子,2,箱"; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `导入模板.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("模板下载成功");
+            const csvContent = "\uFEFF物品名称(必填),分类,标签(用分号隔开),房间(必填),具体位置,数量(数字),单位\n大米,食品饮料,粮食;主食,厨房,米桶,1,袋\n洗发水,个人护理,洗护;日常,卫生间,架子,1,瓶"; 
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `导入模板.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("模板下载成功");
         });
         document.getElementById('btn-trigger-upload').addEventListener('click', () => document.getElementById('file-upload').click());
         document.getElementById('file-upload').addEventListener('change', (e) => {
@@ -1042,7 +1260,22 @@
                 const text = e.target.result; const rows = text.split('\n'); let count = 0;
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i].trim(); if (!row) continue; const cols = row.split(','); if (cols.length < 1) continue; const name = cols[0]?.trim(); if(!name) continue;
-                    await addDoc(itemsRef, { name: name, room: cols[1]?.trim() || '客厅', location: cols[2]?.trim() || '', quantity: parseInt(cols[3]) || 1, unit: cols[4]?.trim() || '个', uid: auth.currentUser.uid, updatedAt: serverTimestamp() }); count++;
+                    
+                    const cat = cols[1]?.trim() || '其他杂项';
+                    const tagStr = cols[2]?.trim() || '';
+                    const tags = tagStr ? tagStr.split(';').map(t => t.trim()).filter(t=>t) : [];
+
+                    await addDoc(itemsRef, { 
+                        name: name, 
+                        category: cat,
+                        tags: tags,
+                        room: cols[3]?.trim() || '客厅', 
+                        location: cols[4]?.trim() || '', 
+                        quantity: parseInt(cols[5]) || 1, 
+                        unit: cols[6]?.trim() || '个', 
+                        uid: auth.currentUser.uid, 
+                        updatedAt: serverTimestamp() 
+                    }); count++;
                 } announce(`导入 ${count} 个物品`); switchScreen('screen-home');
             }; reader.readAsText(file);
         });
@@ -1055,14 +1288,9 @@
                 if (!menu.classList.contains('hidden')) { e.preventDefault(); menu.classList.add('hidden'); document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false'); document.getElementById('btn-account-menu').focus(); return; }
                 const modals = document.querySelectorAll('[id^="modal-"]:not(.hidden)'); if (modals.length > 0) { e.preventDefault(); closeModals(); document.getElementById('modal-qty').classList.add('hidden'); document.getElementById('modal-unit').classList.add('hidden'); return; }
                 if (currentScreen !== 'home' && currentScreen !== 'login') { 
-                    // Clear Search on ESC
-                    document.getElementById('home-search').value = '';
-                    document.getElementById('takeout-search').value = '';
-                    document.getElementById('btn-clear-home-search').classList.add('hidden');
-                    document.getElementById('btn-clear-takeout-search').classList.add('hidden');
-                    
-                    e.preventDefault(); 
-                    switchScreen('screen-home'); 
+                    document.getElementById('home-search').value = ''; document.getElementById('takeout-search').value = '';
+                    document.getElementById('btn-clear-home-search').classList.add('hidden'); document.getElementById('btn-clear-takeout-search').classList.add('hidden');
+                    e.preventDefault(); switchScreen('screen-home'); 
                 }
             }
         });
