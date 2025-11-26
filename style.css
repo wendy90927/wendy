@@ -1,0 +1,103 @@
+        /* 无障碍专用隐藏 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        
+        /* 强焦样式 */
+        *:focus {
+            outline: 4px solid #f97316; 
+            outline-offset: 2px;
+            z-index: 100;
+        }
+
+        /* 列表卡片 */
+        .item-card:focus {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            transform: scale(1.02);
+        }
+
+        /* 数量/单位按钮 */
+        .grid-btn {
+            height: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .grid-btn:hover, .grid-btn:focus {
+            background-color: #dbeafe;
+            border-color: #2563eb;
+            color: #1e40af;
+        }
+
+        /* 自定义输入触发器 */
+        .custom-input-trigger {
+            flex-grow: 1;
+            border: 2px solid #e5e7eb;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            cursor: pointer;
+        }
+        
+        /* 清除按钮样式 */
+        .clear-btn {
+            position: absolute;
+            right: 80px; 
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e5e7eb;
+            color: #374151;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .clear-btn:hover { background: #d1d5db; }
+        .clear-btn.hidden { display: none; }
+
+        /* 标签样式 */
+        .tag-bubble {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #bae6fd;
+        }
+        .tag-remove {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            color: #0284c7;
+            padding: 0 0.25rem;
+        }
+        .tag-remove:hover { color: #dc2626; }
