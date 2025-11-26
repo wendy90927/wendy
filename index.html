@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (移动端适配版)</title>
+    <title>家庭物品管家V1.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -364,7 +364,7 @@
                 </div>
                 
                 <div class="flex flex-col gap-4 mt-8">
-                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">保存</button>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">保存并继续添加</button>
                     <button type="button" id="btn-cancel-add" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-lg font-bold text-xl border-2 border-gray-300">取消</button>
                 </div>
             </form>
@@ -565,7 +565,7 @@
         let homeFilterRoom = 'all';
         let homeFilterCategory = 'all'; 
         let takeoutFilterRoom = 'all';
-        let takeoutFilterCategory = 'all'; // 新增：取出分类筛选
+        let takeoutFilterCategory = 'all'; 
         let unsubscribeItems = null;
         let previousScreen = 'home';
         let focusTargetId = null; 
@@ -820,7 +820,6 @@
             renderList('home-list', homeFilterRoom, homeFilterCategory, allItems); 
         }
 
-        // 修复点：添加取出模式的分类刷新逻辑
         function refreshTakeoutList() { 
             const catSelect = document.getElementById('takeout-filter-cat');
             if (catSelect.value !== takeoutFilterCategory) { catSelect.value = takeoutFilterCategory; }
@@ -850,10 +849,8 @@
                 return;
             }
 
-            // --- 修复 BUG 2 (from previous turn)：移除残留的空提示 ---
             const emptyMsg = container.querySelector('.empty-msg') || container.querySelector('.text-center.text-gray-500');
             if (emptyMsg) emptyMsg.remove();
-            // ----------------------------------
 
             const existingMap = new Map();
             container.querySelectorAll('.item-card').forEach(el => existingMap.set(el.dataset.id, el));
@@ -924,7 +921,6 @@
         document.getElementById('home-filter').addEventListener('change', (e) => { homeFilterRoom = e.target.value; refreshHomeList(); });
         document.getElementById('home-filter-cat').addEventListener('change', (e) => { homeFilterCategory = e.target.value; refreshHomeList(); });
         document.getElementById('takeout-filter').addEventListener('change', (e) => { takeoutFilterRoom = e.target.value; refreshTakeoutList(); });
-        // 新增：取出分类事件监听
         document.getElementById('takeout-filter-cat').addEventListener('change', (e) => { takeoutFilterCategory = e.target.value; refreshTakeoutList(); });
 
         // --- Search Logic ---
@@ -1049,7 +1045,6 @@
         document.getElementById('btn-nav-takeout').addEventListener('click', () => switchScreen('screen-takeout'));
         document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
         
-        // 修改 2: 新增逻辑 - 更新显示
         function updateAddQtyDisplay() {
             const btn = document.getElementById('btn-add-qty-trigger');
             btn.textContent = `当前选择：${pendingAddQty} (点击修改)`;
@@ -1069,7 +1064,6 @@
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
         
-        // 修改 2: 新增逻辑 - 绑定新增界面的数量按钮点击事件
         document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
             openQtyPicker("初始数量", (val) => {
                 pendingAddQty = val;
@@ -1077,7 +1071,7 @@
             });
         });
 
-        // 修改 3: 新增逻辑 - 绑定新增界面的“保存”提交逻辑
+        // 修改: 提交后不跳转，重置表单并聚焦 Name 输入框
         document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('add-name').value.trim();
@@ -1097,14 +1091,17 @@
                 });
                 announce("添加成功");
                 document.getElementById('form-add').reset();
-                switchScreen('screen-home'); // 保存后返回首页
+                pendingAddQty = 1;
+                pendingTags = [];
+                renderTags('add-tags-container', 'add-tags-input');
+                updateAddQtyDisplay();
+                document.getElementById('add-name').focus();
             } catch(err) {
                 announce("添加失败");
                 console.error(err);
             }
         });
 
-        // 修改 3: 新增逻辑 - 绑定新增界面的“取消”按钮
         document.getElementById('btn-cancel-add').addEventListener('click', () => {
             switchScreen('screen-home');
             announce("已取消");
@@ -1179,12 +1176,8 @@
         // Action Menu
         function openActionMenu(item) {
             playSound('click');
-            
-            // --- 修复 BUG 1 (from previous turn)：获取最新数据 ---
             const freshItem = allItems.find(i => i.id === item.id) || item;
             currentActionItem = freshItem;
-            // -----------------------------
-
             const modal = document.getElementById('modal-action');
             document.getElementById('action-title').textContent = `管理：${freshItem.name}`;
             document.getElementById('action-desc').textContent = `分类：${freshItem.category} | 剩余：${freshItem.quantity} ${freshItem.unit||'个'}`;
@@ -1218,7 +1211,7 @@
             renderTags('edit-tags-container', 'edit-tags-input');
         }
 
-        // Qty Picker (Same logic)
+        // Qty Picker (Fixed Focus Logic)
         let qtyCallback = null;
         const qtyGrid = document.getElementById('qty-grid');
         qtyGrid.innerHTML = '';
@@ -1244,8 +1237,29 @@
         customTrigger.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); e.stopPropagation(); activateInput(); } });
         document.getElementById('qty-custom-input').addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); e.stopPropagation(); submitQty(parseInt(e.target.value)); } });
         document.getElementById('btn-qty-confirm').addEventListener('click', () => { submitQty(parseInt(document.getElementById('qty-custom-input').value)); });
-        function submitQty(val) { if (!val || val <= 0) { announce("无效数量"); return; } if (qtyCallback) qtyCallback(val); document.getElementById('modal-qty').classList.add('hidden'); }
-        function closeQtyModal() { document.getElementById('modal-qty').classList.add('hidden'); closeModals(); }
+        
+        function submitQty(val) { 
+            if (!val || val <= 0) { announce("无效数量"); return; } 
+            if (qtyCallback) qtyCallback(val); 
+            document.getElementById('modal-qty').classList.add('hidden');
+            
+            // 修复焦点 BUG 2: 在新增界面，焦点归还给触发器，而不是走通用的 closeModals
+            if (currentScreen === 'add') {
+                document.getElementById('btn-add-qty-trigger').focus();
+            } else {
+                closeModals();
+            }
+        }
+        
+        function closeQtyModal() { 
+            document.getElementById('modal-qty').classList.add('hidden'); 
+            // 修复焦点 BUG 2: 取消时同样处理
+            if (currentScreen === 'add') {
+                document.getElementById('btn-add-qty-trigger').focus();
+            } else {
+                closeModals(); 
+            }
+        }
 
         window.closeModals = () => {
             document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
