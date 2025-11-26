@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家 (取出筛选升级版)</title>
+    <title>家庭物品管家 (移动端适配版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 无障碍专用隐藏 */
@@ -304,7 +304,7 @@
             <form id="form-add" class="space-y-6">
                 <div>
                     <label for="add-name" class="block font-bold mb-2 text-xl">物品名称 (必填)</label>
-                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：洗发水" aria-label="物品名称，输入后按TAB键尝试自动分类">
+                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：洗发水" aria-label="物品名称，输入后尝试自动分类">
                     <p class="text-sm text-gray-500 mt-1">输入名称后，系统将自动尝试推断分类和标签。</p>
                 </div>
                 
@@ -324,7 +324,7 @@
                 <div>
                     <label for="add-tags-input" class="block font-bold mb-2 text-xl">标签 (小类)</label>
                     <div class="flex gap-2">
-                        <input type="text" id="add-tags-input" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="输入标签按回车添加" aria-label="输入标签，按回车添加">
+                        <input type="text" id="add-tags-input" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="输入标签" aria-label="输入标签">
                         <button type="button" id="btn-add-tag-trigger" class="bg-blue-100 text-blue-800 px-4 rounded-lg font-bold border-2 border-blue-200 whitespace-nowrap text-lg">添加</button>
                     </div>
                     <div id="add-tags-container" class="flex flex-wrap gap-2 mt-3 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200" role="list" aria-label="已添加的标签"></div>
@@ -362,7 +362,11 @@
                         当前选择：1 (点击修改)
                     </button>
                 </div>
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl mt-8 shadow-lg">保存并继续</button>
+                
+                <div class="flex flex-col gap-4 mt-8">
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">保存</button>
+                    <button type="button" id="btn-cancel-add" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-lg font-bold text-xl border-2 border-gray-300">取消</button>
+                </div>
             </form>
         </div>
     </div>
@@ -398,7 +402,7 @@
                 <div>
                     <label for="edit-tags-input" class="block font-bold mb-2 text-xl">标签 (小类)</label>
                     <div class="flex gap-2">
-                        <input type="text" id="edit-tags-input" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="输入标签按回车添加" aria-label="输入标签，按回车添加">
+                        <input type="text" id="edit-tags-input" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="输入标签" aria-label="输入标签">
                         <button type="button" id="btn-edit-tag-trigger" class="bg-blue-100 text-blue-800 px-4 rounded-lg font-bold border-2 border-blue-200 whitespace-nowrap text-lg">添加</button>
                     </div>
                     <div id="edit-tags-container" class="flex flex-wrap gap-2 mt-3 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200" role="list" aria-label="已添加的标签"></div>
@@ -491,7 +495,7 @@
             <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900 outline-none" tabindex="-1">选择数量</h2>
             <div class="grid grid-cols-5 gap-3 mb-6" id="qty-grid"></div>
             <div class="flex gap-2 mb-6 items-stretch">
-                <div id="qty-custom-trigger" class="custom-input-trigger" role="button" tabindex="0" aria-label="自定义数量，按回车输入">
+                <div id="qty-custom-trigger" class="custom-input-trigger" role="button" tabindex="0" aria-label="自定义数量">
                     <span class="mr-2 font-bold text-gray-700 text-lg">自定义:</span>
                     <label for="qty-custom-input" class="sr-only">输入数量</label>
                     <input type="number" id="qty-custom-input" class="w-24 p-2 border-b-4 border-gray-400 text-center font-bold text-xl bg-gray-50 text-black" disabled placeholder="#" tabindex="-1" aria-label="输入自定义数量">
@@ -846,7 +850,7 @@
                 return;
             }
 
-            // --- 修复 BUG 2：移除残留的空提示 ---
+            // --- 修复 BUG 2 (from previous turn)：移除残留的空提示 ---
             const emptyMsg = container.querySelector('.empty-msg') || container.querySelector('.text-center.text-gray-500');
             if (emptyMsg) emptyMsg.remove();
             // ----------------------------------
@@ -1045,6 +1049,13 @@
         document.getElementById('btn-nav-takeout').addEventListener('click', () => switchScreen('screen-takeout'));
         document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
         
+        // 修改 2: 新增逻辑 - 更新显示
+        function updateAddQtyDisplay() {
+            const btn = document.getElementById('btn-add-qty-trigger');
+            btn.textContent = `当前选择：${pendingAddQty} (点击修改)`;
+            btn.setAttribute('aria-label', `当前数量 ${pendingAddQty}，点击修改`);
+        }
+
         document.getElementById('btn-nav-add').addEventListener('click', () => { 
             switchScreen('screen-add'); 
             document.getElementById('add-name').focus(); 
@@ -1053,10 +1064,52 @@
             renderTags('add-tags-container', 'add-tags-input');
             updateAddQtyDisplay(); 
         });
+        
         document.getElementById('btn-back-add').addEventListener('click', () => switchScreen('screen-home'));
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
         document.getElementById('btn-back-data').addEventListener('click', () => switchScreen('screen-home'));
         
+        // 修改 2: 新增逻辑 - 绑定新增界面的数量按钮点击事件
+        document.getElementById('btn-add-qty-trigger').addEventListener('click', () => {
+            openQtyPicker("初始数量", (val) => {
+                pendingAddQty = val;
+                updateAddQtyDisplay();
+            });
+        });
+
+        // 修改 3: 新增逻辑 - 绑定新增界面的“保存”提交逻辑
+        document.getElementById('form-add').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('add-name').value.trim();
+            if(!name) return;
+            
+            try {
+                await addDoc(itemsRef, {
+                    name: name,
+                    category: document.getElementById('add-category').value,
+                    tags: pendingTags,
+                    unit: document.getElementById('add-unit').value,
+                    room: document.getElementById('add-room').value,
+                    location: document.getElementById('add-location').value,
+                    quantity: pendingAddQty,
+                    uid: auth.currentUser.uid,
+                    updatedAt: serverTimestamp()
+                });
+                announce("添加成功");
+                document.getElementById('form-add').reset();
+                switchScreen('screen-home'); // 保存后返回首页
+            } catch(err) {
+                announce("添加失败");
+                console.error(err);
+            }
+        });
+
+        // 修改 3: 新增逻辑 - 绑定新增界面的“取消”按钮
+        document.getElementById('btn-cancel-add').addEventListener('click', () => {
+            switchScreen('screen-home');
+            announce("已取消");
+        });
+
         function cancelEdit() {
             playSound('click');
             if(currentActionItem) focusTargetId = currentActionItem.id;
@@ -1127,7 +1180,7 @@
         function openActionMenu(item) {
             playSound('click');
             
-            // --- 修复 BUG 1：获取最新数据 ---
+            // --- 修复 BUG 1 (from previous turn)：获取最新数据 ---
             const freshItem = allItems.find(i => i.id === item.id) || item;
             currentActionItem = freshItem;
             // -----------------------------
