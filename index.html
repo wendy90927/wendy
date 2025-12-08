@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭物品管家V1.8</title>
+    <title>家庭物品管家V2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -65,6 +65,7 @@
                         <span aria-hidden="true">▼</span>
                     </button>
                     <div id="menu-account-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 text-gray-900 z-50 flex flex-col">
+<button id="btn-settings" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-blue-800 border-b border-gray-200">账号与家庭设置</button>
                         <button id="btn-clear-data" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">清空所有数据</button>
                         <button id="btn-delete-account" class="w-full text-left px-4 py-4 hover:bg-red-50 text-red-700 font-bold border-b border-gray-200">注销账号</button>
                         <button id="btn-logout" class="w-full text-left px-4 py-4 hover:bg-gray-100 font-bold text-gray-800">退出登录</button>
@@ -196,12 +197,12 @@
             </div>
         </div>
         
-        <div class="max-w-lg mx-auto w-full p-6 overflow-y-auto">
+<div class="max-w-lg mx-auto w-full p-6 overflow-y-auto">
             <form id="form-add" class="space-y-6">
                 <div>
                     <label for="add-name" class="block font-bold mb-2 text-xl">物品名称 (必填)</label>
-                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：洗发水" aria-label="物品名称，输入后尝试自动分类">
-                    <p class="text-sm text-gray-500 mt-1">输入名称后，系统将自动尝试推断分类和标签。</p>
+                    <input type="text" id="add-name" required class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：洗发水" aria-label="物品名称">
+                    <p class="text-sm text-gray-500 mt-1">输入名称后，系统将自动尝试推断分类。</p>
                 </div>
                 
                 <div>
@@ -227,12 +228,38 @@
                 </div>
 
                 <div>
-                    <label for="add-unit" class="block font-bold mb-2 text-xl">单位</label>
+                    <label for="add-unit" class="block font-bold mb-2 text-xl">主单位 (大单位，如：箱)</label>
                     <div class="flex gap-2">
-                        <input type="text" id="add-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：个" value="个" aria-label="单位">
+                        <input type="text" id="add-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：箱" value="个" aria-label="主单位">
                         <button type="button" id="btn-pick-unit-add" class="bg-gray-200 text-gray-800 px-4 rounded-lg font-bold border-2 border-gray-300 whitespace-nowrap text-lg">选单位</button>
                     </div>
                 </div>
+
+                <div>
+                    <label for="add-quantity" class="block font-bold mb-2 text-xl">主数量 (当前有多少个主单位?)</label>
+                    <input type="number" id="add-quantity" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" value="1" step="0.01" aria-label="主数量">
+                </div>
+
+                <div class="mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="add-enable-subunit" class="w-6 h-6 text-blue-600 rounded">
+                        <span class="font-bold text-lg text-gray-800">启用拆零 (如：1箱有24瓶)</span>
+                    </label>
+                    <div id="add-subunit-area" class="hidden flex flex-col gap-4 mt-4 pl-2 border-l-4 border-blue-200">
+                        <div>
+<label for="add-sub-name" class="block font-bold mb-1 text-lg">子单位 (小单位，如：瓶)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="add-sub-name" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg" aria-label="子单位名称">
+                                <button type="button" id="btn-pick-unit-add-sub" class="bg-gray-200 text-gray-800 px-4 rounded-lg font-bold border-2 border-gray-300 whitespace-nowrap text-lg">选单位</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="add-sub-capacity" class="block font-bold mb-1 text-lg">换算：1个主单位等于多少子单位?</label>
+                            <input type="number" id="add-sub-capacity" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg" placeholder="24" aria-label="换算比例">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label for="add-room" class="block font-bold mb-2 text-xl">房间</label>
@@ -252,14 +279,9 @@
                         <input type="text" id="add-location" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" placeholder="如：柜子第二层" aria-label="具体位置">
                     </div>
                 </div>
-                <div>
-                    <label class="block font-bold mb-2 text-xl">初始数量</label>
-                    <button type="button" id="btn-add-qty-trigger" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-left text-xl rounded-lg" aria-label="设置初始数量">
-                        当前选择：1 (点击修改)
-                    </button>
-                </div>
                 
-                <div class="flex flex-col gap-4 mt-8">
+
+<div class="flex flex-col gap-4 mt-8">
                     <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">保存并继续添加</button>
                     <button type="button" id="btn-cancel-add" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-lg font-bold text-xl border-2 border-gray-300">取消</button>
                 </div>
@@ -305,12 +327,33 @@
                 </div>
 
                 <div>
-                    <label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
+<label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
                     <div class="flex gap-2">
                         <input type="text" id="edit-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
                         <button type="button" id="btn-pick-unit-edit" class="bg-gray-200 text-gray-800 px-4 rounded-lg font-bold border-2 border-gray-300 whitespace-nowrap text-lg">选单位</button>
                     </div>
                 </div>
+
+                <div class="mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="edit-enable-subunit" class="w-6 h-6 text-blue-600 rounded">
+                        <span class="font-bold text-lg text-gray-800">启用拆零 (如：1箱有24瓶)</span>
+                    </label>
+                    <div id="edit-subunit-area" class="hidden flex flex-col gap-4 mt-4 pl-2 border-l-4 border-indigo-200">
+                        <div>
+<label for="edit-sub-name" class="block font-bold mb-1 text-lg">子单位 (小单位，如：瓶)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="edit-sub-name" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg" aria-label="子单位名称">
+                                <button type="button" id="btn-pick-unit-edit-sub" class="bg-gray-200 text-gray-800 px-4 rounded-lg font-bold border-2 border-gray-300 whitespace-nowrap text-lg">选单位</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="edit-sub-capacity" class="block font-bold mb-1 text-lg">换算：1个主单位等于多少子单位? (例如1箱有24瓶，则填入24)</label>
+                            <input type="number" id="edit-sub-capacity" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg" placeholder="如：24" aria-label="换算比例">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label for="edit-room" class="block font-bold mb-2 text-xl">房间</label>
@@ -386,18 +429,26 @@
         </div>
     </div>
 
-    <div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-end sm:items-center">
+<div id="modal-qty" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-end sm:items-center">
         <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl border-t-4 border-blue-500" role="dialog" aria-modal="true" aria-labelledby="qty-title">
-            <h2 id="qty-title" class="text-2xl font-bold mb-6 text-center text-gray-900 outline-none" tabindex="-1">选择数量</h2>
-            <div class="grid grid-cols-5 gap-3 mb-6" id="qty-grid"></div>
-            <div class="flex gap-2 mb-6 items-stretch">
-                <div id="qty-custom-trigger" class="custom-input-trigger" role="button" tabindex="0" aria-label="自定义数量">
-                    <span class="mr-2 font-bold text-gray-700 text-lg">自定义:</span>
-                    <label for="qty-custom-input" class="sr-only">输入数量</label>
-                    <input type="number" id="qty-custom-input" class="w-24 p-2 border-b-4 border-gray-400 text-center font-bold text-xl bg-gray-50 text-black" disabled placeholder="#" tabindex="-1" aria-label="输入自定义数量">
-                </div>
-                <button id="btn-qty-confirm" class="bg-blue-600 text-white font-bold px-6 rounded-lg shadow-lg disabled:opacity-50 text-lg" disabled tabindex="-1">确定</button>
+            <h2 id="qty-title" class="text-2xl font-bold mb-4 text-center text-gray-900 outline-none" tabindex="-1">输入数量</h2>
+            
+            <div id="qty-unit-toggle" class="flex justify-center gap-0 mb-6 w-full bg-gray-100 p-1 rounded-xl" role="radiogroup" aria-label="选择操作单位">
+                <button id="btn-qty-unit-small" class="flex-1 py-3 text-lg font-bold rounded-lg transition-colors border-2 border-transparent focus:z-10" aria-checked="true" role="radio">
+                    按小单位 (瓶)
+                </button>
+                <button id="btn-qty-unit-big" class="flex-1 py-3 text-lg font-bold rounded-lg transition-colors border-2 border-transparent focus:z-10" aria-checked="false" role="radio">
+                    按大单位 (箱)
+                </button>
             </div>
+
+            <div class="mb-6">
+                <label for="qty-custom-input" class="sr-only">请输入数量</label>
+                <input type="number" id="qty-custom-input" class="w-full p-4 text-center text-3xl font-bold border-b-4 border-blue-500 bg-gray-50 rounded-t-lg focus:outline-none focus:bg-white text-black" placeholder="0" step="0.01">
+                <p id="qty-helper-text" class="text-center text-gray-500 mt-2 font-bold" aria-live="polite">请输入数字</p>
+            </div>
+
+            <button id="btn-qty-confirm" class="w-full bg-blue-600 text-white p-4 rounded-xl font-bold text-2xl shadow-lg mb-4 hover:bg-blue-700">确认</button>
             <button id="btn-qty-cancel" class="w-full p-4 bg-gray-200 text-gray-800 rounded-xl font-bold text-xl" onclick="closeQtyModal()">取消</button>
         </div>
     </div>
@@ -432,6 +483,138 @@
             </div>
         </div>
     </div>
+<div id="screen-settings" class="screen hidden min-h-screen flex flex-col bg-white">
+        <div class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex items-center justify-between">
+                <button id="btn-back-settings" class="bg-white text-blue-800 px-6 py-2 rounded-lg font-bold border-2 border-blue-200">&lt; 返回首页</button>
+                <h1 id="title-settings" class="text-xl font-bold outline-none" tabindex="-1">账号与家庭设置</h1>
+            </div>
+        </div>
+        
+        <div class="max-w-3xl mx-auto w-full p-4">
+            <div role="tablist" aria-label="设置选项卡" class="flex border-b-4 border-gray-200 mb-6">
+                <button id="tab-profile" role="tab" aria-selected="true" aria-controls="panel-profile" class="flex-1 p-4 font-bold text-xl border-b-4 border-blue-600 text-blue-800 bg-blue-50 focus:bg-blue-100">个人资料</button>
+                <button id="tab-rooms" role="tab" aria-selected="false" aria-controls="panel-rooms" tabindex="-1" class="flex-1 p-4 font-bold text-xl border-b-4 border-transparent text-gray-600 hover:bg-gray-50 focus:bg-gray-100">房间管理</button>
+            </div>
+
+            <div id="panel-profile" role="tabpanel" aria-labelledby="tab-profile" tabindex="0">
+                <form id="form-profile" class="space-y-6">
+                    <div>
+<label for="set-nickname" class="block font-bold mb-2 text-xl">我的昵称</label>
+                        <input type="text" id="set-nickname" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="我的昵称">
+                    </div>
+                    <div>
+                        <label for="set-family-name" class="block font-bold mb-2 text-xl">家庭名称</label>
+                        <input type="text" id="set-family-name" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="家庭名称">
+                    </div>
+                    <hr class="border-gray-200 my-4">
+                    <button type="button" id="btn-to-change-pwd" class="w-full p-4 bg-gray-100 text-blue-800 font-bold rounded-lg text-xl border-2 border-gray-300 text-left hover:bg-gray-200">修改登录密码 &gt;</button>
+                    
+                    <div class="flex flex-col gap-4 mt-8">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">保存设置</button>
+<button type="button" id="btn-cancel-profile" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-5 rounded-lg font-bold text-2xl shadow-lg mt-4 border-2 border-gray-300">取消</button>
+                    </div>
+                </form>
+            </div>
+
+<div id="panel-rooms" role="tabpanel" aria-labelledby="tab-rooms" class="hidden" tabindex="0">
+                <div class="flex flex-col gap-4 p-4">
+                    <p class="text-gray-600 mb-2 font-bold" id="room-manage-hint">管理您的家庭空间布局。</p>
+                    
+                    <button id="btn-to-add-room" class="w-full p-6 bg-green-50 text-green-800 font-bold rounded-xl border-2 border-green-300 text-left text-xl shadow-sm hover:bg-green-100 flex justify-between items-center">
+                        <span>+ 新增房间</span>
+                        <span class="text-sm bg-green-200 px-2 py-1 rounded text-green-900">推荐</span>
+                    </button>
+
+                    <button id="btn-to-delete-room" class="w-full p-6 bg-red-50 text-red-800 font-bold rounded-xl border-2 border-red-300 text-left text-xl shadow-sm hover:bg-red-100 flex justify-between items-center">
+                        <span>- 删除房间</span>
+                        <span class="text-sm text-red-600">谨慎操作</span>
+                    </button>
+
+                    <div class="mt-8 border-t pt-4">
+                         <p class="font-bold text-lg mb-4">当前操作提示：</p>
+                         <ul class="list-disc pl-5 text-gray-700 space-y-2">
+                             <li>新增房间：可从系统推荐列表中选择，或自定义输入。</li>
+                             <li>删除房间：删除后，原房间内的物品将被标记为“位置未知”。</li>
+                         </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-change-pwd" class="screen hidden min-h-screen flex flex-col bg-white">
+        <div class="bg-gray-800 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex items-center justify-between">
+                <button id="btn-back-pwd" class="bg-white text-gray-800 px-6 py-2 rounded-lg font-bold border-2 border-gray-300">&lt; 返回设置</button>
+                <h1 id="title-pwd" class="text-xl font-bold outline-none" tabindex="-1">修改密码</h1>
+            </div>
+        </div>
+        <div class="max-w-md mx-auto w-full p-6 mt-4">
+            <form id="form-change-pwd" class="space-y-6">
+                <div>
+                    <label for="pwd-old" class="block font-bold mb-2 text-xl">旧密码</label>
+                    <input type="password" id="pwd-old" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="旧密码">
+                </div>
+                <div>
+                    <label for="pwd-new" class="block font-bold mb-2 text-xl">新密码 (至少6位)</label>
+                    <input type="password" id="pwd-new" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="新密码">
+                </div>
+                <div>
+                    <label for="pwd-confirm" class="block font-bold mb-2 text-xl">确认新密码</label>
+                    <input type="password" id="pwd-confirm" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="确认新密码">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg mt-4">确认修改</button>
+<button type="button" id="btn-cancel-pwd" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-5 rounded-lg font-bold text-2xl shadow-lg mt-4 border-2 border-gray-300">取消</button>
+            </form>
+        </div>
+    </div>
+
+<div id="screen-room-add" class="screen hidden min-h-screen flex flex-col bg-white">
+        <div class="bg-green-600 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex items-center justify-between">
+                <button id="btn-back-room-add" class="bg-white text-green-700 px-6 py-2 rounded-lg font-bold border-2 border-green-200">&lt; 返回设置</button>
+                <h1 id="title-room-add" class="text-xl font-bold outline-none" tabindex="-1">新增房间</h1>
+            </div>
+        </div>
+        
+        <div class="max-w-lg mx-auto w-full p-6 overflow-y-auto pb-20">
+            <p class="font-bold text-lg mb-4" id="label-sys-rooms">1. 从推荐列表中选择 (上下键浏览，空格选中)：</p>
+            
+            <div id="list-room-recommend" class="flex flex-col gap-3 mb-8" role="group" aria-labelledby="label-sys-rooms">
+                </div>
+
+            <p class="font-bold text-lg mb-2" id="label-custom-room">2. 或输入自定义房间名：</p>
+            <input type="text" id="input-custom-room" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl mb-8" placeholder="例如：影音室" aria-labelledby="label-custom-room">
+
+            <div class="flex flex-col gap-4">
+                <button id="btn-save-room-add" class="w-full bg-green-600 hover:bg-green-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">保存并添加</button>
+                <button id="btn-cancel-room-add" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-lg font-bold text-xl border-2 border-gray-300">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-room-delete" class="screen hidden min-h-screen flex flex-col bg-white">
+        <div class="bg-red-600 text-white p-4 shadow-md sticky top-0 z-20">
+            <div class="max-w-3xl mx-auto flex items-center justify-between">
+                <button id="btn-back-room-del" class="bg-white text-red-700 px-6 py-2 rounded-lg font-bold border-2 border-red-200">&lt; 返回设置</button>
+                <h1 id="title-room-del" class="text-xl font-bold outline-none" tabindex="-1">删除房间</h1>
+            </div>
+        </div>
+
+        <div class="max-w-lg mx-auto w-full p-6 overflow-y-auto pb-20">
+            <p class="font-bold text-lg mb-4 text-red-700">请选择要删除的房间 (谨慎操作)：</p>
+            
+            <div id="list-room-existing" class="flex flex-col gap-3 mb-8" role="group" aria-label="已有房间列表，上下键浏览，空格选中">
+                </div>
+
+            <div class="flex flex-col gap-4">
+                <button id="btn-confirm-del-room" class="w-full bg-red-600 hover:bg-red-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">确认删除选中房间</button>
+                <button id="btn-cancel-room-del" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-lg font-bold text-xl border-2 border-gray-300">取消</button>
+            </div>
+        </div>
+    </div>
+
 <script type="module" src="script.js"></script>
 </body>
 </html>
