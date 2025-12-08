@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, deleteUser, setPersistence, browserLocalPersistence, browserSessionPersistence, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, doc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, doc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // Config
 const firebaseConfig = {
@@ -160,15 +160,28 @@ else if (screenId === 'screen-settings') currentScreen = 'settings';
         }
 
         // --- Auth & Init ---
-        onAuthStateChanged(auth, user => {
-if (user) {
-                // 优化朗读：优先显示昵称，并去除“点击展开菜单”冗余提示
-const nickName = user.displayName || '未设置昵称';
-                // 读取本地家庭名称
-                const familyName = localStorage.getItem('family_name_cache') || '未设置家庭';
+onAuthStateChanged(auth, async user => {
+            if (user) {
+                // 优化朗读：优先显示昵称
+                const nickName = user.displayName || '未设置昵称';
+                
+                // --- 修复：从数据库获取家庭名称 (数据隔离) ---
+                let familyName = '未设置家庭';
+                try {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists() && userDoc.data().familyName) {
+                        familyName = userDoc.data().familyName;
+                    }
+                } catch (e) {
+                    console.error("获取家庭信息失败", e);
+                }
+
                 const labelText = `当前账号：${nickName}，所属家庭：${familyName}，${user.email}`;
                 document.getElementById('btn-account-menu').setAttribute('aria-label', labelText);
                 document.getElementById('user-email-display').textContent = nickName;
+                // 将家庭名称暂存到 dataset 中，供设置页面回显使用，避免反复请求
+                document.getElementById('btn-account-menu').dataset.familyName = familyName;
+
                 switchScreen('screen-home');
                 setupDataListener(user.uid);
             } else {
@@ -575,8 +588,10 @@ if (predictedCat) {
 
         // --- Navigation Handlers ---
         document.getElementById('btn-nav-takeout').addEventListener('click', () => switchScreen('screen-takeout'));
-        document.getElementById('btn-back-takeout').addEventListener('click', () => switchScreen('screen-home'));
-        
+document.getElementById('btn-back-takeout').addEventListener('click', () => { 
+            switchScreen('screen-home'); 
+            setTimeout(() => document.getElementById('btn-nav-takeout').focus(), 200); 
+        });
 
 document.getElementById('btn-nav-add').addEventListener('click', () => { 
             switchScreen('screen-add'); 
@@ -584,8 +599,15 @@ document.getElementById('btn-nav-add').addEventListener('click', () => {
             pendingTags = []; 
             renderTags('add-tags-container', 'add-tags-input');
         });
-        document.getElementById('btn-back-add').addEventListener('click', () => switchScreen('screen-home'));
+document.getElementById('btn-back-add').addEventListener('click', () => { 
+            switchScreen('screen-home'); 
+            setTimeout(() => document.getElementById('btn-nav-add').focus(), 200); 
+        });
         document.getElementById('btn-nav-data').addEventListener('click', () => switchScreen('screen-data'));
+document.getElementById('btn-back-data').addEventListener('click', () => { 
+            switchScreen('screen-home'); 
+            setTimeout(() => document.getElementById('btn-nav-data').focus(), 200); 
+        });
 
 // 修改: 提交后不跳转，重置表单并聚焦 Name 输入框
         document.getElementById('form-add').addEventListener('submit', async (e) => {
@@ -984,20 +1006,25 @@ function closeQtyModal() {
         async function execDelete() { try { await deleteDoc(doc(db, "items", currentActionItem.id)); announce("已删除"); closeModals(); } catch(e) { announce("删除失败"); } }
 
         // Export/Import
-        document.getElementById('btn-export').addEventListener('click', () => {
-            let csvContent = "\uFEFF物品名称,分类,标签,房间,具体位置,数量,单位\n"; 
+document.getElementById('btn-export').addEventListener('click', () => {
+            let csvContent = "\uFEFF物品名称,分类,标签,房间,具体位置,数量,主单位,子单位,换算比例\n"; 
             allItems.forEach(item => { 
                 const tagsStr = (item.tags || []).join(';');
-                csvContent += `${item.name},${item.category},${tagsStr},${item.room},${item.location || ''},${item.quantity},${item.unit||'个'}\n`; 
+                // 还原显示数量：如果是多级单位，需要除以容量得到主数量，以便重新导入时计算正确
+                let displayQty = item.quantity;
+                if (item.subUnit && item.subCapacity > 1) {
+                    displayQty = item.quantity / item.subCapacity;
+                }
+                csvContent += `${item.name},${item.category},${tagsStr},${item.room},${item.location || ''},${displayQty},${item.unit||'个'},${item.subUnit||''},${item.subCapacity||''}\n`; 
             });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("导出成功");
         });
-        document.getElementById('btn-download-template').addEventListener('click', () => {
-            const csvContent = "\uFEFF物品名称(必填),分类,标签(用分号隔开),房间(必填),具体位置,数量(数字),单位\n大米,食品饮料,粮食;主食,厨房,米桶,1,袋\n洗发水,个人护理,洗护;日常,卫生间,架子,1,瓶"; 
+document.getElementById('btn-download-template').addEventListener('click', () => {
+            const csvContent = "\uFEFF物品名称(必填),分类,标签(分号隔开),房间(必填),具体位置,数量(数字),主单位,子单位(可选),换算比例(可选)\n大米,食品饮料,粮食;主食,厨房,米桶,1,袋,,\n可乐,食品饮料,囤货,阳台,箱子,2,箱,瓶,24";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `导入模板.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("模板下载成功");
         });
         document.getElementById('btn-trigger-upload').addEventListener('click', () => document.getElementById('file-upload').click());
-        document.getElementById('file-upload').addEventListener('change', (e) => {
+document.getElementById('file-upload').addEventListener('change', (e) => {
             const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
             reader.onload = async (e) => {
                 const text = e.target.result; const rows = text.split('\n'); let count = 0;
@@ -1008,14 +1035,28 @@ function closeQtyModal() {
                     const tagStr = cols[2]?.trim() || '';
                     const tags = tagStr ? tagStr.split(';').map(t => t.trim()).filter(t=>t) : [];
 
+                    // 解析数量与多级单位逻辑 (新逻辑)
+                    const mainQty = parseFloat(cols[5]) || 1;
+                    const unitName = cols[6]?.trim() || '个';
+                    const subUnitName = cols[7]?.trim() || null;
+                    const subCapacity = parseInt(cols[8]) || null;
+
+                    // 计算入库总数 (如果有子单位，存最小单位总数)
+                    let finalQty = mainQty;
+                    if(subUnitName && subCapacity > 1) {
+                        finalQty = mainQty * subCapacity;
+                    }
+
                     await addDoc(itemsRef, { 
                         name: name, 
                         category: cat,
                         tags: tags,
                         room: cols[3]?.trim() || '客厅', 
                         location: cols[4]?.trim() || '', 
-                        quantity: parseInt(cols[5]) || 1, 
-                        unit: cols[6]?.trim() || '个', 
+                        quantity: finalQty, 
+                        unit: unitName, 
+                        subUnit: subUnitName,
+                        subCapacity: subCapacity,
                         uid: auth.currentUser.uid, 
                         updatedAt: serverTimestamp() 
                     }); count++;
@@ -1024,14 +1065,17 @@ function closeQtyModal() {
         });
 
 // --- Settings & Tabs Logic ---
-        document.getElementById('btn-settings').addEventListener('click', () => {
+document.getElementById('btn-settings').addEventListener('click', () => {
             document.getElementById('menu-account-dropdown').classList.add('hidden');
             document.getElementById('btn-account-menu').setAttribute('aria-expanded', 'false');
             switchScreen('screen-settings');
-// 默认加载个人资料
-            // 回显昵称和家庭名称
-document.getElementById('set-nickname').value = auth.currentUser.displayName || '';
-            document.getElementById('set-family-name').value = localStorage.getItem('family_name_cache') || '';
+            // 默认加载个人资料
+            // 回显昵称和家庭名称 (从 DOM 状态或 User 对象读取)
+            document.getElementById('set-nickname').value = auth.currentUser.displayName || '';
+            
+            // --- 修复：回显家庭名称 (优先读取刚才加载的数据) ---
+            const currentFamilyName = document.getElementById('btn-account-menu').dataset.familyName || '';
+            document.getElementById('set-family-name').value = (currentFamilyName === '未设置家庭') ? '' : currentFamilyName;
         });
 
         document.getElementById('btn-back-settings').addEventListener('click', () => switchScreen('screen-home'));
@@ -1080,13 +1124,22 @@ document.getElementById('set-nickname').value = auth.currentUser.displayName || 
         });
 
 // 个人资料保存
-        document.getElementById('form-profile').addEventListener('submit', async (e) => {
+document.getElementById('form-profile').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nick = document.getElementById('set-nickname').value.trim();
-const familyName = document.getElementById('set-family-name').value.trim();
-            localStorage.setItem('family_name_cache', familyName);
-try {
+            const familyName = document.getElementById('set-family-name').value.trim();
+            
+            // --- 修复：保存到数据库 (数据隔离) ---
+            try {
                 await updateProfile(auth.currentUser, { displayName: nick });
+                
+                // 将家庭名称写入 users 集合
+                await setDoc(doc(db, "users", auth.currentUser.uid), { 
+                    familyName: familyName,
+                    email: auth.currentUser.email,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
             } catch (err) {
                 announce("保存失败，请重试");
                 console.error(err);
@@ -1095,17 +1148,17 @@ try {
 
             // 更新本地界面显示
             const currentUser = auth.currentUser;
-if (currentUser) {
-                const labelText = `当前账号：${nick}，所属家庭：${familyName}，${currentUser.email}`;
+            if (currentUser) {
+                const displayFamily = familyName || '未设置家庭';
+                const labelText = `当前账号：${nick}，所属家庭：${displayFamily}，${currentUser.email}`;
                 document.getElementById('btn-account-menu').setAttribute('aria-label', labelText);
+                document.getElementById('btn-account-menu').dataset.familyName = displayFamily;
                 document.getElementById('user-email-display').textContent = nick;
             }
 
             announce(`设置已保存，昵称更新为 ${nick}`);
             switchScreen('screen-home');
         });
-
-        // 取消按钮逻辑
         document.getElementById('btn-cancel-profile').addEventListener('click', () => {
             announce("已取消");
             switchScreen('screen-home');
