@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homi 好觅</title>
+    <title>Homi 好觅——你的智能物品管家</title>
 <meta name="description" content="万物好觅，生活有序。您的家庭物品管家。">
     <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="style.css">
@@ -325,14 +325,19 @@
                         <button type="button" id="btn-edit-tag-trigger" class="bg-blue-100 text-blue-800 px-4 rounded-lg font-bold border-2 border-blue-200 whitespace-nowrap text-lg">添加</button>
                     </div>
                     <div id="edit-tags-container" class="flex flex-wrap gap-2 mt-3 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200" role="list" aria-label="已添加的标签"></div>
+</div>
+
+                <div>
+                    <label for="edit-unit" class="block font-bold mb-2 text-xl">主单位 (大单位，如：箱)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="edit-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="主单位">
+<button type="button" id="btn-pick-unit-edit" class="bg-gray-200 text-gray-800 px-4 rounded-lg font-bold border-2 border-gray-300 whitespace-nowrap text-lg">选单位</button>
+                    </div>
                 </div>
 
                 <div>
-<label for="edit-unit" class="block font-bold mb-2 text-xl">单位</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="edit-unit" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="单位">
-                        <button type="button" id="btn-pick-unit-edit" class="bg-gray-200 text-gray-800 px-4 rounded-lg font-bold border-2 border-gray-300 whitespace-nowrap text-lg">选单位</button>
-                    </div>
+                    <label for="edit-quantity" class="block font-bold mb-2 text-xl">主数量 (当前有多少个主单位?)</label>
+                    <input type="number" id="edit-quantity" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="主数量">
                 </div>
 
                 <div class="mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
@@ -372,11 +377,7 @@
                     <div>
                         <label for="edit-location" class="block font-bold mb-2 text-xl">具体位置</label>
                         <input type="text" id="edit-location" class="w-full p-4 border-2 border-gray-300 rounded-lg text-xl" aria-label="具体位置">
-                    </div>
-                </div>
-                <div>
-                    <label for="edit-quantity" class="block font-bold mb-2 text-xl">数量 (直接修改)</label>
-                    <input type="number" id="edit-quantity" class="w-full p-4 border-2 border-blue-300 bg-blue-50 text-blue-900 font-bold text-xl rounded-lg" aria-label="数量">
+</div>
                 </div>
                 <div class="flex flex-col gap-4 mt-8">
                     <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-5 rounded-lg font-bold text-2xl shadow-lg">保存修改</button>
