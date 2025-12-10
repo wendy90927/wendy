@@ -617,16 +617,18 @@ document.getElementById('btn-back-data').addEventListener('click', () => {
 
             // --- 核心重构: 入库数量计算 ---
             // 用户输入的是“主数量”(例如几箱)，我们需要存“最小单位总数”
-            const mainQty = parseFloat(document.getElementById('add-quantity').value) || 0;
+const mainQty = parseFloat(document.getElementById('add-quantity').value) || 0;
             const isSubEnabled = document.getElementById('add-enable-subunit').checked;
             let capacity = 1;
+            let subQty = 0;
             
             if (isSubEnabled) {
                 capacity = parseFloat(document.getElementById('add-sub-capacity').value) || 1;
+                subQty = parseFloat(document.getElementById('add-sub-quantity').value) || 0;
             }
             
-            // 存入数据库的是：主数量 * 容量
-            const finalTotalQuantity = mainQty * capacity;
+            // 存入数据库的是：(主数量 * 容量) + 零散数量
+            const finalTotalQuantity = (mainQty * capacity) + subQty;
             
             try {
                 await addDoc(itemsRef, {
@@ -650,6 +652,7 @@ document.getElementById('btn-back-data').addEventListener('click', () => {
 
 // 重置默认值
                 document.getElementById('add-quantity').value = "1";
+document.getElementById('add-sub-quantity').value = "";
                 document.getElementById('add-unit').value = "个";
                 document.getElementById('add-name').focus();
             } catch(err) {
@@ -748,18 +751,18 @@ document.getElementById('btn-pick-unit-edit-sub').addEventListener('click', () =
             
             // --- 修复: 编辑保存时的计算 ---
             // 获取用户输入的主数量 (如: 2箱)
-            const inputMainQty = parseFloat(document.getElementById('edit-quantity').value) || 0;
+const inputMainQty = parseFloat(document.getElementById('edit-quantity').value) || 0;
             
             // 获取当前的换算比例
             const isSub = document.getElementById('edit-enable-subunit').checked;
             const cap = isSub ? (parseFloat(document.getElementById('edit-sub-capacity').value) || 1) : 1;
+            const subQty = isSub ? (parseFloat(document.getElementById('edit-sub-quantity').value) || 0) : 0;
             
-            // 计算入库总数 (如: 2 * 24 = 48)
-            const finalTotal = inputMainQty * cap;
+            // 计算入库总数 (如: 2箱 * 24 + 3瓶 = 51)
+            const finalTotal = (inputMainQty * cap) + subQty;
 
             const unitVal = document.getElementById('edit-unit').value;
             learnNewUnit(unitVal);
-            
 if (finalTotal === 0) { openZeroConfirmEdit(finalTotal); return; }
             await executeEdit(finalTotal);
         });
@@ -841,13 +844,24 @@ document.getElementById('action-buttons-container').addEventListener('click', (e
 
 pendingTags = [...(item.tags || [])];
             
-            // --- 修复: 数量回显 (转回主单位) ---
-            // 如果有多级单位，显示“主单位数量”(例如 24瓶 -> 显示 1箱)
+// --- 修复: 数量回显 (转回主单位) ---
+            // 如果有多级单位，显示“主单位数量”(例如 27瓶, 1箱24瓶 -> 显示 1箱, 零散 3瓶)
             const cap = (item.subUnit && item.subCapacity) ? item.subCapacity : 1;
-            // 保留2位小数，防止除不尽
-            const mainQty = (item.quantity / cap); 
-            // 如果是整数就显示整数，否则显示小数
-            document.getElementById('edit-quantity').value = Number.isInteger(mainQty) ? mainQty : mainQty.toFixed(2);
+            
+            if (item.subUnit && item.subCapacity > 1) {
+                const total = item.quantity;
+                // 向下取整得到完整的箱数
+                const mainCount = Math.floor(total / cap);
+                // 取模得到剩余的瓶数 (保留2位小数防精度问题)
+                const looseCount = parseFloat((total % cap).toFixed(2));
+                
+                document.getElementById('edit-quantity').value = mainCount;
+                document.getElementById('edit-sub-quantity').value = looseCount;
+            } else {
+                // 没有子单位，直接显示总数
+                document.getElementById('edit-quantity').value = item.quantity;
+                document.getElementById('edit-sub-quantity').value = '';
+            }
 
             renderTags('edit-tags-container', 'edit-tags-input');
         }
@@ -1007,21 +1021,29 @@ function closeQtyModal() {
 
         // Export/Import
 document.getElementById('btn-export').addEventListener('click', () => {
-let csvContent = "\uFEFF物品名称(必填),大类,标签(小类),主单位(大单位),主数量,子单位(小单位),换算比例,房间(必填),具体位置\n";
+// CSV 表头调整：将 "零散子数量" 移到 "换算比例" 后面
+            let csvContent = "\uFEFF物品名称(必填),大类,标签(小类),主单位(大单位),主数量(整数),子单位(小单位),换算比例,零散子数量,房间(必填),具体位置\n";
             allItems.forEach(item => { 
                 const tagsStr = (item.tags || []).join(';');
-                // 还原显示数量：如果是多级单位，需要除以容量得到主数量，以便重新导入时计算正确
-let displayQty = item.quantity;
-            if (item.subUnit && item.subCapacity > 1) {
-                displayQty = item.quantity / item.subCapacity;
-            }
-            // 修正数据顺序：名称,分类,标签,主单位,主数量,子单位,换算,房间,具体位置
-            csvContent += `${item.name},${item.category},${tagsStr},${item.unit||'个'},${displayQty},${item.subUnit||''},${item.subCapacity||''},${item.room},${item.location || ''}\n`; 
-        });
+                
+                // 还原显示数量
+                let mainQtyDisplay = item.quantity;
+                let looseQtyDisplay = '';
+                
+                if (item.subUnit && item.subCapacity > 1) {
+                    mainQtyDisplay = Math.floor(item.quantity / item.subCapacity);
+                    looseQtyDisplay = parseFloat((item.quantity % item.subCapacity).toFixed(2));
+                    if (looseQtyDisplay === 0) looseQtyDisplay = ''; 
+                }
+
+                // 数据顺序调整：... 主数量, 子单位, 换算, 零散数量, ...
+                csvContent += `${item.name},${item.category},${tagsStr},${item.unit||'个'},${mainQtyDisplay},${item.subUnit||''},${item.subCapacity||''},${looseQtyDisplay},${item.room},${item.location || ''}\n`; 
+            });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `物品备份_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("导出成功");
         });
 document.getElementById('btn-download-template').addEventListener('click', () => {
-const csvContent = "\uFEFF物品名称(必填),大类,标签(小类),主单位(大单位),主数量,子单位(小单位),换算比例,房间(必填),具体位置\n大米,食品饮料,粮食;主食,袋,1,,,厨房,米桶\n可乐,食品饮料,囤货,箱,2,瓶,24,阳台,箱子";
+// 模板更新：调整列顺序 (零散子数量后置)
+            const csvContent = "\uFEFF物品名称(必填),大类,标签(小类),主单位(大单位),主数量(整数),子单位(小单位),换算比例,零散子数量,房间(必填),具体位置\n大米,食品饮料,粮食;主食,袋,1,,,,厨房,米桶\n可乐,食品饮料,囤货,箱,1,瓶,24,3,阳台,箱子";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `导入模板.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); announce("模板下载成功");
         });
         document.getElementById('btn-trigger-upload').addEventListener('click', () => document.getElementById('file-upload').click());
@@ -1036,25 +1058,28 @@ document.getElementById('file-upload').addEventListener('change', (e) => {
                     const tagStr = cols[2]?.trim() || '';
                     const tags = tagStr ? tagStr.split(';').map(t => t.trim()).filter(t=>t) : [];
 
-// 解析数量与多级单位逻辑 (修正后)
-                // 对应新表头：Name(0), Cat(1), Tags(2), Unit(3), Qty(4), SubUnit(5), Scale(6), Room(7), Loc(8)
-                const unitName = cols[3]?.trim() || '个';
-                const mainQty = parseFloat(cols[4]) || 1;
-                const subUnitName = cols[5]?.trim() || null;
-                const subCapacity = parseInt(cols[6]) || null;
+// 解析数量与多级单位逻辑 (修正后 - 适配列顺序调整)
+                    // 新顺序：Name(0), Cat(1), Tags(2), Unit(3), MainQty(4), SubUnit(5), Scale(6), LooseQty(7), Room(8), Loc(9)
+                    const unitName = cols[3]?.trim() || '个';
+                    const mainQty = parseFloat(cols[4]) || 0; 
+                    const subUnitName = cols[5]?.trim() || null;
+                    const subCapacity = parseInt(cols[6]) || null;
+                    const looseQty = parseFloat(cols[7]) || 0; // 零散数量现在位于索引 7
 
-                    // 计算入库总数 (如果有子单位，存最小单位总数)
+                    // 计算入库总数：(主数量 * 换算) + 零散数量
                     let finalQty = mainQty;
                     if(subUnitName && subCapacity > 1) {
-                        finalQty = mainQty * subCapacity;
+                        finalQty = (mainQty * subCapacity) + looseQty;
+                    } else {
+                        finalQty = mainQty;
                     }
 
                     await addDoc(itemsRef, { 
                         name: name, 
                         category: cat,
 tags: tags,
-                    room: cols[7]?.trim() || '客厅', 
-                    location: cols[8]?.trim() || '',
+                        room: cols[8]?.trim() || '客厅',  
+                        location: cols[9]?.trim() || '',
                         quantity: finalQty, 
                         unit: unitName, 
                         subUnit: subUnitName,
